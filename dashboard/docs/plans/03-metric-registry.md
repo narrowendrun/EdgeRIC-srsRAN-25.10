@@ -232,8 +232,12 @@ SELECT rnti, MIN(dl_mcs) AS dlMcs__min, MAX(dl_mcs) AS dlMcs__max, AVG(dl_mcs) A
 FROM ue_mac WHERE timestamp_us BETWEEN ? AND ? GROUP BY rnti
 ```
 
-It hits the same index range as the main query and returns one row per UE, so the extra cost is
-small. `rate` and `ratio` summaries are derived in JS from the buckets already fetched.
+**Superseded during implementation.** A separate summary scan measured 38% slower than folding
+`MIN`/`MAX`/`SUM` plus a row `COUNT(*)` into the bucket query itself and reducing per UE in JS:
+min of bucket minima is the true window minimum, and sum/count the true window mean, so the
+guarantee above is preserved exactly with a single range scan. Measured on the 1.5M-row reference
+run: 5m went 578 ms (three scans) to 325 ms (one), 1h 1352 ms to 720 ms. `rate` and `ratio`
+summaries fold from the same rows.
 
 `last` is the most recent **bucket** value, not the most recent raw sample. At 1 kHz a raw sample is
 far too jittery to read as a number; a 900 ms mean is what "current MCS" should mean to a human.
