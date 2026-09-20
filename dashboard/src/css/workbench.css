@@ -170,3 +170,10 @@ select { min-height: 36px; color: var(--blue); background: var(--paper); border:
   .chart-canvas { height: 250px; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+
+.log-truncation-note {
+  margin: 0 0 .5rem;
+  font-size: .78rem;
+  color: var(--ink-muted);
+  font-style: italic;
+}

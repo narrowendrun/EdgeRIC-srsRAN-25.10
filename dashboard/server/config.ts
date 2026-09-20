@@ -16,6 +16,9 @@ export const managedUnits = {
   gnb: 'edgeric-gnb.service',
 } as const
 
+/** Not in managedUnits: it is started and stopped as a PartOf dependency of the collector. */
+export const recorderUnit = 'edgeric-metrics-recorder.service'
+
 export type ModuleName = keyof typeof managedUnits
 export type ServiceAction = 'start' | 'stop' | 'restart'
 export type WindowSize = '5m' | '15m' | '30m' | '1h'

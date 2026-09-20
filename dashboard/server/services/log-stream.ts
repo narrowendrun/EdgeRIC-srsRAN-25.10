@@ -57,6 +57,8 @@ export async function streamLogs(req: Request, res: Response, module: ModuleName
       }
     })
     child.stderr?.on('data', (chunk) => sendSse(res, 'notice', { line: chunk.toString().trim() }))
+    // Without this an unhandled 'error' event would take the whole server down.
+    child.on('error', (error) => sendSse(res, 'notice', { line: `stream failed: ${error.message}` }))
   }
 
   if (module === 'open5gs') {

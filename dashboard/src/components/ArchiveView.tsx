@@ -14,6 +14,7 @@ export function ArchiveView() {
   const [files, setFiles] = useState<string[]>([])
   const [selectedFile, setSelectedFile] = useState('')
   const [logLines, setLogLines] = useState<string[]>([])
+  const [logTruncated, setLogTruncated] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -35,8 +36,13 @@ export function ArchiveView() {
   }, [selected])
 
   useEffect(() => {
-    if (!selected || !selectedFile) { setLogLines([]); return }
-    fetch(`/api/runs/${selected}/log?file=${encodeURIComponent(selectedFile)}`).then((response) => response.json()).then((data: { lines: string[] }) => setLogLines(data.lines)).catch(() => setLogLines(['Unable to read archived log.']))
+    if (!selected || !selectedFile) { setLogLines([]); setLogTruncated(false); return }
+    fetch(`/api/runs/${selected}/log?file=${encodeURIComponent(selectedFile)}`)
+      .then((response) => response.json())
+      .then((data: { lines: string[]; truncated?: boolean }) => {
+        setLogLines(data.lines); setLogTruncated(Boolean(data.truncated))
+      })
+      .catch(() => { setLogLines(['Unable to read archived log.']); setLogTruncated(false) })
   }, [selected, selectedFile])
 
   return <section className="archive-view">
@@ -57,6 +63,7 @@ export function ArchiveView() {
       <ChartsSection runId={selected} archived />
       <section className="paper-note archived-logs">
         <div className="section-heading"><div><p className="section-kicker">captured output</p><h2>Archived logs</h2></div><label>Source<select value={selectedFile} onChange={(event) => setSelectedFile(event.target.value)}>{files.map((file) => <option value={file} key={file}>{file}</option>)}</select></label></div>
+        {logTruncated && <p className="log-truncation-note">Showing the last {logLines.length.toLocaleString()} lines — this file was read from its final 2 MB.</p>}
         <pre className="terminal-output archived-output" tabIndex={0}>{selectedFile ? logLines.join('\n') || 'No lines captured.' : 'No archived logs found.'}</pre>
       </section>
     </div>}

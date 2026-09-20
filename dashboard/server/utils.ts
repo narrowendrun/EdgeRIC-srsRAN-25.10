@@ -31,7 +31,3 @@ export function sameOrigin(req: Request) {
 export function stripAnsi(value: string) {
   return value.replace(/\u001b(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])/g, '')
 }
-
-export function isSafeRunId(value: string) {
-  return /^[0-9]{8}T[0-9]{6}[A-Z0-9_-]{0,20}$/.test(value)
-}

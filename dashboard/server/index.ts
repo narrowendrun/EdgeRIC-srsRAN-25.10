@@ -38,6 +38,10 @@ if (existsSync(staticRoot)) {
   })
 }
 
+// Closes runs that ended outside the dashboard (a gNB crash, or `systemctl stop` from a shell).
+const reconcileTimer = setInterval(() => { void runStore.reconcile() }, 5000)
+reconcileTimer.unref()
+
 const server = createServer(app)
 server.listen(port, host, () => console.log(`EdgeRIC dashboard listening on http://${host}:${port}`))
 
@@ -53,6 +57,7 @@ proxyServer.on('upgrade', (req, socket, head) => webuiProxy.ws(req, socket, head
 proxyServer.listen(webuiProxyPort, host, () => console.log(`Open5GS WebUI proxy listening on http://${host}:${webuiProxyPort}`))
 
 function shutdown() {
+  clearInterval(reconcileTimer)
   runStore.shutdown()
   proxyServer.close()
   server.close(() => process.exit(0))

@@ -5,7 +5,7 @@ import {
   readdirSync, rmSync, statSync, writeFileSync, type WriteStream,
 } from 'node:fs'
 import path from 'node:path'
-import { open5gsLogNames, projectRoot } from '../config.js'
+import { managedUnits, open5gsLogNames, projectRoot, recorderUnit } from '../config.js'
 import { run } from '../utils.js'
 
 export interface RunManifest {
@@ -18,14 +18,33 @@ export interface RunManifest {
   configFile: string
   observedRntis: string[]
   metrics: { messages: number; ueSamples: number; missedTtis: number }
+  /**
+   * When the metric counters below were successfully derived from the run's database.
+   * null means "never computed" (not "computed and genuinely zero"), which is what lets
+   * list() repair a run whose stats read lost a race with the recorder shutting down.
+   */
+  statsComputedAt: string | null
 }
 
 interface Capture { child: ChildProcessWithoutNullStreams; stream: WriteStream }
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+async function unitIsActive(unit: string) {
+  // `systemctl is-active` exits 3 when inactive, so read stdout rather than the exit code.
+  const result = await run('/usr/bin/systemctl', ['is-active', unit])
+  return (result.stdout || 'inactive') === 'active'
+}
+
 export class RunStore {
   readonly runsRoot: string
   readonly activeFile: string
+  /** Set by the control route while a start/stop/restart is in flight, so reconcile() stands down. */
+  busy = false
   private captures: Capture[] = []
+  private repairAttempted = new Set<string>()
+  private idleChecks = 0
+  private reconciling = false
 
   constructor(logsRoot: string) {
     this.runsRoot = path.join(logsRoot, 'runs')
@@ -68,6 +87,7 @@ export class RunStore {
       schemaVersion: 1, id, startedAt: now.toISOString(), endedAt: null, status: 'active',
       gitCommit: git.ok ? git.stdout : 'unknown', configFile: configName,
       observedRntis: [], metrics: { messages: 0, ueSamples: 0, missedTtis: 0 },
+      statsComputedAt: null,
     }
     this.writeManifest(manifest)
     writeFileSync(this.activeFile, `${JSON.stringify({ runId: id, runDir: dir, startedAt: manifest.startedAt }, null, 2)}\n`, { mode: 0o644 })
@@ -84,6 +104,13 @@ export class RunStore {
     const id = this.activeId()
     if (!id) return null
     this.stopCapture()
+    // The recorder is PartOf the collector, so systemd stops it as a propagated job that can
+    // still be running -- and holding an exclusive lock for its WAL checkpoint -- after
+    // `systemctl stop edgeric-collector` returns. Reading its database before it lets go is
+    // what silently produced zeroed manifests.
+    if (!await this.waitForRecorderStop()) {
+      console.warn(`Recorder still active after timeout while finalizing ${id}; stats may be incomplete.`)
+    }
     const manifest = this.readManifest(id)
     if (!manifest) return null
     const stats = await this.readMetricsStats(id)
@@ -92,21 +119,60 @@ export class RunStore {
     if (stats) {
       manifest.metrics = stats.metrics
       manifest.observedRntis = stats.rntis
+      manifest.statsComputedAt = new Date().toISOString()
     }
     this.writeManifest(manifest)
     rmSync(this.activeFile, { force: true })
     return id
   }
 
-  list() {
-    const runs = readdirSync(this.runsRoot, { withFileTypes: true })
+  /**
+   * Closes a run that ended outside the dashboard -- a gNB crash, or `systemctl stop` from a
+   * shell. Without this, active-run.json survives and the next experiment's metrics land in the
+   * previous run's database.
+   */
+  async reconcile() {
+    if (this.busy || this.reconciling) { this.idleChecks = 0; return }
+    if (!this.activeId()) { this.idleChecks = 0; return }
+    this.reconciling = true
+    try {
+      const units = [managedUnits.gnb, managedUnits.edgeric, recorderUnit]
+      const active = await Promise.all(units.map(unitIsActive))
+      if (active.some(Boolean)) { this.idleChecks = 0; return }
+      // Three consecutive idle checks (~15s) so restarting one module is not mistaken for the
+      // end of a run.
+      if (++this.idleChecks < 3) return
+      this.idleChecks = 0
+      console.warn('Stack stopped outside the dashboard; finalizing run as interrupted.')
+      await this.finalize('interrupted')
+    } finally {
+      this.reconciling = false
+    }
+  }
+
+  async list() {
+    const manifests = readdirSync(this.runsRoot, { withFileTypes: true })
       .filter((entry) => entry.isDirectory() && this.validId(entry.name))
       .map((entry) => this.readManifest(entry.name))
       .filter((item): item is RunManifest => Boolean(item))
       .sort((a, b) => b.startedAt.localeCompare(a.startedAt))
-    return runs.map((manifest) => {
-      const dir = this.runDir(manifest.id)
-      const dbPath = path.join(dir, 'metrics.sqlite3')
+
+    for (const manifest of manifests) {
+      if (manifest.status === 'active' || manifest.statsComputedAt) continue
+      // Claim before awaiting so concurrent /api/runs requests cannot both spawn the reader.
+      if (this.repairAttempted.has(manifest.id)) continue
+      this.repairAttempted.add(manifest.id)
+      const stats = await this.readMetricsStats(manifest.id)
+      if (!stats) continue
+      manifest.metrics = stats.metrics
+      manifest.observedRntis = stats.rntis
+      manifest.statsComputedAt = new Date().toISOString()
+      this.writeManifest(manifest)
+      console.log(`Repaired metric stats for ${manifest.id}: ${stats.metrics.messages} messages.`)
+    }
+
+    return manifests.map((manifest) => {
+      const dbPath = path.join(this.runDir(manifest.id), 'metrics.sqlite3')
       return { ...manifest, databaseBytes: existsSync(dbPath) ? statSync(dbPath).size : 0 }
     })
   }
@@ -148,19 +214,34 @@ export class RunStore {
     writeFileSync(path.join(this.runDir(manifest.id), 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
   }
 
+  private async waitForRecorderStop(timeoutMs = 20_000) {
+    const deadline = Date.now() + timeoutMs
+    while (Date.now() < deadline) {
+      if (!await unitIsActive(recorderUnit)) return true
+      await delay(250)
+    }
+    return false
+  }
+
   private attach(command: string, args: string[], destination: string) {
     const stream = createWriteStream(destination, { flags: 'a' })
+    // An unhandled 'error' event throws and takes the process down. ENOSPC is the realistic
+    // trigger here, since run capture has no retention policy.
+    stream.on('error', (error) => console.error(`Log capture write failed (${destination}):`, error))
     const child = spawn(command, args)
+    child.on('error', (error) => console.error(`Log capture spawn failed (${command}):`, error))
     child.stdout.pipe(stream, { end: false })
-    child.stderr.on('data', (chunk) => stream.write(`[capture] ${chunk.toString()}`))
+    child.stderr.on('data', (chunk) => {
+      if (!stream.writableEnded) stream.write(`[capture] ${chunk.toString()}`)
+    })
     this.captures.push({ child, stream })
   }
 
   private startCapture(id: string) {
     if (this.captures.length > 0) return
     const dir = this.runDir(id)
-    this.attach('/usr/bin/journalctl', ['-u', 'edgeric-gnb.service', '-f', '-n', '0', '-o', 'short-iso'], path.join(dir, 'gnb.log'))
-    this.attach('/usr/bin/journalctl', ['-u', 'edgeric-collector.service', '-u', 'edgeric-metrics-recorder.service', '-f', '-n', '0', '-o', 'short-iso'], path.join(dir, 'edgeric.log'))
+    this.attach('/usr/bin/journalctl', ['-u', managedUnits.gnb, '-f', '-n', '0', '-o', 'short-iso'], path.join(dir, 'gnb.log'))
+    this.attach('/usr/bin/journalctl', ['-u', managedUnits.edgeric, '-u', recorderUnit, '-f', '-n', '0', '-o', 'short-iso'], path.join(dir, 'edgeric.log'))
     for (const name of open5gsLogNames) {
       const source = `/var/log/open5gs/${name}.log`
       if (existsSync(source)) this.attach('/usr/bin/tail', ['-n', '0', '-F', source], path.join(dir, 'open5gs', `${name}.log`))
@@ -169,8 +250,12 @@ export class RunStore {
   }
 
   private stopCapture() {
-    for (const { child } of this.captures) child.kill('SIGTERM')
-    for (const { stream } of this.captures) stream.end()
+    for (const { child, stream } of this.captures) {
+      // End the stream only once the child is gone, so a late stderr chunk cannot write
+      // after end.
+      child.once('close', () => stream.end())
+      child.kill('SIGTERM')
+    }
     this.captures = []
   }
 
@@ -178,11 +263,15 @@ export class RunStore {
     const db = path.join(this.runDir(id), 'metrics.sqlite3')
     if (!existsSync(db)) return null
     const script = path.join(projectRoot, 'dashboard', 'server', 'scripts', 'metrics_stats.py')
-    const result = await run(path.join(projectRoot, '.venv', 'bin', 'python'), [script, db], 5000)
-    if (!result.ok) return null
+    const result = await run(path.join(projectRoot, '.venv', 'bin', 'python'), [script, db], 30_000)
+    if (!result.ok) {
+      console.error(`Metric stats read failed for ${id}: ${result.stderr || 'unknown error'}`)
+      return null
+    }
     try {
       return JSON.parse(result.stdout) as { metrics: RunManifest['metrics']; rntis: string[] }
-    } catch {
+    } catch (error) {
+      console.error(`Metric stats output was not valid JSON for ${id}:`, error)
       return null
     }
   }
