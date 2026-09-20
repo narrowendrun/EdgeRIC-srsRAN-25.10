@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { RunManifest } from '../types'
-import { ChartsSection } from './ChartsSection'
+import { TelemetrySection } from './TelemetrySection'
 
 function formatBytes(bytes: number) {
   if (!bytes) return '—'
@@ -60,7 +60,7 @@ export function ArchiveView() {
     </table></div>}
     {selected && <div className="archive-detail">
       <button type="button" className="archive-close" onClick={() => setSelected(null)}>Close run details</button>
-      <ChartsSection runId={selected} archived />
+      <TelemetrySection runId={selected} archived />
       <section className="paper-note archived-logs">
         <div className="section-heading"><div><p className="section-kicker">captured output</p><h2>Archived logs</h2></div><label>Source<select value={selectedFile} onChange={(event) => setSelectedFile(event.target.value)}>{files.map((file) => <option value={file} key={file}>{file}</option>)}</select></label></div>
         {logTruncated && <p className="log-truncation-note">Showing the last {logLines.length.toLocaleString()} lines — this file was read from its final 2 MB.</p>}

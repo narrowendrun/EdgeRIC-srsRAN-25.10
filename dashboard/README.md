@@ -1,6 +1,6 @@
 # EdgeRIC Workbench Dashboard
 
-The Workbench is a local Vite/React dashboard for the X310, srsRAN gNB, EdgeRIC and Open5GS stack. It provides service controls, live logs, per-UE radio charts and a per-run archive. The dashboard and Open5GS WebUI proxy bind to the machine's Tailscale address.
+The Workbench is a local Vite/React dashboard for the X310, srsRAN gNB, EdgeRIC and Open5GS stack. It provides service controls, live logs, selectable per-UE telemetry and a per-run archive. The dashboard and Open5GS WebUI proxy bind to the machine's Tailscale address.
 
 ## What it shows
 
@@ -8,8 +8,11 @@ The Workbench is a local Vite/React dashboard for the X310, srsRAN gNB, EdgeRIC 
 - Open5GS, EdgeRIC collector/recorder, gNB, connected UE and iperf3 status.
 - Start, stop and restart controls for each module or the complete stack.
 - Live Open5GS, EdgeRIC and gNB logs.
-- Five-minute rolling charts by default, with 15-minute, 30-minute and one-hour windows.
-- Per-UE DL/UL throughput, SNR, CQI and DL/UL BLER.
+- Five-minute rolling windows by default, with 15-minute, 30-minute and one-hour options.
+- A selectable set of twenty per-UE metrics, each shown either as a live number with its
+  window minimum, maximum and average, or as a time-series chart. The choice is per metric and
+  is remembered in the browser.
+- Throughput, SNR, CQI, BLER, MCS, PRBs, TBS, buffer occupancy and the MAC delay breakdown.
 - A protobuf-derived catalog of every EdgeRIC published metric and subscribed control.
 - Archived runs with charts and individual component logs.
 
@@ -24,7 +27,9 @@ dashboard server API ───────────────────�
 systemd journals + /var/log/open5gs/*.log ─► logs/runs/<run-id>/*.log
 ```
 
-The existing `collector.py` remains responsible for readable EdgeRIC output and the current UE snapshot. `metrics_recorder.py` is a separate subscriber that saves the complete received protobuf payload plus indexed MAC fields used by the charts.
+The existing `collector.py` remains responsible for readable EdgeRIC output and the current UE snapshot. `metrics_recorder.py` is a separate subscriber that projects every scalar `MacUeMetrics` field
+into the indexed `ue_mac` table. It does **not** store the raw protobuf payload unless started
+with `--store-raw`: nothing reads it, and it roughly triples database size.
 
 EdgeRIC's gNB publisher currently conflates its outgoing stream. The recorder saves every message it receives, but a subscriber cannot guarantee receipt of every 1 ms TTI. Inferred TTI gaps are counted and displayed with each live run.
 
@@ -97,13 +102,25 @@ SQLite uses WAL while a run is active. Temporary `metrics.sqlite3-wal` and `metr
 
 ## Metric calculations
 
-- DL throughput uses acknowledged MAC bytes in each server-side time bucket.
-- UL throughput uses successfully decoded MAC bytes.
-- SNR and CQI are averaged per UE and bucket.
-- DL BLER is `NACK / (ACK + NACK)`.
-- UL BLER is `CRC fail / (CRC success + CRC fail)`.
+Every metric is declared once in `server/metrics-registry.ts`, which drives the SQL projection,
+the chart cards, the numeric tiles and the picker. Three aggregation kinds cover all twenty:
 
-Queries are downsampled to a few hundred buckets before reaching the browser. Raw received protobuf messages remain in `raw_tti`, while chart-ready values live in `ue_mac`.
+- `avg` averages the column over each bucket. SNR, CQI, MCS, PRBs, TBS, buffers and the delays.
+- `rate` is `SUM(bytes) * 8 / bucket` in Mbit/s. DL throughput uses acknowledged MAC bytes, UL
+  uses successfully decoded bytes.
+- `ratio` is `SUM(fail) / (SUM(fail) + SUM(ok)) * 100`. DL BLER is `NACK / (ACK + NACK)`, UL BLER
+  is `CRC fail / (CRC success + CRC fail)`.
+
+Queries are downsampled to a few hundred buckets before reaching the browser. Chart-ready values
+live in `ue_mac`; `raw_tti` is empty unless the recorder was started with `--store-raw`.
+
+Per-UE minimum, maximum and average are computed from the raw rows for `avg` metrics, not from
+the bucket series -- the minimum of a set of ~900 ms means is not the lowest value the UE
+actually reached. `rate` and `ratio` are undefined for a single TTI, so their extremes do come
+from the buckets and their average is the whole-window total.
+
+Chart queries run in a worker thread. `node:sqlite` is synchronous, so running them on the main
+thread stalled log streaming, status polling and service controls behind every chart refresh.
 
 Chart-query temporary tables are kept in memory. This is required by the dashboard's hardened systemd sandbox and avoids temporary disk I/O while an active WAL is being written.
 
@@ -115,7 +132,7 @@ dashboard/
     routes/       HTTP APIs
     services/     systemd, run capture and SQLite queries
   src/
-    components/   status, charts, terminal and archive views
+    components/   status, telemetry, terminal and archive views
     hooks/        polling and streaming data hooks
     css/
       workbench.css
@@ -148,9 +165,9 @@ Useful project-root commands:
 - `GET /api/status`
 - `POST /api/control/:target/:action`
 - `GET /api/logs/:module/stream?window=5m`
-- `GET /api/metrics/live?window=5m`
+- `GET /api/metrics/live?window=5m&metrics=snr,dlMcs`
 - `GET /api/metrics/catalog`
 - `GET /api/runs`
-- `GET /api/runs/:id/metrics`
+- `GET /api/runs/:id/metrics?window=5m&metrics=...&full=1`
 - `GET /api/runs/:id/logs`
 - `GET /api/runs/:id/log?file=...`

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArchiveView } from './components/ArchiveView'
-import { ChartsSection } from './components/ChartsSection'
+import { TelemetrySection } from './components/TelemetrySection'
 import { LiveTerminal } from './components/LiveTerminal'
 import { StatusBoard } from './components/StatusBoard'
 import { moduleLabels } from './constants'
@@ -84,7 +84,7 @@ function App() {
     {notice && <div className="notice" role="status">{notice}</div>}
     {view === 'live' ? <>
       <StatusBoard status={status} pendingAction={pendingAction} onAction={runAction} />
-      <ChartsSection />
+      <TelemetrySection />
       <LiveTerminal />
     </> : <ArchiveView />}
   </main>
