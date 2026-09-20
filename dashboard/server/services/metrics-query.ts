@@ -27,7 +27,10 @@ export function queryMetrics(store: RunStore, id: string, window: WindowSize, fu
     // scratch data in memory so read-only chart queries never need /tmp.
     db.exec('PRAGMA temp_store=MEMORY')
     db.exec('PRAGMA query_only=ON')
-    const bounds = db.prepare('SELECT MIN(timestamp_us) AS min_us, MAX(timestamp_us) AS max_us FROM raw_tti').get() as { min_us: number | null; max_us: number | null }
+    // Bounds come from ue_mac, the table the rows below are actually read from. raw_tti holds a
+    // row per TTI including those with no UEs, so its max sat past the last real sample -- and
+    // with raw payload storage off by default it is empty, which would strand every chart.
+    const bounds = db.prepare('SELECT MIN(timestamp_us) AS min_us, MAX(timestamp_us) AS max_us FROM ue_mac').get() as { min_us: number | null; max_us: number | null }
     if (!bounds.max_us || !bounds.min_us) return { runId: id, available: true, series: [], capture: captureStats(db) }
     const manifest = store.readManifest(id)
     const endUs = manifest?.status === 'active' ? Math.max(bounds.max_us, Date.now() * 1000) : bounds.max_us

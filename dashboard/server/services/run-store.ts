@@ -241,7 +241,11 @@ export class RunStore {
     if (this.captures.length > 0) return
     const dir = this.runDir(id)
     this.attach('/usr/bin/journalctl', ['-u', managedUnits.gnb, '-f', '-n', '0', '-o', 'short-iso'], path.join(dir, 'gnb.log'))
-    this.attach('/usr/bin/journalctl', ['-u', managedUnits.edgeric, '-u', recorderUnit, '-f', '-n', '0', '-o', 'short-iso'], path.join(dir, 'edgeric.log'))
+    // Recorder only, not the collector: the collector prints per-TTI, which produced a 116 MB
+    // edgeric.log for a 14-minute run -- duplicating, unstructured, what metrics.sqlite3 already
+    // holds. The live terminal's EdgeRIC tab still streams the collector straight from journald,
+    // so this costs nothing but archive bloat.
+    this.attach('/usr/bin/journalctl', ['-u', recorderUnit, '-f', '-n', '0', '-o', 'short-iso'], path.join(dir, 'edgeric.log'))
     for (const name of open5gsLogNames) {
       const source = `/var/log/open5gs/${name}.log`
       if (existsSync(source)) this.attach('/usr/bin/tail', ['-n', '0', '-F', source], path.join(dir, 'open5gs', `${name}.log`))

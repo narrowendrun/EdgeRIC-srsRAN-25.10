@@ -153,6 +153,10 @@ function availableColumns(db: DatabaseSync): Set<string> {
 }
 ```
 
+**Deferred to plan 3 as implemented.** The v1 query selects only columns present in both
+schemas, so it needs no gating yet -- adding `availableColumns` in wave 1b would have been dead
+code until the registry arrived. Plan 3 introduces it at the point of first use.
+
 Plan 3 intersects this set with the requested metrics. A v1 archive offers the original six
 derived metrics; a v2 archive offers all twenty. The UI greys out the rest rather than erroring.
 
