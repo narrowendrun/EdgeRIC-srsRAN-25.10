@@ -1,0 +1,30 @@
+[Unit]
+Description=EdgeRIC operations dashboard
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@USER@
+Group=@USER@
+SupplementaryGroups=open5gs systemd-journal
+WorkingDirectory=@PROJECT_ROOT@/dashboard
+Environment=NODE_ENV=production
+Environment=PATH=@NODE_DIR@:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+Environment=PROJECT_ROOT=@PROJECT_ROOT@
+Environment=DASHBOARD_HOST=@TAILSCALE_IP@
+Environment=DASHBOARD_PORT=4173
+Environment=OPEN5GS_PROXY_PORT=4174
+ExecStart=@NODE@ --disable-warning=ExperimentalWarning @PROJECT_ROOT@/dashboard/dist-server/index.js
+Restart=on-failure
+RestartSec=2
+KillSignal=SIGINT
+TimeoutStopSec=10
+PrivateTmp=false
+ProtectSystem=strict
+ProtectHome=read-only
+ReadOnlyPaths=@PROJECT_ROOT@
+ReadWritePaths=@PROJECT_ROOT@/logs
+
+[Install]
+WantedBy=multi-user.target

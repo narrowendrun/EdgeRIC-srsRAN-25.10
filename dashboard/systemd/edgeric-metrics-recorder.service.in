@@ -1,0 +1,23 @@
+[Unit]
+Description=EdgeRIC SQLite metrics recorder
+After=network.target
+PartOf=edgeric-collector.service
+
+[Service]
+Type=simple
+User=@USER@
+Group=@USER@
+WorkingDirectory=@PROJECT_ROOT@/edgeric
+Environment=PYTHONUNBUFFERED=1
+Environment=VIRTUAL_ENV=@PROJECT_ROOT@/.venv
+Environment=PATH=@PROJECT_ROOT@/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+ExecStart=@PROJECT_ROOT@/.venv/bin/python -u @PROJECT_ROOT@/edgeric/metrics_recorder.py --active-run-file @PROJECT_ROOT@/logs/active-run.json
+Restart=on-failure
+RestartSec=2
+KillSignal=SIGINT
+TimeoutStopSec=15
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

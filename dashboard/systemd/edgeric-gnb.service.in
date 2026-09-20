@@ -1,0 +1,27 @@
+[Unit]
+Description=EdgeRIC srsRAN X310 gNB
+After=network-online.target edgeric-open5gs.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@USER@
+Group=@USER@
+WorkingDirectory=@PROJECT_ROOT@
+ExecStartPre=+/usr/bin/rm -f /tmp/gnb.log /tmp/gnb_mac.pcap /tmp/gnb_ngap.pcap /tmp/gnb_n3.pcap /tmp/metrics_data
+# srsRAN otherwise block-buffers stdout when journald replaces the terminal.
+ExecStart=/usr/bin/stdbuf --output=L --error=L @PROJECT_ROOT@/build/apps/gnb/gnb -c @PROJECT_ROOT@/gnb_rf_x310_tdd_n78_20mhz.yml
+Restart=on-failure
+RestartSec=3
+KillSignal=SIGINT
+TimeoutStopSec=15
+LimitRTPRIO=99
+LimitMEMLOCK=infinity
+Nice=-10
+AmbientCapabilities=CAP_SYS_NICE
+CapabilityBoundingSet=CAP_SYS_NICE
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

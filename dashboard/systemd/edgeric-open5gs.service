@@ -1,0 +1,12 @@
+[Unit]
+Description=EdgeRIC Open5GS service group
+After=network.target mongodb.service mongod.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/systemctl start open5gs-mmed.service open5gs-sgwcd.service open5gs-smfd.service open5gs-amfd.service open5gs-sgwud.service open5gs-upfd.service open5gs-hssd.service open5gs-pcrfd.service open5gs-nrfd.service open5gs-scpd.service open5gs-seppd.service open5gs-ausfd.service open5gs-udmd.service open5gs-pcfd.service open5gs-nssfd.service open5gs-bsfd.service open5gs-udrd.service open5gs-webui.service
+ExecStop=/usr/bin/systemctl stop open5gs-webui.service open5gs-udrd.service open5gs-bsfd.service open5gs-nssfd.service open5gs-pcfd.service open5gs-udmd.service open5gs-ausfd.service open5gs-seppd.service open5gs-scpd.service open5gs-nrfd.service open5gs-pcrfd.service open5gs-hssd.service open5gs-upfd.service open5gs-sgwud.service open5gs-amfd.service open5gs-smfd.service open5gs-sgwcd.service open5gs-mmed.service
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,24 @@
+[Unit]
+Description=EdgeRIC metrics collector
+After=network.target
+Requires=edgeric-metrics-recorder.service
+After=edgeric-metrics-recorder.service
+
+[Service]
+Type=simple
+User=@USER@
+Group=@USER@
+WorkingDirectory=@PROJECT_ROOT@/edgeric
+Environment=PYTHONUNBUFFERED=1
+Environment=VIRTUAL_ENV=@PROJECT_ROOT@/.venv
+Environment=PATH=@PROJECT_ROOT@/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+ExecStart=@PROJECT_ROOT@/.venv/bin/python -u @PROJECT_ROOT@/edgeric/collector.py --quiet --state-file /tmp/edgeric_ue_state.json
+Restart=on-failure
+RestartSec=2
+KillSignal=SIGINT
+TimeoutStopSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
