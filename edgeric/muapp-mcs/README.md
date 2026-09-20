@@ -16,39 +16,38 @@ The muApp:
 ### Python Packages
 
 ```bash
-# Activate the EdgeRIC virtualenv
-source ../venv/bin/activate
-
-# Install required packages (if not already installed)
-pip install pyzmq protobuf
+# From the project root, activate the shared virtual environment
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
 
 ### Protobuf Generation
 
 ```bash
-cd ../protobufs
+cd edgeric/protobufs
 protoc --python_out=.. *.proto
+cd ../..
 ```
 
 ## Usage
 
 ```bash
-cd muapp-mcs
+cd edgeric/muapp-mcs
 
 # Fixed MCS: Set MCS=20 for all UEs
-python3 mcs_muapp.py --algorithm fixed --mcs 20
+python mcs_muapp.py --algorithm fixed --mcs 20
 
 # Random MCS: Random MCS between 10-20 for each UE
-python3 mcs_muapp.py --algorithm random
+python mcs_muapp.py --algorithm random
 
 # Random MCS with custom range
-python3 mcs_muapp.py --algorithm random --min-mcs 15 --max-mcs 25
+python mcs_muapp.py --algorithm random --min-mcs 15 --max-mcs 25
 
 # CQI-based MCS: Map CQI to MCS
-python3 mcs_muapp.py --algorithm cqi
+python mcs_muapp.py --algorithm cqi
 
 # Test staleness (MCS should be rejected)
-python3 mcs_muapp.py --algorithm fixed --mcs 20 --tti-offset -3
+python mcs_muapp.py --algorithm fixed --mcs 20 --tti-offset -3
 ```
 
 ## Available Algorithms
@@ -88,10 +87,10 @@ The RAN discards stale MCS decisions to ensure real-time control:
 
 ```bash
 # Normal operation (MCS applied)
-python3 mcs_controller.py --all --mcs 20 --tti-offset 0
+python mcs_controller.py --all --mcs 20 --tti-offset 0
 
 # Simulate 3 TTI delay (MCS REJECTED, reverts to link adaptation)
-python3 mcs_controller.py --all --mcs 20 --tti-offset -3
+python mcs_controller.py --all --mcs 20 --tti-offset -3
 ```
 
 ## How It Works
@@ -128,13 +127,13 @@ message UeMcs {
 
 ```bash
 # Terminal 1: Run collector to see metrics
-python3 ../collector.py --quiet
+python ../collector.py --quiet
 
 # Terminal 2: Set low MCS (see throughput drop)
-python3 mcs_controller.py --rnti 17921 --mcs 5
+python mcs_controller.py --rnti 17921 --mcs 5
 
 # Terminal 2: Set high MCS (see throughput increase)
-python3 mcs_controller.py --rnti 17921 --mcs 28
+python mcs_controller.py --rnti 17921 --mcs 28
 ```
 
 ## Limitations

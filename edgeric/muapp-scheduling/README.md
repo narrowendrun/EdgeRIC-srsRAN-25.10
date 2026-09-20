@@ -15,13 +15,9 @@ The controller:
 ### Python Packages
 
 ```bash
-# Create and activate virtualenv (recommended)
-cd ../
-python3 -m venv venv
-source venv/bin/activate
-
-# Install required packages
-pip install pyzmq protobuf redis numpy
+# From the project root, activate the shared virtual environment
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
 
 ### Required Packages
@@ -38,8 +34,9 @@ pip install pyzmq protobuf redis numpy
 Generate Python protobuf files before first use:
 
 ```bash
-cd ../protobufs
+cd edgeric/protobufs
 protoc --python_out=.. *.proto
+cd ../..
 ```
 
 This creates `metrics_pb2.py` and `control_weights_pb2.py` in the `edgeric/` directory.
@@ -67,16 +64,16 @@ When you set `weight = 0.3` for a UE, it means that UE gets `0.3 * available_prb
 ## Quick Start
 
 ```bash
-# 1. Activate the EdgeRIC virtualenv
-source ../venv/bin/activate
+# 1. From the project root, activate the shared virtual environment
+source .venv/bin/activate
 
 # 2. Generate protobufs (if needed)
-cd ../protobufs
+cd edgeric/protobufs
 protoc --python_out=.. *.proto
-cd -
+cd ../muapp-scheduling
 
 # 3. Start the scheduling muApp
-python3 scheduling_muapp.py
+python scheduling_muapp.py
 
 # 4. Set algorithm via Redis (in another terminal)
 redis-cli SET scheduling_algorithm "Max CQI"
@@ -88,7 +85,7 @@ redis-cli SET scheduling_algorithm "Max CQI"
 
 ```bash
 # Start muApp (reads algorithm from Redis)
-python3 scheduling_muapp.py
+python scheduling_muapp.py
 
 # Set algorithm via Redis
 redis-cli SET scheduling_algorithm "Fixed Weight"
@@ -101,8 +98,8 @@ redis-cli SET scheduling_algorithm "Round Robin"
 ### With Fixed Algorithm (No Redis)
 
 ```bash
-python3 scheduling_muapp.py --algorithm "Max CQI"
-python3 scheduling_muapp.py --algorithm "Proportional Fair"
+python scheduling_muapp.py --algorithm "Max CQI"
+python scheduling_muapp.py --algorithm "Proportional Fair"
 ```
 
 ## Available Algorithms

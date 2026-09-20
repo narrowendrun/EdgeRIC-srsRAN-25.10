@@ -27,9 +27,12 @@ Examples:
 import zmq
 import argparse
 import json
+import os
 import sys
-from datetime import datetime
+import time
+from datetime import datetime, timezone
 from collections import defaultdict
+from pathlib import Path
 
 # Import generated protobuf
 import metrics_pb2
@@ -63,6 +66,30 @@ class BlerTracker:
 
 # Global BLER tracker
 bler_tracker = BlerTracker()
+
+def write_ue_state(state_file, tti_msg):
+    """Atomically publish a lightweight UE snapshot for local status consumers."""
+    destination = Path(state_file)
+    temporary = destination.with_name(f".{destination.name}.{os.getpid()}.tmp")
+    snapshot = {
+        "count": len(tti_msg.ues),
+        "rntis": [f"0x{ue.rnti:04X}" for ue in tti_msg.ues],
+        "tti_index": tti_msg.tti_index,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "collector_pid": os.getpid(),
+    }
+    temporary.write_text(json.dumps(snapshot), encoding="utf-8")
+    os.replace(temporary, destination)
+
+def remove_owned_ue_state(state_file):
+    """Remove this collector's snapshot without deleting another collector's state."""
+    destination = Path(state_file)
+    try:
+        snapshot = json.loads(destination.read_text(encoding="utf-8"))
+        if snapshot.get("collector_pid") == os.getpid():
+            destination.unlink(missing_ok=True)
+    except (OSError, ValueError):
+        pass
 
 # ANSI colors for terminal output
 class C:
@@ -365,6 +392,7 @@ def main():
     parser.add_argument('--output', '-o', type=str, help='Output file path (for JSON mode). If not specified, writes to stdout.')
     parser.add_argument('--quiet', '-q', action='store_true', help='Only show MAC-level metrics, skip per-DRB')
     parser.add_argument('--address', default='ipc:///tmp/metrics_data', help='ZMQ address to connect to')
+    parser.add_argument('--state-file', default='/tmp/edgeric_ue_state.json', help='Current UE state file for local status consumers')
     args = parser.parse_args()
     
     # Setup ZMQ subscriber with conflate
@@ -390,6 +418,8 @@ def main():
         print(f"Waiting for metrics... (Ctrl+C to exit)\n")
     
     msg_count = 0
+    last_state_write = 0.0
+    last_rntis = None
     try:
         while True:
             # Receive message
@@ -403,6 +433,17 @@ def main():
             except Exception as e:
                 print(f"[{msg_count}] Failed to parse protobuf: {e}", file=sys.stderr)
                 continue
+
+            current_rntis = tuple(ue.rnti for ue in tti_msg.ues)
+            now = time.monotonic()
+            if current_rntis != last_rntis or now - last_state_write >= 1.0:
+                try:
+                    write_ue_state(args.state_file, tti_msg)
+                    last_rntis = current_rntis
+                    last_state_write = now
+                except OSError as e:
+                    print(f"Unable to update UE state file {args.state_file}: {e}", file=sys.stderr)
+                    last_state_write = now
             
             if args.json:
                 print_json(tti_msg, output_file)
@@ -415,6 +456,7 @@ def main():
         else:
             print(f"\n\n{C.BOLD}Received {msg_count} messages.{C.RESET} Exiting...")
     finally:
+        remove_owned_ue_state(args.state_file)
         if output_file:
             output_file.close()
         socket.close()

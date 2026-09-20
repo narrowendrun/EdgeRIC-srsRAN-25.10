@@ -1,2 +1,4 @@
 pyzmq>=25.0.0
 protobuf>=4.0.0
+redis>=4.0.0
+numpy>=1.20.0

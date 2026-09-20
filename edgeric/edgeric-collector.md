@@ -5,10 +5,9 @@ Python-side collector and controller for EdgeRIC real-time telemetry.
 ## Setup
 
 ```bash
-cd srsRAN_Project/edgeric
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+cd srsRAN_Project
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
 ```
 
 ## Collector Agent
@@ -21,16 +20,16 @@ Subscribes to real-time metrics from the gNB:
 
 ```bash
 # Pretty-printed output (default)
-sudo python3 collector.py
+.venv/bin/python edgeric/collector.py
 
 # JSON output (one line per TTI)
-sudo python3 collector.py --json
+.venv/bin/python edgeric/collector.py --json
 
 # JSON to file
-sudo python3 collector.py --json --output metrics.json
+.venv/bin/python edgeric/collector.py --json --output metrics.json
 
 # Quiet mode (MAC-level only, no per-DRB details)
-sudo python3 collector.py --quiet
+.venv/bin/python edgeric/collector.py --quiet
 ```
 
 ### Output Example
@@ -494,4 +493,3 @@ Protection via `std::mutex`:
 - `pdcp_mutex` - PDCP metrics map  
 - `gtp_mutex` - GTP metrics map
 - `du_ue_mutex` - ID mapping
-
