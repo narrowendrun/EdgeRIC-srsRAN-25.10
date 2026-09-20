@@ -1,3 +1,11 @@
 build/
 personal/
+logs/
+
+# Python virtualenvs and bytecode (never portable; absolute paths baked in)
+.venv/
+edgeric/venv/
+__pycache__/
+*.pyc
+
 edgeric/telemetry-runs/
