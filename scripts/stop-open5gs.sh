@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 sudo systemctl stop open5gs-mmed
 sudo systemctl stop open5gs-sgwcd
 sudo systemctl stop open5gs-smfd

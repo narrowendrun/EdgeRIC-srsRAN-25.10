@@ -1,0 +1,96 @@
+# Single-cell OTA gNB using a USRP X310 with CBX daughterboards.
+# This configuration targets the local Open5GS installation and the X310's
+# 1 Gigabit Ethernet interface at 192.168.10.2.
+
+cu_cp:
+  amf:
+    addr: 127.0.0.5
+    port: 38412
+    bind_addr: 127.0.0.1
+    supported_tracking_areas:
+      - tac: 7
+        plmn_list:
+          - plmn: "00101"
+            tai_slice_support_list:
+              - sst: 1
+  max_nof_dus: 6
+  max_nof_cu_ups: 6
+  max_nof_ues: 8192
+  max_nof_drbs_per_ue: 8
+  inactivity_timer: 7200
+  request_pdu_session_timeout: 30
+
+cu_up:
+  ngu:
+    socket:
+      - bind_addr: 127.0.0.1
+
+ru_sdr:
+  device_driver: uhd
+  device_args: type=x300,addr=192.168.10.2,master_clock_rate=184.32e6,num_recv_frames=64,num_send_frames=64,recv_frame_size=8000,send_frame_size=8000
+  clock: external
+  sync: internal
+  srate: 23.04
+  otw_format: sc16
+  tx_gain: 15
+  rx_gain: 20
+
+cell_cfg:
+  dl_arfcn: 632628
+  band: 78
+  channel_bandwidth_MHz: 20
+  common_scs: 30
+  plmn: "00101"
+  tac: 7
+  pci: 1
+
+log:
+  filename: /tmp/gnb.log
+  all_level: none
+
+pcap:
+  mac_enable: true
+  mac_filename: /tmp/gnb_mac.pcap
+  ngap_enable: false
+  ngap_filename: /tmp/gnb_ngap.pcap
+  n3_enable: false
+  n3_filename: /tmp/gnb_n3.pcap
+
+remote_control:
+  enabled: true
+  bind_addr: 127.0.0.1
+  port: 55555
+
+metrics:
+  enable_json: true
+  autostart_stdout_metrics: true
+  enable_log: false
+  enable_verbose: false
+  layers:
+    enable_app_usage: false
+    enable_ngap: true
+    enable_e1ap: false
+    enable_pdcp: true
+    enable_rrc: false
+    skip_cu_up_executor: true
+    enable_sched: true
+    enable_rlc: true
+    enable_mac: true
+    enable_executor: false
+    enable_du_low: false
+    enable_ru: false
+  periodicity:
+    app_usage_report_period: 1000
+    cu_cp_report_period: 100
+    cu_up_report_period: 100
+    du_report_period: 100
+    executors_report_period: 1000
+
+# expert_phy:
+#   max_proc_delay: 5
+#   pusch_dec_max_iterations: 10
+
+# expert_execution:
+#   threads:
+#     lower_phy:
+#       execution_profile: single
