@@ -27,6 +27,12 @@ function findCandidate(): Candidate | null {
     const log = path.join(dir, 'gnb.log')
     const dbPath = path.join(dir, 'metrics.sqlite3')
     if (!existsSync(log) || !existsSync(dbPath)) continue
+    // Never compare against a run still being recorded: the log and the database are both
+    // moving, so the same assertion can pass and then fail minutes later.
+    try {
+      const manifest = JSON.parse(readFileSync(path.join(dir, 'manifest.json'), 'utf8')) as { status?: string }
+      if (manifest.status === 'active') continue
+    } catch { continue }
     if (statSync(log).size > 64 * 1024 * 1024) continue
     const rows = parseSrsranMetricsLog(readFileSync(log, 'utf8'))
     if (rows.length < 200) continue
