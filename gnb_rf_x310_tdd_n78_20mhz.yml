@@ -32,8 +32,8 @@ ru_sdr:
   sync: internal
   srate: 23.04
   otw_format: sc16
-  tx_gain: 15
-  rx_gain: 20
+  tx_gain: 10
+  rx_gain: 10
 
 cell_cfg:
   dl_arfcn: 632628
