@@ -18,7 +18,7 @@ export interface DashboardStatus {
  * Keys are metric keys from server/metrics-registry.ts, so this is an index signature rather
  * than a fixed shape -- the served set is chosen at runtime.
  */
-export interface MetricPoint { timestamp: number; [metricKey: string]: number }
+export interface MetricPoint { timestamp: number; [metricKey: string]: number | undefined }
 export interface MetricSummary { last: number; min: number; max: number; avg: number }
 export interface MetricSeries {
   rnti: number

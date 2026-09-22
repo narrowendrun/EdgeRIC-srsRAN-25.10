@@ -163,7 +163,13 @@ more plausible but still unexplained. Worth understanding before touching.
 
 ## 5. Roadmap
 
-### R1 — Match srsRAN's reporting semantics *(highest value)*
+### R1 — Match srsRAN's reporting semantics — **DONE**
+
+> Implemented on `r1-srsran-semantics`. Verified on run `20260922T195130Z8C9C`, UE 0x4602:
+> DL MCS went **1.42 → 15.0** against srsRAN's 15.48, and DL BLER stayed at 1.757% against
+> srsRAN's 1.760%. SNR is now PUSCH-conditioned (24.97 → 22.51), and `dlSchedRate` reports 9.4%.
+> Ten tests, including a parity test that parses `gnb.log` and asserts against it.
+
 
 Add a per-metric `definedWhen` predicate to the registry so aggregates count only the TTIs srsRAN
 would count:

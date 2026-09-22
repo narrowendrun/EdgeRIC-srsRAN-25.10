@@ -7,6 +7,9 @@ import type { MetricSeries } from '../types'
 
 const colors = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)', 'var(--chart-6)']
 
+/** timestamp is always present; a series key is absent when that bucket had no value. */
+interface ChartRow { timestamp: number; [dataKey: string]: number | undefined }
+
 export interface ChartCard {
   title: string
   unit: string
@@ -16,7 +19,8 @@ export interface ChartCard {
 
 export function MetricChart({ card, series }: { card: ChartCard; series: MetricSeries[] }) {
   const { rows, keys } = useMemo(() => {
-    const buckets = new Map<number, Record<string, number>>()
+    // undefined leaves a genuine gap in the line (connectNulls is off) rather than a dip to zero.
+    const buckets = new Map<number, ChartRow>()
     const generated: Array<{ dataKey: string; name: string; color: string; dashed?: boolean }> = []
     series.forEach((item, seriesIndex) => card.metrics.forEach((metric, lineIndex) => {
       const dataKey = `${item.rnti}_${metric.key}`

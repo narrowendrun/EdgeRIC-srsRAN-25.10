@@ -4,7 +4,8 @@ import { allowedWindows, type WindowSize } from '../config.js'
 import { METRICS_BY_KEY, requiredColumns, resolveMetrics, type MetricDef } from '../metrics-registry.js'
 
 export interface MetricSummary { last: number; min: number; max: number; avg: number }
-export interface MetricPoint { timestamp: number; [metricKey: string]: number }
+/** A metric key is absent when it was undefined for that bucket -- see bucketSelect. */
+export interface MetricPoint { timestamp: number; [metricKey: string]: number | undefined }
 export interface MetricSeries {
   rnti: number
   label: string
@@ -47,20 +48,32 @@ function round(value: number, precision: number) {
  */
 function bucketSelect(metric: MetricDef): string {
   switch (metric.agg) {
-    case 'avg':
-      return `AVG(${metric.column}) AS "${metric.key}", MIN(${metric.column}) AS "${metric.key}__min", ` +
-             `MAX(${metric.column}) AS "${metric.key}__max", SUM(${metric.column}) AS "${metric.key}__sum"`
+    case 'avg': {
+      // Conditional aggregation rather than a WHERE clause: one query serves several metrics and
+      // they do not share a predicate. A bucket with no qualifying TTI yields NULL, which becomes
+      // an absent point -- a broken chart line, not a dip to zero.
+      const when = metric.definedWhen ?? '1'
+      const value = `CASE WHEN ${when} THEN ${metric.column} END`
+      return `AVG(${value}) AS "${metric.key}", MIN(${value}) AS "${metric.key}__min", ` +
+             `MAX(${value}) AS "${metric.key}__max", SUM(${value}) AS "${metric.key}__sum", ` +
+             `SUM(CASE WHEN ${when} THEN 1 ELSE 0 END) AS "${metric.key}__n"`
+    }
     case 'rate':
+      // A rate is bytes over elapsed time, so idle TTIs legitimately contribute zero.
       return `SUM(${metric.column}) AS "${metric.key}__bytes"`
     case 'ratio':
+      // Already matches srsRAN's nok/(ok+nok); an unscheduled TTI contributes nothing to either.
       return `SUM(${metric.numerator}) AS "${metric.key}__num", SUM(${metric.denominator}) AS "${metric.key}__den"`
   }
 }
 
-function pointValue(metric: MetricDef, row: Record<string, number>, bucketUs: number): number {
+function pointValue(metric: MetricDef, row: Record<string, number | null>, bucketUs: number): number | null {
   switch (metric.agg) {
-    case 'avg':
-      return round((row[metric.key] ?? 0) * (metric.scale ?? 1), metric.precision)
+    case 'avg': {
+      const value = row[metric.key]
+      if (value === null || value === undefined) return null
+      return round(value * (metric.scale ?? 1), metric.precision)
+    }
     case 'rate':
       // bytes * 8 bits / microseconds = bits per microsecond = Mbit/s
       return round(((row[`${metric.key}__bytes`] ?? 0) * 8) / bucketUs, metric.precision)
@@ -126,19 +139,26 @@ export function queryMetrics(request: QueryRequest): MetricsResult {
       WHERE timestamp_us BETWEEN ? AND ?
       GROUP BY bucket_us, rnti
       ORDER BY bucket_us, rnti
-    `).all(startUs, bucketUs, bucketUs, startUs, startUs, endUs) as unknown as Array<Record<string, number>>
+    `).all(startUs, bucketUs, bucketUs, startUs, startUs, endUs) as unknown as Array<Record<string, number | null>>
 
     const grouped = new Map<number, MetricPoint[]>()
-    const rawByRnti = new Map<number, Array<Record<string, number>>>()
+    const rawByRnti = new Map<number, Array<Record<string, number | null>>>()
     for (const row of rows) {
-      const point: MetricPoint = { timestamp: Math.round(row.bucket_us / 1000) }
-      for (const metric of metrics) point[metric.key] = pointValue(metric, row, bucketUs)
-      const points = grouped.get(row.rnti) || []
+      // bucket_us is computed and rnti is NOT NULL, so both are always present; only the
+      // metric aggregates can be null.
+      const bucket = row.bucket_us as number
+      const rnti = row.rnti as number
+      const point: MetricPoint = { timestamp: Math.round(bucket / 1000) }
+      for (const metric of metrics) {
+        const value = pointValue(metric, row, bucketUs)
+        if (value !== null) point[metric.key] = value
+      }
+      const points = grouped.get(rnti) || []
       points.push(point)
-      grouped.set(row.rnti, points)
-      const raws = rawByRnti.get(row.rnti) || []
+      grouped.set(rnti, points)
+      const raws = rawByRnti.get(rnti) || []
       raws.push(row)
-      rawByRnti.set(row.rnti, raws)
+      rawByRnti.set(rnti, raws)
     }
 
     const summaries = summarise(metrics, grouped, rawByRnti, Math.max(1, endUs - startUs))
@@ -179,7 +199,7 @@ export function queryMetrics(request: QueryRequest): MetricsResult {
 function summarise(
   metrics: MetricDef[],
   grouped: Map<number, MetricPoint[]>,
-  rawByRnti: Map<number, Array<Record<string, number>>>,
+  rawByRnti: Map<number, Array<Record<string, number | null>>>,
   windowUs: number,
 ): Map<number, Record<string, MetricSummary>> {
   const result = new Map<number, Record<string, MetricSummary>>()
@@ -197,13 +217,25 @@ function summarise(
         let sum = 0
         let count = 0
         for (const raw of raws) {
-          min = Math.min(min, raw[`${metric.key}__min`] ?? 0)
-          max = Math.max(max, raw[`${metric.key}__max`] ?? 0)
+          // A bucket with no qualifying TTI contributes nothing at all -- not a zero.
+          const n = raw[`${metric.key}__n`] ?? 0
+          if (!n) continue
+          const rawMin = raw[`${metric.key}__min`]
+          const rawMax = raw[`${metric.key}__max`]
+          if (rawMin !== null && rawMin !== undefined) min = Math.min(min, rawMin)
+          if (rawMax !== null && rawMax !== undefined) max = Math.max(max, rawMax)
           sum += raw[`${metric.key}__sum`] ?? 0
-          count += raw.sample_count ?? 0
+          count += n
+        }
+        // `last` is the most recent bucket that actually had a value, so a tile shows the last
+        // known MCS rather than blanking whenever the scheduler skips a bucket.
+        let lastValue = 0
+        for (let i = points.length - 1; i >= 0; i--) {
+          const candidate = points[i][metric.key]
+          if (candidate !== undefined) { lastValue = candidate; break }
         }
         summary[metric.key] = {
-          last: last ? last[metric.key] : 0,
+          last: lastValue,
           min: count ? round(min * scale, metric.precision) : 0,
           max: count ? round(max * scale, metric.precision) : 0,
           avg: count ? round((sum / count) * scale, metric.precision) : 0,
@@ -212,7 +244,7 @@ function summarise(
       }
 
       // 'rate' and 'ratio': extremes over buckets, average over the whole window.
-      const values = points.map((point) => point[metric.key])
+      const values = points.map((point) => point[metric.key]).filter((v): v is number => v !== undefined)
       const totals: Record<string, number> = {}
       for (const raw of raws) {
         for (const alias of metric.agg === 'rate'
@@ -225,7 +257,8 @@ function summarise(
         last: values.length ? values[values.length - 1] : 0,
         min: values.length ? round(Math.min(...values), metric.precision) : 0,
         max: values.length ? round(Math.max(...values), metric.precision) : 0,
-        avg: pointValue(metric, totals, windowUs),
+        // rate and ratio never yield null -- only 'avg' has a predicate that can exclude everything.
+        avg: pointValue(metric, totals, windowUs) ?? 0,
       }
     }
 

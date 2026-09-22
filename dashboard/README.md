@@ -102,8 +102,28 @@ SQLite uses WAL while a run is active. Temporary `metrics.sqlite3-wal` and `metr
 
 ## Metric calculations
 
+**Aggregates match what the srsRAN gNB reports in its own metrics log.** That log is the
+reference; we do not invent semantics. `server/services/srsran-parity.test.ts` parses a recorded
+run's `gnb.log` and asserts our numbers against it.
+
+A metric is only averaged over the TTIs srsRAN counts, expressed as a `definedWhen` predicate in
+the registry:
+
+| Metrics | Counted on | Why |
+|---|---|---|
+| `dlMcs`, `dlPrbs`, `dlTbs` | `dl_prbs > 0` | srsRAN averages over transmitted PDSCHs; the gNB writes 0 otherwise |
+| `ulMcs`, `ulPrbs`, `ulTbs` | `ul_prbs > 0` | same, PUSCH side |
+| `snr` | a PUSCH occurred | srsRAN prints `n/a` when there was none |
+| `cqi` | every TTI | srsRAN reports it every period — it is a UE report, not a scheduling decision |
+| `dlBler`, `ulBler` | every TTI | already identical to srsRAN's `nok / (ok + nok)` |
+| throughput | every TTI | a rate over elapsed time, so idle TTIs correctly contribute zero |
+
+A bucket with no qualifying TTI omits that metric rather than reporting zero, so a chart line
+breaks instead of dipping to the floor. `dlSchedRate` / `ulSchedRate` report the share of TTIs
+that got an allocation, which is the context a conditioned MCS needs.
+
 Every metric is declared once in `server/metrics-registry.ts`, which drives the SQL projection,
-the chart cards, the numeric tiles and the picker. Three aggregation kinds cover all twenty:
+the chart cards, the numeric tiles and the picker. Three aggregation kinds cover them:
 
 - `avg` averages the column over each bucket. SNR, CQI, MCS, PRBs, TBS, buffers and the delays.
 - `rate` is `SUM(bytes) * 8 / bucket` in Mbit/s. DL throughput uses acknowledged MAC bytes, UL
@@ -140,6 +160,17 @@ dashboard/
 ```
 
 All visual rules and theme tokens are contained in `src/css/workbench.css`. Change the variables at the top of that file to retheme the dashboard without touching the React components.
+
+## Tests
+
+```bash
+npm test
+```
+
+Node's built-in runner via `tsx`; no extra dependency. `metrics-query.test.ts` pins the
+aggregation arithmetic against a synthetic fixture with round numbers;
+`srsran-parity.test.ts` checks those aggregates against a real run's `gnb.log` and skips when no
+suitable run is recorded.
 
 ## Development
 
