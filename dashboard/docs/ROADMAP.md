@@ -197,6 +197,29 @@ should become a permanent test — it is the only check that keeps us honest aga
 > Now divides by the span actually covered, capped at the newest sample. Parity tests cover DL and
 > UL throughput, CQI and SNR against srsRAN's own `brate`, `cqi` and `pusch` columns.
 
+### R8 — Decide how the window summary weights samples — **needs your call**
+
+Per-bucket values agree with srsRAN (per-second aligned, SNR ratio 1.0012). The **window
+summary** does not, because we weight every sample equally while averaging srsRAN's log rows
+weights every metrics period equally. On run `20260922T200524Z2489`, UE 0x4602:
+
+| | srsRAN | ours (sample-weighted) |
+|---|---|---|
+| SNR | 26.90 dB | 24.42 dB |
+| DL MCS | 7.72 | 7.00 |
+| CQI | 7.65 | 7.66 |
+
+PUSCH counts range 1–559 per second, so busy periods dominate a sample-weighted mean — and they
+have lower SNR. CQI is unaffected because it is reported uniformly.
+
+srsRAN publishes no window aggregate, so neither is "what srsRAN reports":
+
+- **sample-weighted** (current) answers *what SNR did data actually move at*
+- **time-weighted** (mean of per-period values) answers *what did the channel look like*, and is
+  what you get by eyeballing the gNB log
+
+Not picked unilaterally. Affects the numeric tiles' min/max/avg only; charts are unaffected.
+
 ### R2 — Understand the SNR outlier before doing anything about it
 
 See 4.4. Do not add percentile or clamping logic on a hunch; there is no srsRAN reference for a

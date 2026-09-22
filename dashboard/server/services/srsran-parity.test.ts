@@ -5,7 +5,8 @@ import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 import { logsRoot } from '../config.js'
 import { queryMetrics } from './metrics-query.js'
-import { blerOf, meanMcsWhenTransmitting, meanOf, parseSrsranMetricsLog } from './srsran-metrics-log.js'
+import { METRICS_BY_KEY } from '../metrics-registry.js'
+import { blerOf, meanOf, parseSrsranMetricsLog, type SrsranMetricRow } from './srsran-metrics-log.js'
 
 /**
  * Integration parity check: our aggregates against the srsRAN gNB's own reported metrics, over
@@ -64,16 +65,8 @@ describe('parity with the srsRAN gNB metrics log', { skip: candidate ? false : '
       `DL BLER: srsRAN ${srsran.toFixed(3)}%, ours ${ours.toFixed(3)}%`)
   })
 
-  test(`run ${c?.id}, UE ${label}: DL MCS matches srsRAN`, () => {
-    const srsran = meanMcsWhenTransmitting(c.rows.map((r) => r.dl))
-    assert.ok(srsran !== null, 'srsRAN reported no DL transmissions')
-    const ours = ourSummary(c, ['dlMcs']).dlMcs.avg
-    // srsRAN averages its own per-period means, we average per TTI, so they differ slightly.
-    // A failure here means a semantic divergence, not rounding.
-    assert.ok(Math.abs(ours - srsran) < 1.5,
-      `DL MCS: srsRAN ${srsran.toFixed(2)}, ours ${ours.toFixed(2)} — ` +
-      'a large gap means we are averaging over TTIs srsRAN excludes')
-  })
+  // --- Weighting-independent metrics are compared over the whole window. ---
+  // A ratio of sums and bytes-over-elapsed-time are both invariant to how samples are weighted.
 
   test(`run ${c?.id}, UE ${label}: DL throughput matches srsRAN brate`, () => {
     const srsran = meanOf(c.rows.map((r) => r.dl.brateBps))! / 1e6
@@ -90,20 +83,77 @@ describe('parity with the srsRAN gNB metrics log', { skip: candidate ? false : '
       'ul_ok_bytes is the matching counter; ul_tbs runs ~1.9x high')
   })
 
-  test(`run ${c?.id}, UE ${label}: CQI matches srsRAN`, () => {
-    const srsran = meanOf(c.rows.map((r) => r.dl.cqi))!
-    const ours = ourSummary(c, ['cqi']).cqi.avg
-    assert.ok(within(ours, srsran, 0.05), `CQI: srsRAN ${srsran.toFixed(2)}, ours ${ours.toFixed(2)}`)
+  // --- Weighting-sensitive metrics are compared per second. ---
+  //
+  // srsRAN publishes a value per metrics period; we aggregate per TTI. Any window-level
+  // comparison therefore mixes two different weightings and the result depends on bucket width
+  // (this run buckets at 7.6 s). Aligning per second removes that entirely and tests what parity
+  // is actually about: do we count the same TTIs and compute the same quantity. Bucketing itself
+  // is covered by metrics-query.test.ts.
+
+  test(`run ${c?.id}, UE ${label}: DL MCS matches srsRAN, per second`, () => {
+    const srsran = perSecond(c.rows, (r) => (r.dl.ok + r.dl.nok > 0 && r.dl.mcs > 0 ? r.dl.mcs : null))
+    const ours = ourPerSecond(c, 'dlMcs', [...srsran.keys()])
+    assertAgrees('DL MCS', srsran, ours, 0.05)
   })
 
-  test(`run ${c?.id}, UE ${label}: SNR matches srsRAN pusch`, () => {
-    // srsRAN prints n/a with no PUSCH and meanOf skips those, which is exactly the condition
-    // our snr metric applies.
-    const srsran = meanOf(c.rows.map((r) => r.ul.snr))!
-    const ours = ourSummary(c, ['snr']).snr.avg
-    assert.ok(within(ours, srsran, 0.05), `SNR: srsRAN ${srsran.toFixed(2)} dB, ours ${ours.toFixed(2)} dB`)
+  test(`run ${c?.id}, UE ${label}: CQI matches srsRAN, per second`, () => {
+    const srsran = perSecond(c.rows, (r) => r.dl.cqi)
+    const ours = ourPerSecond(c, 'cqi', [...srsran.keys()])
+    assertAgrees('CQI', srsran, ours, 0.05)
+  })
+
+  test(`run ${c?.id}, UE ${label}: SNR matches srsRAN pusch, per second`, () => {
+    // srsRAN prints n/a with no PUSCH and we skip those, which is the condition our snr
+    // metric applies.
+    const srsran = perSecond(c.rows, (r) => r.ul.snr)
+    const ours = ourPerSecond(c, 'snr', [...srsran.keys()])
+    assertAgrees('SNR', srsran, ours, 0.05)
   })
 })
+
+/** Mean of a per-row field within each wall-clock second, skipping nulls. */
+function perSecond(rows: SrsranMetricRow[], pick: (r: SrsranMetricRow) => number | null): Map<number, number> {
+  const buckets = new Map<number, number[]>()
+  for (const row of rows) {
+    const value = pick(row)
+    if (value === null) continue
+    const second = Math.floor(row.timestampMs / 1000)
+    const list = buckets.get(second) ?? []
+    list.push(value)
+    buckets.set(second, list)
+  }
+  return new Map([...buckets].map(([s, v]) => [s, v.reduce((a, b) => a + b, 0) / v.length]))
+}
+
+/** The same quantity from ue_mac, built from the registry so the predicates themselves are tested. */
+function ourPerSecond(c: Candidate, metricKey: string, seconds: number[]): Map<number, number> {
+  const metric = METRICS_BY_KEY.get(metricKey)!
+  const when = metric.definedWhen ?? '1'
+  const db = new DatabaseSync(c.dbPath, { readOnly: true })
+  const stmt = db.prepare(
+    `SELECT AVG(CASE WHEN ${when} THEN ${metric.column} END) AS v FROM ue_mac ` +
+    'WHERE rnti = ? AND timestamp_us >= ? AND timestamp_us < ?',
+  )
+  const out = new Map<number, number>()
+  for (const second of seconds) {
+    const row = stmt.get(c.rnti, second * 1_000_000, (second + 1) * 1_000_000) as { v: number | null }
+    if (row?.v !== null && row?.v !== undefined) out.set(second, row.v)
+  }
+  db.close()
+  return out
+}
+
+function assertAgrees(name: string, srsran: Map<number, number>, ours: Map<number, number>, tolerance: number) {
+  const common = [...srsran.keys()].filter((s) => ours.has(s))
+  // Drop the first and last second: both are partially covered by the log and the database.
+  const seconds = common.sort((a, b) => a - b).slice(1, -1)
+  assert.ok(seconds.length > 30, `expected a meaningful overlap, got ${seconds.length} seconds`)
+  const a = seconds.reduce((sum, s) => sum + srsran.get(s)!, 0) / seconds.length
+  const b = seconds.reduce((sum, s) => sum + ours.get(s)!, 0) / seconds.length
+  assert.ok(Math.abs(b - a) / Math.abs(a) <= tolerance,
+    `${name}: srsRAN ${a.toFixed(3)}, ours ${b.toFixed(3)} over ${seconds.length} aligned seconds`)
+}
 
 /** Relative comparison; srsRAN averages its own per-period means, we average per TTI. */
 function within(ours: number, reference: number, tolerance: number): boolean {
