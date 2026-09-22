@@ -67,7 +67,8 @@ function bucketSelect(metric: MetricDef): string {
   }
 }
 
-function pointValue(metric: MetricDef, row: Record<string, number | null>, bucketUs: number): number | null {
+/** `durationUs` is the wall-clock span the row covers -- the bucket's, or the window's for a summary. */
+function pointValue(metric: MetricDef, row: Record<string, number | null>, durationUs: number): number | null {
   switch (metric.agg) {
     case 'avg': {
       const value = row[metric.key]
@@ -76,7 +77,7 @@ function pointValue(metric: MetricDef, row: Record<string, number | null>, bucke
     }
     case 'rate':
       // bytes * 8 bits / microseconds = bits per microsecond = Mbit/s
-      return round(((row[`${metric.key}__bytes`] ?? 0) * 8) / bucketUs, metric.precision)
+      return round(((row[`${metric.key}__bytes`] ?? 0) * 8) / durationUs, metric.precision)
     case 'ratio': {
       const num = row[`${metric.key}__num`] ?? 0
       const total = num + (row[`${metric.key}__den`] ?? 0)
@@ -149,8 +150,19 @@ export function queryMetrics(request: QueryRequest): MetricsResult {
       const bucket = row.bucket_us as number
       const rnti = row.rnti as number
       const point: MetricPoint = { timestamp: Math.round(bucket / 1000) }
+      // Buckets are anchored at startUs, so only the newest one can be partial -- and during a
+      // live run that is the bucket the numeric tile shows as the current value. A rate must
+      // divide by the time the bucket actually covers; dividing by the nominal width reports it
+      // low by up to bucketUs/covered.
+      // Capped at the newest sample, not wall-clock: on a live run endUs is `now`, but the
+      // recorder commits in batches, so the last 250 ms of the window holds no data yet.
+      // Dividing by that empty tail would under-report the rate all over again.
+      const coveredUs = Math.max(1, Math.min(bucket + bucketUs, endUs, bounds.max_us) - bucket)
+      const sliver = coveredUs < bucketUs * 0.25
       for (const metric of metrics) {
-        const value = pointValue(metric, row, bucketUs)
+        // Too short a span to derive a rate from; omitting beats a spike or a dip.
+        if (metric.agg === 'rate' && sliver) continue
+        const value = pointValue(metric, row, coveredUs)
         if (value !== null) point[metric.key] = value
       }
       const points = grouped.get(rnti) || []

@@ -189,6 +189,14 @@ Acceptance test: parse `gnb.log` for a run and assert our aggregates land within
 of srsRAN's own per-period numbers. That comparison is scripted in this session's history and
 should become a permanent test — it is the only check that keeps us honest against the reference.
 
+### R1b — Throughput denominator — **DONE**
+
+> The final bucket of every window is partial, and was divided by the nominal bucket width:
+> measured 0.027 Mbps where the true rate was 0.081, a 3x under-report on exactly the bucket the
+> numeric tile shows as the live value. On a live run the recorder's commit lag compounds it.
+> Now divides by the span actually covered, capped at the newest sample. Parity tests cover DL and
+> UL throughput, CQI and SNR against srsRAN's own `brate`, `cqi` and `pusch` columns.
+
 ### R2 — Understand the SNR outlier before doing anything about it
 
 See 4.4. Do not add percentile or clamping logic on a hunch; there is no srsRAN reference for a

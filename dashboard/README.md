@@ -119,7 +119,16 @@ the registry:
 | throughput | every TTI | a rate over elapsed time, so idle TTIs correctly contribute zero |
 
 A bucket with no qualifying TTI omits that metric rather than reporting zero, so a chart line
-breaks instead of dipping to the floor. `dlSchedRate` / `ulSchedRate` report the share of TTIs
+breaks instead of dipping to the floor.
+
+Throughput divides by the span a bucket **actually covers**, capped at the newest recorded sample.
+The newest bucket in any window is normally partial, and on a live run the recorder's commit lag
+leaves the last fraction of a second empty; dividing either by the nominal bucket width reports
+the current rate low by several times. A bucket covering under a quarter of its width omits the
+rate rather than reporting a spike or a dip.
+
+Peak throughput is bounded by bucket width: a 100 ms burst seen through a 900 ms bucket is
+averaged down. Narrow the window for finer buckets if you need the true peak. `dlSchedRate` / `ulSchedRate` report the share of TTIs
 that got an allocation, which is the context a conditioned MCS needs.
 
 Every metric is declared once in `server/metrics-registry.ts`, which drives the SQL projection,

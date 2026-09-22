@@ -132,3 +132,90 @@ describe('throughput is a rate over time and must count idle TTIs', () => {
       `expected ~0.8 Mbps over the full window, got ${s.summary.dlMbps.avg}`)
   })
 })
+
+/**
+ * A rate's denominator must be the wall-clock time the bucket actually covers. The newest bucket
+ * in any window is normally partial -- and during a live run it is the one the numeric tile shows
+ * as the current value, so getting this wrong makes live throughput read systematically low.
+ */
+describe('rate metrics and the partial final bucket', () => {
+  let rateDir: string
+  let ratePath: string
+
+  function build(ttis: number, bytesPerTti: number) {
+    rateDir = mkdtempSync(path.join(tmpdir(), 'metrics-rate-'))
+    ratePath = path.join(rateDir, 'metrics.sqlite3')
+    const db = new DatabaseSync(ratePath)
+    db.exec(`CREATE TABLE ue_mac (id INTEGER PRIMARY KEY, raw_tti_id INTEGER, ${COLS.map((c) => `${c} ${c === 'snr' ? 'REAL' : 'INTEGER'} NOT NULL DEFAULT 0`).join(', ')});`)
+    db.exec('CREATE TABLE capture_stats (key TEXT PRIMARY KEY, value INTEGER NOT NULL);')
+    const insert = db.prepare(`INSERT INTO ue_mac(timestamp_us, tti_index, rnti, ul_ok_bytes) VALUES (?,?,?,?)`)
+    for (let tti = 0; tti < ttis; tti++) insert.run(BASE_US + tti * 1000, tti, 0x4601, bytesPerTti)
+    db.close()
+  }
+
+  after(() => rateDir && rmSync(rateDir, { recursive: true, force: true }))
+
+  test('the last partial bucket reports the true rate, not a diluted one', () => {
+    // 951 TTIs at 1 ms, 1000 B each -> a steady 8 Mbps. Window is 950 ms, buckets are 100 ms,
+    // so the final bucket covers only 50 ms. Dividing its 51 kB by the full 100 ms gives 4.08.
+    build(951, 1000)
+    const r = queryMetrics({ runId: 't', dbPath: ratePath, isActive: false, window: '5m', metricKeys: ['ulMbps'], fullRun: true })
+    const points = r.series[0].points
+    assert.equal(r.bucketMs, 100, 'fixture should produce 100 ms buckets')
+    const interior = points[points.length - 2].ulMbps!
+    const final = points[points.length - 1].ulMbps!
+    assert.ok(Math.abs(interior - 8) < 0.2, `interior bucket should be ~8 Mbps, got ${interior}`)
+    assert.ok(Math.abs(final - 8) < 0.5,
+      `final bucket covers half its width, so it must still read ~8 Mbps, got ${final} ` +
+      '(4.08 means it was divided by the nominal bucket width)')
+  })
+
+  test('a sliver of a bucket is omitted rather than reported as a spike or a dip', () => {
+    // 910 TTIs -> the final bucket covers 9 ms of 100 ms. Too little to derive a rate from.
+    build(910, 1000)
+    const r = queryMetrics({ runId: 't', dbPath: ratePath, isActive: false, window: '5m', metricKeys: ['ulMbps'], fullRun: true })
+    const points = r.series[0].points
+    const final = points[points.length - 1]
+    assert.equal(final.ulMbps, undefined,
+      'a bucket covering under a quarter of its width should omit the rate')
+  })
+
+  test('the window average is unaffected -- it already divides by the true span', () => {
+    build(951, 1000)
+    const r = queryMetrics({ runId: 't', dbPath: ratePath, isActive: false, window: '5m', metricKeys: ['ulMbps'], fullRun: true })
+    assert.ok(Math.abs(r.series[0].summary.ulMbps.avg - 8) < 0.2)
+  })
+})
+
+/**
+ * The live path: endUs is wall-clock `now`, but the recorder commits in batches so the newest
+ * sample lags it. The rate denominator must follow the data, not the clock.
+ */
+describe('rate metrics on a live run', () => {
+  let liveDir: string
+  let livePath: string
+
+  after(() => liveDir && rmSync(liveDir, { recursive: true, force: true }))
+
+  test('a commit lag between the last sample and now does not dilute the rate', () => {
+    liveDir = mkdtempSync(path.join(tmpdir(), 'metrics-live-'))
+    livePath = path.join(liveDir, 'metrics.sqlite3')
+    const db = new DatabaseSync(livePath)
+    db.exec(`CREATE TABLE ue_mac (id INTEGER PRIMARY KEY, raw_tti_id INTEGER, ${COLS.map((c) => `${c} ${c === 'snr' ? 'REAL' : 'INTEGER'} NOT NULL DEFAULT 0`).join(', ')});`)
+    db.exec('CREATE TABLE capture_stats (key TEXT PRIMARY KEY, value INTEGER NOT NULL);')
+    const insert = db.prepare('INSERT INTO ue_mac(timestamp_us, tti_index, rnti, ul_ok_bytes) VALUES (?,?,?,?)')
+    // 2 s of steady 8 Mbps traffic, ending 400 ms before "now" — the recorder's commit lag.
+    const nowUs = Date.now() * 1000
+    const startUs = nowUs - 2_400_000
+    for (let i = 0; i < 2000; i++) insert.run(startUs + i * 1000, i % 10000, 0x4601, 1000)
+    db.close()
+
+    const r = queryMetrics({ runId: 't', dbPath: livePath, isActive: true, window: '5m', metricKeys: ['ulMbps'], fullRun: false })
+    const points = r.series[0].points.filter((p) => p.ulMbps !== undefined)
+    assert.ok(points.length >= 3, 'expected several buckets with data')
+    for (const p of points) {
+      assert.ok(Math.abs(p.ulMbps! - 8) < 1.0,
+        `every bucket carrying data should read ~8 Mbps, got ${p.ulMbps} at ${new Date(p.timestamp).toISOString()}`)
+    }
+  })
+})
