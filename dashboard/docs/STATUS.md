@@ -173,6 +173,12 @@ All are recorded in the plan files themselves.
 
 ## 6. Not yet verified — the one real gap
 
+> **RESOLVED 2026-09-22.** Validated on `logs/runs/20260922T195130Z8C9C` with a UE passing
+> 421 MB of uplink traffic. MCS, PRBs, buffers and MAC delays all confirmed against real data.
+> See [ROADMAP.md](ROADMAP.md) for what that run revealed. The original text is kept below for
+> the record.
+
+
 **No UE has been connected since wave 1b landed.** So the whole chain has been proved *except*
 that the real gNB populates `dl_mcs` and the other new columns. Proto3 returns zero for absent
 fields rather than erroring, so a mis-wired publisher shows as a column of zeros, not a failure.
