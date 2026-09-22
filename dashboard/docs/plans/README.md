@@ -16,6 +16,7 @@ deferred, or rejected on its own.
 | 4 | [Telemetry section](04-telemetry-section.md) | The overhaul you asked for: metric picker, numeric vs chart display. | ~450 lines, mostly new |
 | 5 | [Follow-ups](05-followups.md) | Worker-thread query offload, log retention, gNB config tab, de-hardcoding, tests. | Pick and choose |
 | — | [Why SQLite, not Redis](06-why-sqlite-not-redis.md) | Decision record answering the storage question. No work attached. | — |
+| 7 | [Scheduler control and notes](07-scheduler-control-and-notes.md) | Redis scheduler dropdown, sample-weighting decision, metric notes tab. | ~320 lines |
 
 Plans 1 and 2 are worth doing before the next OTA session regardless of whether the telemetry
 work proceeds — see "Why now" in each.
