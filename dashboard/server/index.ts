@@ -40,7 +40,10 @@ if (existsSync(staticRoot)) {
 }
 
 // Closes runs that ended outside the dashboard (a gNB crash, or `systemctl stop` from a shell).
-const reconcileTimer = setInterval(() => { void runStore.reconcile() }, 5000)
+const reconcileTimer = setInterval(() => {
+  void runStore.reconcile()
+  void runStore.sampleScheduler()
+}, 5000)
 reconcileTimer.unref()
 
 const server = createServer(app)

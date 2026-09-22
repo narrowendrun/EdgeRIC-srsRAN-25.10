@@ -1,11 +1,45 @@
 import { useEffect, useState } from 'react'
 import type { RunManifest } from '../types'
+import { rfLabels } from '../constants'
 import { TelemetrySection } from './TelemetrySection'
 
 function formatBytes(bytes: number) {
   if (!bytes) return '—'
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KiB`
   return `${(bytes / 1024 / 1024).toFixed(1)} MiB`
+}
+
+/**
+ * What the bench looked like for this run. Without it an archived run cannot be attributed to a
+ * scheduler or an RF configuration, and comparing two runs means nothing.
+ */
+function RunConditions({ run }: { run?: RunManifest }) {
+  if (!run) return null
+  const timeline = run.schedulerTimeline ?? []
+  const rf = run.rf ?? {}
+  return <section className="paper-note run-conditions">
+    <div className="section-heading"><div><p className="section-kicker">run conditions</p><h2>Bench details</h2></div></div>
+    <div className="detail-highlight-grid">
+      <div className="detail-highlight"><span>Scheduling algorithm</span>
+        <strong>{timeline.length ? (timeline[0].algorithm ?? 'none set') : 'not recorded'}</strong>
+        <small>{timeline.length > 1 ? `changed ${timeline.length - 1} time${timeline.length === 2 ? '' : 's'} during the run` : 'unchanged for the whole run'}</small>
+      </div>
+      <div className="detail-highlight"><span>Build</span>
+        <strong>{run.gitCommit}</strong><small>{run.configFile || 'config not recorded'}</small>
+      </div>
+    </div>
+    {timeline.length > 1 && <ol className="scheduler-timeline">
+      {timeline.map((entry, index) => <li key={`${entry.at}-${index}`}>
+        <code>{new Date(entry.at).toLocaleTimeString()}</code>
+        <strong>{entry.algorithm ?? 'none set'}</strong>
+      </li>)}
+    </ol>}
+    {Object.keys(rf).length > 0 && <div className="rf-grid">
+      {Object.entries(rfLabels).filter(([key]) => rf[key]).map(([key, label]) => <div className="rf-cell" key={key}>
+        <span>{label}</span><strong>{rf[key]}</strong>
+      </div>)}
+    </div>}
+  </section>
 }
 
 export function ArchiveView() {
@@ -60,6 +94,7 @@ export function ArchiveView() {
     </table></div>}
     {selected && <div className="archive-detail">
       <button type="button" className="archive-close" onClick={() => setSelected(null)}>Close run details</button>
+      <RunConditions run={runs.find((item) => item.id === selected)} />
       <TelemetrySection runId={selected} archived />
       <section className="paper-note archived-logs">
         <div className="section-heading"><div><p className="section-kicker">captured output</p><h2>Archived logs</h2></div><label>Source<select value={selectedFile} onChange={(event) => setSelectedFile(event.target.value)}>{files.map((file) => <option value={file} key={file}>{file}</option>)}</select></label></div>

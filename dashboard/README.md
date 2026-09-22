@@ -170,6 +170,52 @@ dashboard/
 
 All visual rules and theme tokens are contained in `src/css/workbench.css`. Change the variables at the top of that file to retheme the dashboard without touching the React components.
 
+## Scheduling algorithm
+
+The EdgeRIC scheduling muApp (`edgeric/muapp-scheduling/scheduling_muapp.py`) picks its algorithm
+from a single Redis key. Set it from a shell:
+
+```bash
+redis-cli SET scheduling_algorithm "Max CQI"
+```
+
+Valid values: `Fixed Weight`, `Max CQI`, `Max Weight`, `Proportional Fair`, `Round Robin`. The
+muApp picks a change up within about one episode (~1 s) and prints `Running: <name>`.
+
+**The dashboard reports, it does not set.** The status board shows the current value, whether the
+muApp is running to act on it, and flags a value the muApp would not recognise. The muApp's
+lifecycle stays manual.
+
+Every run records which algorithm was active and when it changed, sampled every 5 s, so an
+archived run can be attributed to a scheduler. That timeline appears under the run's bench
+details in the archive.
+
+## Analysing a recorded run
+
+Each run directory is self-contained and meant to outlive this codebase:
+
+```text
+logs/runs/<run-id>/
+  manifest.json          run conditions: RF config, git commit, scheduler timeline, UE counts
+  metrics-schema.json    how every metric is derived, including which TTIs it counts
+  metrics.sqlite3        raw per-TTI rows in ue_mac
+  gnb.log                the gNB's own metrics, the reference our aggregates match
+```
+
+`metrics-schema.json` exists because deriving metrics from `ue_mac` naively gets them wrong: the
+gNB writes `mcs = 0` on TTIs it did not schedule, so an unconditioned average reports about 1.4
+where the gNB reports 15. The conditions travel with the data.
+
+To get analysis-ready CSV:
+
+```bash
+python3 dashboard/server/scripts/export_run.py logs/runs/<run-id> --bucket 1.0 -o run.csv
+```
+
+One row per UE per bucket, with the same conditions the dashboard applies. A blank cell means the
+metric was undefined for that bucket — a gap, not a zero. `--metrics snr,dlMcs` narrows the
+columns; `--bucket` sets the resolution.
+
 ## Tests
 
 ```bash

@@ -15,6 +15,12 @@ export function StatusBoard({ status, pendingAction, onAction }: Props) {
   const ueState: ModuleState = !status?.ues.fresh ? 'unknown' : (status.ues.count || 0) > 0 ? 'active' : 'inactive'
   const ueSummary = status?.ues.fresh ? `${status.ues.count} connected` : 'telemetry unavailable'
   const iperfEndpoint = status ? `${status.iperf3.address}:${status.iperf3.port}` : '—'
+  // Set externally with `redis-cli SET scheduling_algorithm`; the dashboard only reports it.
+  const scheduler = status?.scheduler
+  const schedulerState: ModuleState = !scheduler ? 'unknown'
+    : !scheduler.available ? 'inactive'
+    : scheduler.algorithm && scheduler.known && scheduler.muappRunning ? 'active'
+    : 'degraded'
 
   return <>
     <section className="status-board" aria-label="Live radio stack status">
@@ -41,6 +47,11 @@ export function StatusBoard({ status, pendingAction, onAction }: Props) {
           <span className="summary-label"><StatusLamp state={status?.iperf3.state || 'unknown'} /> iperf3 server</span>
           <strong>{iperfEndpoint}</strong><small>{status?.iperf3.detail || 'checking…'}</small>
         </div>
+        <div className="summary-cell">
+          <span className="summary-label"><StatusLamp state={schedulerState} /> Scheduler</span>
+          <strong>{status?.scheduler?.algorithm || (status?.scheduler ? 'none set' : '—')}</strong>
+          <small>{status?.scheduler?.detail || 'checking…'}</small>
+        </div>
       </div>
     </section>
 
@@ -54,6 +65,16 @@ export function StatusBoard({ status, pendingAction, onAction }: Props) {
         <div className="detail-highlight-grid">
           <div className="detail-highlight"><span>Connected UEs</span><strong>{ueSummary}</strong><small>{status?.ues.rntis.length ? `RNTI ${status.ues.rntis.join(', ')}` : 'No current RNTI reported'}</small></div>
           <div className="detail-highlight"><span>iperf3 service</span><strong>{status?.iperf3.state || 'unknown'} · {iperfEndpoint}</strong><small>{status?.iperf3.detail || 'checking…'}</small></div>
+        </div>
+        <div className="detail-highlight-grid">
+          <div className="detail-highlight"><span>Scheduling algorithm</span>
+            <strong>{scheduler?.algorithm || 'none set'}</strong>
+            <small>{scheduler?.detail || 'checking…'} · set with <code>redis-cli SET scheduling_algorithm</code></small>
+          </div>
+          <div className="detail-highlight"><span>Scheduling muApp</span>
+            <strong>{scheduler?.muappRunning ? 'running' : 'not running'}</strong>
+            <small>{scheduler?.muappRunning ? 'applying the algorithm above' : 'nothing is acting on the Redis value'}</small>
+          </div>
         </div>
         <div className="rf-grid">
           {Object.entries(rfLabels).map(([key, label]) => <div className="rf-cell" key={key}><span>{label}</span><strong>{status?.rf[key] || '—'}</strong></div>)}

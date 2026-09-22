@@ -212,3 +212,32 @@ select { min-height: 36px; color: var(--blue); background: var(--paper); border:
   .picker-groups { grid-template-columns: 1fr; }
 }
 
+/* ---- metric notes tab ---- */
+.metric-notes { margin-top: 26px; }
+.notes-prose { padding: 20px 22px; margin-top: 18px; }
+.notes-prose h3 { margin: 20px 0 8px; padding-bottom: 6px; border-bottom: 1px dotted var(--blue-mid); }
+.notes-prose h3:first-child { margin-top: 0; }
+.notes-prose p { max-width: 82ch; margin: 0; line-height: 1.6; color: var(--blue); }
+.notes-prose code { padding: 1px 5px; background: var(--yellow-soft); font-size: .84em; }
+.notes-map { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 10px 0 4px; font: .8rem "SFMono-Regular", Consolas, monospace; }
+.notes-map > div { display: flex; align-items: center; gap: 6px; }
+.notes-map span { color: var(--ink-muted); }
+.notes-group { margin-top: 26px; }
+.notes-group > h3 { padding-bottom: 8px; border-bottom: 2px dotted var(--blue-mid); }
+.notes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 14px; }
+.note-card { padding: 14px; }
+.note-card h4 { margin: 0; font-size: 1rem; }
+.note-text { margin: 10px 0 0; font-size: .86rem; line-height: 1.5; color: var(--blue-mid); }
+.note-facts { display: grid; gap: 4px; margin: 12px 0 0; }
+.note-facts > div { display: grid; grid-template-columns: 8.5rem 1fr; gap: 8px; font-size: .78rem; }
+.note-facts dt { color: var(--ink-muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+.note-facts dd { margin: 0; color: var(--blue); }
+.note-facts code { font-size: .95em; color: var(--blue); }
+
+/* ---- archived run conditions ---- */
+.run-conditions { padding: 18px 20px; margin-bottom: 22px; }
+.scheduler-timeline { display: grid; gap: 4px; margin: 14px 0 0; padding: 0 0 0 4px; list-style: none; }
+.scheduler-timeline li { display: flex; align-items: baseline; gap: 10px; padding: 5px 0; border-bottom: 1px dotted var(--blue-soft); font-size: .84rem; }
+.scheduler-timeline li:last-child { border-bottom: 0; }
+.scheduler-timeline code { color: var(--ink-muted); font-size: .78rem; }
+

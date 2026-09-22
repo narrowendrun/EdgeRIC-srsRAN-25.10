@@ -11,6 +11,13 @@ export interface DashboardStatus {
   modules: Record<ModuleName, ModuleStatus>
   ues: { count: number | null; rntis: string[]; fresh: boolean }
   iperf3: { state: ModuleState; address: string; port: number; detail: string }
+  scheduler: {
+    available: boolean
+    algorithm: string | null
+    known: boolean
+    muappRunning: boolean
+    detail: string
+  }
   webui: { available: boolean; proxyPort: number }
 }
 
@@ -49,4 +56,7 @@ export interface RunManifest {
   observedRntis: string[]
   metrics: { messages: number; ueSamples: number; missedTtis: number }
   databaseBytes: number
+  configFile?: string
+  rf?: Record<string, string>
+  schedulerTimeline?: Array<{ at: string; algorithm: string | null }>
 }

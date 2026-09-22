@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { ArchiveView } from './components/ArchiveView'
 import { TelemetrySection } from './components/TelemetrySection'
 import { LiveTerminal } from './components/LiveTerminal'
+import { MetricNotes } from './components/MetricNotes'
 import { StatusBoard } from './components/StatusBoard'
 import { moduleLabels } from './constants'
 import { useStatus } from './hooks/useStatus'
@@ -9,7 +10,7 @@ import type { Action, ModuleName } from './types'
 
 function App() {
   const { status, error: statusError, refresh } = useStatus()
-  const [view, setView] = useState<'live' | 'archive'>('live')
+  const [view, setView] = useState<'live' | 'archive' | 'notes'>('live')
   const [pendingAction, setPendingAction] = useState('')
   const [notice, setNotice] = useState('')
 
@@ -79,14 +80,17 @@ function App() {
     <nav className="view-tabs" aria-label="Dashboard view">
       <button type="button" className={view === 'live' ? 'is-active' : ''} aria-current={view === 'live' ? 'page' : undefined} onClick={() => setView('live')}>Live workbench</button>
       <button type="button" className={view === 'archive' ? 'is-active' : ''} aria-current={view === 'archive' ? 'page' : undefined} onClick={() => setView('archive')}>Run archive</button>
+      <button type="button" className={view === 'notes' ? 'is-active' : ''} aria-current={view === 'notes' ? 'page' : undefined} onClick={() => setView('notes')}>Metric notes</button>
     </nav>
     {statusError && <div className="notice notice-error" role="alert">Status feed: {statusError}</div>}
     {notice && <div className="notice" role="status">{notice}</div>}
-    {view === 'live' ? <>
+    {view === 'live' && <>
       <StatusBoard status={status} pendingAction={pendingAction} onAction={runAction} />
       <TelemetrySection />
       <LiveTerminal />
-    </> : <ArchiveView />}
+    </>}
+    {view === 'archive' && <ArchiveView />}
+    {view === 'notes' && <MetricNotes />}
   </main>
 }
 

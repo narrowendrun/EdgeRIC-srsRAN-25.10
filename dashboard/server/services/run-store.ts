@@ -6,6 +6,9 @@ import {
 } from 'node:fs'
 import path from 'node:path'
 import { managedUnits, open5gsLogNames, projectRoot, recorderUnit } from '../config.js'
+import { writeRunSchema } from './run-schema.js'
+import { readSchedulerAlgorithm } from './scheduler.js'
+import { loadRfConfig } from './systemd.js'
 import { run } from '../utils.js'
 
 export interface RunManifest {
@@ -18,6 +21,18 @@ export interface RunManifest {
   configFile: string
   observedRntis: string[]
   metrics: { messages: number; ueSamples: number; missedTtis: number }
+  /**
+   * RF and radio configuration as it was when the run started, so an archived run is
+   * self-describing without re-reading a config file that may since have changed.
+   */
+  rf: Record<string, string>
+  /**
+   * Which EdgeRIC scheduling algorithm was active, and when it changed. The algorithm is set
+   * externally with `redis-cli SET scheduling_algorithm`, so this is sampled rather than
+   * recorded at the point of change. Without it an archived run cannot be attributed to a
+   * scheduler, and comparing runs is meaningless.
+   */
+  schedulerTimeline: Array<{ at: string; algorithm: string | null }>
   /**
    * When the metric counters below were successfully derived from the run's database.
    * null means "never computed" (not "computed and genuinely zero"), which is what lets
@@ -83,13 +98,18 @@ export class RunStore {
     const sourceConfig = path.join(projectRoot, configName)
     if (existsSync(sourceConfig)) copyFileSync(sourceConfig, path.join(dir, 'config', configName))
     const git = await run('/usr/bin/git', ['-C', projectRoot, 'rev-parse', '--short', 'HEAD'])
+    const scheduler = await readSchedulerAlgorithm()
     const manifest: RunManifest = {
       schemaVersion: 1, id, startedAt: now.toISOString(), endedAt: null, status: 'active',
       gitCommit: git.ok ? git.stdout : 'unknown', configFile: configName,
       observedRntis: [], metrics: { messages: 0, ueSamples: 0, missedTtis: 0 },
       statsComputedAt: null,
+      rf: loadRfConfig() as unknown as Record<string, string>,
+      schedulerTimeline: [{ at: now.toISOString(), algorithm: scheduler.algorithm }],
     }
     this.writeManifest(manifest)
+    // Travels with the run so it stays interpretable away from this codebase.
+    writeRunSchema(dir)
     writeFileSync(this.activeFile, `${JSON.stringify({ runId: id, runDir: dir, startedAt: manifest.startedAt }, null, 2)}\n`, { mode: 0o644 })
     this.startCapture(id)
     return id
@@ -124,6 +144,27 @@ export class RunStore {
     this.writeManifest(manifest)
     rmSync(this.activeFile, { force: true })
     return id
+  }
+
+  /**
+   * Appends to the active run's scheduler timeline when the algorithm changes underneath us.
+   * The dashboard does not set the value -- it is changed from a shell -- so the only way to
+   * know a run switched schedulers is to sample.
+   */
+  async sampleScheduler() {
+    const id = this.activeId()
+    if (!id) return
+    const manifest = this.readManifest(id)
+    if (!manifest) return
+    const timeline = manifest.schedulerTimeline ?? []
+    const { available, algorithm } = await readSchedulerAlgorithm()
+    if (!available) return
+    const latest = timeline.length ? timeline[timeline.length - 1].algorithm : undefined
+    if (latest === algorithm) return
+    timeline.push({ at: new Date().toISOString(), algorithm })
+    manifest.schedulerTimeline = timeline
+    this.writeManifest(manifest)
+    console.log(`Run ${id}: scheduling algorithm changed to ${algorithm ?? '(unset)'}.`)
   }
 
   /**
@@ -172,7 +213,13 @@ export class RunStore {
     }
 
     return manifests.map((manifest) => {
-      const dbPath = path.join(this.runDir(manifest.id), 'metrics.sqlite3')
+      const dir = this.runDir(manifest.id)
+      // Runs recorded before schemas were written are still worth exporting; the export tool
+      // filters by the columns actually present, so current definitions are safe to backfill.
+      if (!existsSync(path.join(dir, 'metrics-schema.json'))) {
+        try { writeRunSchema(dir, true) } catch { /* archive may be read-only */ }
+      }
+      const dbPath = path.join(dir, 'metrics.sqlite3')
       return { ...manifest, databaseBytes: existsSync(dbPath) ? statSync(dbPath).size : 0 }
     })
   }

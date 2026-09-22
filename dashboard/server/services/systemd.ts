@@ -7,6 +7,7 @@ import {
   criticalOpen5gsUnits, managedUnits, open5gsUnits, projectRoot, webuiProxyPort,
   type ModuleName, type ServiceAction,
 } from '../config.js'
+import { getSchedulerStatus } from './scheduler.js'
 import { run } from '../utils.js'
 
 async function unitState(unit: string) {
@@ -48,7 +49,7 @@ function tcpReachable(address: string, targetPort: number, timeout = 400) {
   })
 }
 
-function loadRfConfig() {
+export function loadRfConfig() {
   const configPath = path.join(projectRoot, 'gnb_rf_x310_tdd_n78_20mhz.yml')
   try {
     const document = YAML.parse(readFileSync(configPath, 'utf8'))
@@ -76,13 +77,15 @@ function loadRfConfig() {
 
 export async function getStatus() {
   const iperfAddress = interfaceIpv4('ogstun')
-  const [open5gsStates, gnbUnit, collectorUnit, recorderUnit, iperfUnit, manualGnb, manualCollector, remoteControl, webui, iperfReachable, ues] = await Promise.all([
+  const [open5gsStates, gnbUnit, collectorUnit, recorderUnit, iperfUnit, manualGnb, manualCollector, remoteControl, webui, iperfReachable, ues, muappRunning] = await Promise.all([
     Promise.all(open5gsUnits.map(async (unit) => [unit, await unitState(unit)] as const)),
     unitState(managedUnits.gnb), unitState(managedUnits.edgeric), unitState('edgeric-metrics-recorder.service'),
     unitState('iperf3.service'), processRunning('/build/apps/gnb/gnb'),
     processRunning('python(3)? .*collector\\.py'), tcpReachable('127.0.0.1', 55555),
     tcpReachable('127.0.0.1', 9999), iperfAddress ? tcpReachable(iperfAddress, 5201) : Promise.resolve(false), latestUeSnapshot(),
+    processRunning('python(3)? .*scheduling_muapp\\.py'),
   ])
+  const scheduler = await getSchedulerStatus(muappRunning)
 
   const stateMap = Object.fromEntries(open5gsStates)
   const activeCount = open5gsStates.filter(([, state]) => state === 'active').length
@@ -120,6 +123,7 @@ export async function getStatus() {
       address: iperfAddress || 'unavailable', port: 5201,
       detail: iperfReachable ? 'server accepting tests' : iperfUnit === 'active' ? 'service active, port unreachable' : 'service is not running',
     },
+    scheduler,
     webui: { available: webui, proxyPort: webuiProxyPort },
   }
 }

@@ -197,7 +197,13 @@ should become a permanent test — it is the only check that keeps us honest aga
 > Now divides by the span actually covered, capped at the newest sample. Parity tests cover DL and
 > UL throughput, CQI and SNR against srsRAN's own `brate`, `cqi` and `pusch` columns.
 
-### R8 — Decide how the window summary weights samples — **needs your call**
+### R8 — Sample weighting — **DECIDED: weight by samples**
+
+Every qualifying TTI counts once toward a window average, which is what the code already did, so
+this closed with documentation rather than a change. The Metric notes tab explains what it means
+and why the tile and the gNB log differ. Original analysis below.
+
+
 
 Per-bucket values agree with srsRAN (per-second aligned, SNR ratio 1.0012). The **window
 summary** does not, because we weight every sample equally while averaging srsRAN's log rows
