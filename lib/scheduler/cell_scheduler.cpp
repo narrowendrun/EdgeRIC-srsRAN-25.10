@@ -98,7 +98,8 @@ void cell_scheduler::run_slot(slot_point sl_tx)
   auto slot_start_tp = std::chrono::high_resolution_clock::now();
   //Ushasi 
   tti_counter = tti_counter + 1;
-  edgeric::setTTI(tti_counter);
+  edgeric::setTTI(
+      tti_counter, sl_tx.to_uint(), sl_tx.nof_slots_per_hyper_system_frame(), sl_tx.numerology());
   edgeric::get_weights_from_er();
   edgeric::get_mcs_from_er();
   

@@ -67,6 +67,7 @@ class EdgeRICMessenger:
         # State
         self.ran_index = 0
         self.current_tti = 0
+        self.current_native_slot = 0
         self.last_metrics: Dict[int, dict] = {}
         
         # Give time for ZMQ connections
@@ -117,6 +118,7 @@ class EdgeRICMessenger:
                 tti_msg.ParseFromString(data)
                 
                 self.current_tti = tti_msg.tti_index
+                self.current_native_slot = tti_msg.native_slot
                 
                 # Log received metrics every 500 TTIs
                 if (self.current_tti % 500) == 0:
@@ -232,6 +234,21 @@ class EdgeRICMessenger:
             print(f"[muApp TX] TTI={self.current_tti + tti_offset} weights: {[(r, f'{w:.2f}') for r, w in weights]}")
         
         self.send_weights(weights, include_tti, tti_offset)
+
+    def send_eligibility(self, dl_rntis, ul_rntis, algorithm: str, policy_epoch: int):
+        """Admit candidates only; native srsRAN still owns grants and PRB sizing."""
+        msg = control_weights_pb2.SchedulingWeights(
+            ran_index=self.ran_index,
+            tti_index=self.current_tti,
+            mode=control_weights_pb2.CONTROL_MODE_ELIGIBILITY,
+            policy_epoch=policy_epoch,
+            algorithm=algorithm,
+            decision_native_slot=self.current_native_slot,
+            dl_eligible_rntis=sorted(int(value) for value in dl_rntis),
+            ul_eligible_rntis=sorted(int(value) for value in ul_rntis),
+        )
+        self.ran_index += 1
+        self.weights_socket.send(msg.SerializeToString())
     
     def close(self):
         """Clean up ZMQ resources."""
@@ -303,6 +320,10 @@ def send_scheduling_weight(weights, include_tti: bool = True, verbose: bool = Fa
     """
     messenger = _get_messenger()
     messenger.send_weights_array(weights, include_tti, verbose, tti_offset)
+
+
+def send_scheduling_eligibility(dl_rntis, ul_rntis, algorithm: str, policy_epoch: int):
+    _get_messenger().send_eligibility(dl_rntis, ul_rntis, algorithm, policy_epoch)
 
 
 def cleanup():

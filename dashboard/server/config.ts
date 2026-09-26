@@ -6,6 +6,11 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 export const projectRoot = process.env.PROJECT_ROOT || path.resolve(here, '../..')
 export const dashboardRoot = path.join(projectRoot, 'dashboard')
 export const logsRoot = path.join(projectRoot, 'logs')
+export function resolveGnbConfigPath(configured = process.env.GNB_CONFIG_PATH) {
+  const selected = configured?.trim() || 'gnb_rf_x310_tdd_n78_20mhz.yml'
+  return path.isAbsolute(selected) ? path.normalize(selected) : path.resolve(projectRoot, selected)
+}
+export const gnbConfigPath = resolveGnbConfigPath()
 export const host = process.env.DASHBOARD_HOST || '0.0.0.0'
 export const port = Number(process.env.DASHBOARD_PORT || 4173)
 export const webuiProxyPort = Number(process.env.OPEN5GS_PROXY_PORT || 4174)
@@ -13,6 +18,7 @@ export const webuiProxyPort = Number(process.env.OPEN5GS_PROXY_PORT || 4174)
 export const managedUnits = {
   open5gs: 'edgeric-open5gs.service',
   edgeric: 'edgeric-collector.service',
+  scheduler: 'edgeric-scheduler.service',
   gnb: 'edgeric-gnb.service',
 } as const
 

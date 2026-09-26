@@ -10,6 +10,7 @@ import { metricsRouter } from './routes/metrics.js'
 import { runsRouter } from './routes/runs.js'
 import { statusRouter } from './routes/status.js'
 import { shutdownMetricsRunner } from './services/metrics-runner.js'
+import { shutdownHarqRunner } from './services/harq-runner.js'
 import { RunStore } from './services/run-store.js'
 
 const app = express()
@@ -63,6 +64,7 @@ proxyServer.listen(webuiProxyPort, host, () => console.log(`Open5GS WebUI proxy 
 function shutdown() {
   clearInterval(reconcileTimer)
   void shutdownMetricsRunner()
+  void shutdownHarqRunner()
   runStore.shutdown()
   proxyServer.close()
   server.close(() => process.exit(0))

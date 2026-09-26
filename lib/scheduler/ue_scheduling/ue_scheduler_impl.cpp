@@ -293,6 +293,21 @@ public:
     metrics_handler.handle_harq_timeout(ue_idx, is_dl);
   }
 
+  void on_harq_timeout(const harq_timeout_context& context) override
+  {
+    metrics_handler.handle_harq_timeout(context.ue_idx, context.is_dl);
+    metrics_handler.handle_harq_timeout_event(context.ue_idx,
+                                              context.is_dl,
+                                              context.tx_slot,
+                                              context.timeout_slot,
+                                              context.harq_id,
+                                              context.attempt_number,
+                                              context.ndi,
+                                              context.retransmission_timeout,
+                                              context.ack_on_timeout,
+                                              units::bytes{context.tbs_bytes});
+  }
+
 private:
   cell_metrics_handler& metrics_handler;
 };

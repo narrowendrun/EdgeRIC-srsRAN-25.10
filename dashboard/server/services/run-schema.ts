@@ -21,6 +21,7 @@ interface ExportedMetric {
   group: string
   unit: string
   aggregation: MetricDef['agg']
+  source: 'ue_mac' | 'harq'
   columns: string[]
   /** SQL predicate selecting the TTIs this metric is defined on; null means every TTI. */
   definedWhen: string | null
@@ -32,6 +33,11 @@ interface ExportedMetric {
 }
 
 function sqlFor(metric: MetricDef): string {
+  if (metric.source === 'harq') {
+    return metric.key.includes('SuccessProbability')
+      ? 'successful resolved initial HARQ outcomes * 100 / resolved initial HARQ outcomes'
+      : 'AoI=1 at a successful initial transmission; otherwise AoI=previous AoI+1 native slot'
+  }
   const when = metric.definedWhen ?? '1'
   switch (metric.agg) {
     case 'avg':
@@ -45,9 +51,14 @@ function sqlFor(metric: MetricDef): string {
 
 export function runSchema(backfilled = false) {
   return {
-    schemaVersion: 2,
+    schemaVersion: 4,
     ...(backfilled ? { backfilled: true, backfillNote: 'Written after the run, from the definitions in force when it was listed. The run itself predates schema capture.' } : {}),
     table: 'ue_mac',
+    relatedTables: {
+      slot_observation: 'One loss-detectable native scheduler-slot observation with applied scheduler policy provenance per published message.',
+      ue_slot_observation: 'UE presence by native slot; currently scoped to the single-cell OTA setup.',
+      harq_outcome: 'Immutable terminal native HARQ outcomes, including attempt and process identity.',
+    },
     description:
       'One row per UE per TTI. Metrics must be derived with the condition below; the gNB writes ' +
       'zero for MCS, PRBs and TBS on TTIs it did not schedule, and averaging those in is wrong.',
@@ -66,6 +77,7 @@ export function runSchema(backfilled = false) {
       group: metric.group,
       unit: metric.unit,
       aggregation: metric.agg,
+      source: metric.source ?? 'ue_mac',
       columns: requiredColumns(metric),
       definedWhen: metric.definedWhen ?? null,
       sql: sqlFor(metric),

@@ -20,14 +20,17 @@ import sys
 from pathlib import Path
 
 
-def build_select(metric: dict, covered_us: str) -> str | None:
+def build_select(metric: dict, covered_us: str, minimum_rate_span_us: int) -> str | None:
     cols = metric["columns"]
     when = metric["definedWhen"] or "1"
     agg = metric["aggregation"]
     if agg == "avg":
         return f'AVG(CASE WHEN {when} THEN {cols[0]} END) * {metric["scale"]} AS "{metric["key"]}"'
     if agg == "rate":
-        return f'SUM({cols[0]}) * 8.0 / {covered_us} AS "{metric["key"]}"'
+        # Match the dashboard: divide the final partial bucket by the interval the archive
+        # actually covers, and suppress tiny slivers whose apparent rate is too unstable.
+        return (f'CASE WHEN {covered_us} >= {minimum_rate_span_us} '
+                f'THEN SUM({cols[0]}) * 8.0 / {covered_us} END AS "{metric["key"]}"')
     if agg == "ratio":
         num, den = cols
         return (f'CASE WHEN SUM({num}) + SUM({den}) > 0 '
@@ -66,11 +69,22 @@ def main() -> int:
         return 1
 
     bucket_us = int(args.bucket * 1_000_000)
-    selects = [s for s in (build_select(m, str(bucket_us)) for m in metrics) if s]
+    # Anchor buckets at the run's first sample, just as the dashboard anchors them at the query
+    # window start. `covered_us` then differs from bucket_us only for the final partial bucket.
+    covered_us = f'MAX(1, MIN(bucket_us + {bucket_us}, MAX(end_us)) - bucket_us)'
+    minimum_rate_span_us = int(bucket_us * 0.25)
+    selects = [s for s in (build_select(m, covered_us, minimum_rate_span_us) for m in metrics) if s]
     sql = f"""
-        SELECT CAST(timestamp_us / {bucket_us} AS INTEGER) * {bucket_us} AS bucket_us, rnti,
+        WITH bounds AS (
+            SELECT MIN(timestamp_us) AS start_us, MAX(timestamp_us) AS end_us FROM ue_mac
+        ), bucketed AS (
+            SELECT CAST((timestamp_us - start_us) / {bucket_us} AS INTEGER) * {bucket_us} + start_us AS bucket_us,
+                   ue_mac.*, end_us
+            FROM ue_mac CROSS JOIN bounds
+        )
+        SELECT bucket_us, rnti,
                {', '.join(selects)}
-        FROM ue_mac GROUP BY bucket_us, rnti ORDER BY bucket_us, rnti
+        FROM bucketed GROUP BY bucket_us, rnti ORDER BY bucket_us, rnti
     """
     rows = db.execute(sql).fetchall()
 

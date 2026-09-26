@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Summarise a run's metrics database for its manifest.
 
-Reads counters the recorder maintains as it writes (schema v2), falling back to table scans
+Reads counters the recorder maintains as it writes (schema v2+), falling back to table scans
 for databases written by an older build.
 """
 import json

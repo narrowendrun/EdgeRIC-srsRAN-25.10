@@ -81,7 +81,9 @@ function pointValue(metric: MetricDef, row: Record<string, number | null>, durat
     case 'ratio': {
       const num = row[`${metric.key}__num`] ?? 0
       const total = num + (row[`${metric.key}__den`] ?? 0)
-      return total ? round((num / total) * 100, metric.precision) : 0
+      // With no outcomes there is no ratio. In particular, no HARQ feedback must not be
+      // presented as 0% BLER: that would claim perfect reliability without an attempt.
+      return total ? round((num / total) * 100, metric.precision) : null
     }
   }
 }
@@ -113,7 +115,9 @@ export function queryMetrics(request: QueryRequest): MetricsResult {
     // A v1 archive has only the original eight metric columns; offer what is actually there
     // rather than erroring, and tell the caller what it could not serve.
     const columns = availableColumns(db)
-    const requested = resolveMetrics(request.metricKeys)
+    // HARQ-derived metrics are served by /harq and merged by the client. Keeping them out of
+    // this ue_mac SQL path prevents the presentation registry from becoming a reconstruction.
+    const requested = resolveMetrics(request.metricKeys).filter((metric) => metric.source !== 'harq')
     const metrics = requested.filter((metric) => requiredColumns(metric).every((c) => columns.has(c)))
     const unavailable = request.metricKeys.filter((key) => !metrics.some((m) => m.key === key))
 
@@ -173,7 +177,11 @@ export function queryMetrics(request: QueryRequest): MetricsResult {
       rawByRnti.set(rnti, raws)
     }
 
-    const summaries = summarise(metrics, grouped, rawByRnti, Math.max(1, endUs - startUs))
+    // During a live run `endUs` is wall-clock now, while the most recent committed sample can
+    // trail it. The bucket path above deliberately excludes that empty commit-lag tail; use the
+    // same effective end for the whole-window throughput summary.
+    const effectiveEndUs = Math.min(endUs, bounds.max_us)
+    const summaries = summarise(metrics, grouped, rawByRnti, Math.max(1, effectiveEndUs - startUs))
 
     return {
       runId: request.runId, available: true,
@@ -241,16 +249,19 @@ function summarise(
         }
         // `last` is the most recent bucket that actually had a value, so a tile shows the last
         // known MCS rather than blanking whenever the scheduler skips a bucket.
-        let lastValue = 0
+        let lastValue: number | undefined
         for (let i = points.length - 1; i >= 0; i--) {
           const candidate = points[i][metric.key]
           if (candidate !== undefined) { lastValue = candidate; break }
         }
+        // Do not manufacture a zero when this metric had no qualifying observation anywhere in
+        // the window. Omitting the summary makes the client render an em dash.
+        if (!count || lastValue === undefined) continue
         summary[metric.key] = {
           last: lastValue,
-          min: count ? round(min * scale, metric.precision) : 0,
-          max: count ? round(max * scale, metric.precision) : 0,
-          avg: count ? round((sum / count) * scale, metric.precision) : 0,
+          min: round(min * scale, metric.precision),
+          max: round(max * scale, metric.precision),
+          avg: round((sum / count) * scale, metric.precision),
         }
         continue
       }
@@ -265,12 +276,15 @@ function summarise(
           totals[alias] = (totals[alias] ?? 0) + (raw[alias] ?? 0)
         }
       }
+      const average = pointValue(metric, totals, windowUs)
+      // Ratios are absent when there were no events. Rates remain valid zeroes over an observed
+      // interval, so `average` is non-null for them.
+      if (!values.length || average === null) continue
       summary[metric.key] = {
-        last: values.length ? values[values.length - 1] : 0,
-        min: values.length ? round(Math.min(...values), metric.precision) : 0,
-        max: values.length ? round(Math.max(...values), metric.precision) : 0,
-        // rate and ratio never yield null -- only 'avg' has a predicate that can exclude everything.
-        avg: pointValue(metric, totals, windowUs) ?? 0,
+        last: values[values.length - 1],
+        min: round(Math.min(...values), metric.precision),
+        max: round(Math.max(...values), metric.precision),
+        avg: average,
       }
     }
 

@@ -29,6 +29,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
@@ -55,6 +56,31 @@ template<> ::SchedulingWeights* Arena::CreateMaybeMessage<::SchedulingWeights>(A
 template<> ::UeWeight* Arena::CreateMaybeMessage<::UeWeight>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 
+enum ControlMode : int {
+  CONTROL_MODE_WEIGHTS = 0,
+  CONTROL_MODE_ELIGIBILITY = 1,
+  ControlMode_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  ControlMode_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool ControlMode_IsValid(int value);
+constexpr ControlMode ControlMode_MIN = CONTROL_MODE_WEIGHTS;
+constexpr ControlMode ControlMode_MAX = CONTROL_MODE_ELIGIBILITY;
+constexpr int ControlMode_ARRAYSIZE = ControlMode_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ControlMode_descriptor();
+template<typename T>
+inline const std::string& ControlMode_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, ControlMode>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function ControlMode_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    ControlMode_descriptor(), enum_t_value);
+}
+inline bool ControlMode_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, ControlMode* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<ControlMode>(
+    ControlMode_descriptor(), name, value);
+}
 // ===================================================================
 
 class SchedulingWeights final :
@@ -179,8 +205,14 @@ class SchedulingWeights final :
 
   enum : int {
     kUeWeightsFieldNumber = 3,
+    kDlEligibleRntisFieldNumber = 8,
+    kUlEligibleRntisFieldNumber = 9,
+    kAlgorithmFieldNumber = 6,
     kRanIndexFieldNumber = 1,
     kTtiIndexFieldNumber = 2,
+    kPolicyEpochFieldNumber = 5,
+    kDecisionNativeSlotFieldNumber = 7,
+    kModeFieldNumber = 4,
   };
   // repeated .UeWeight ue_weights = 3;
   int ue_weights_size() const;
@@ -200,6 +232,64 @@ class SchedulingWeights final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::UeWeight >&
       ue_weights() const;
 
+  // repeated uint32 dl_eligible_rntis = 8;
+  int dl_eligible_rntis_size() const;
+  private:
+  int _internal_dl_eligible_rntis_size() const;
+  public:
+  void clear_dl_eligible_rntis();
+  private:
+  uint32_t _internal_dl_eligible_rntis(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      _internal_dl_eligible_rntis() const;
+  void _internal_add_dl_eligible_rntis(uint32_t value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      _internal_mutable_dl_eligible_rntis();
+  public:
+  uint32_t dl_eligible_rntis(int index) const;
+  void set_dl_eligible_rntis(int index, uint32_t value);
+  void add_dl_eligible_rntis(uint32_t value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      dl_eligible_rntis() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      mutable_dl_eligible_rntis();
+
+  // repeated uint32 ul_eligible_rntis = 9;
+  int ul_eligible_rntis_size() const;
+  private:
+  int _internal_ul_eligible_rntis_size() const;
+  public:
+  void clear_ul_eligible_rntis();
+  private:
+  uint32_t _internal_ul_eligible_rntis(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      _internal_ul_eligible_rntis() const;
+  void _internal_add_ul_eligible_rntis(uint32_t value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      _internal_mutable_ul_eligible_rntis();
+  public:
+  uint32_t ul_eligible_rntis(int index) const;
+  void set_ul_eligible_rntis(int index, uint32_t value);
+  void add_ul_eligible_rntis(uint32_t value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      ul_eligible_rntis() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      mutable_ul_eligible_rntis();
+
+  // string algorithm = 6;
+  void clear_algorithm();
+  const std::string& algorithm() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_algorithm(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_algorithm();
+  PROTOBUF_NODISCARD std::string* release_algorithm();
+  void set_allocated_algorithm(std::string* algorithm);
+  private:
+  const std::string& _internal_algorithm() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_algorithm(const std::string& value);
+  std::string* _internal_mutable_algorithm();
+  public:
+
   // uint32 ran_index = 1;
   void clear_ran_index();
   uint32_t ran_index() const;
@@ -218,6 +308,33 @@ class SchedulingWeights final :
   void _internal_set_tti_index(uint32_t value);
   public:
 
+  // uint64 policy_epoch = 5;
+  void clear_policy_epoch();
+  uint64_t policy_epoch() const;
+  void set_policy_epoch(uint64_t value);
+  private:
+  uint64_t _internal_policy_epoch() const;
+  void _internal_set_policy_epoch(uint64_t value);
+  public:
+
+  // uint64 decision_native_slot = 7;
+  void clear_decision_native_slot();
+  uint64_t decision_native_slot() const;
+  void set_decision_native_slot(uint64_t value);
+  private:
+  uint64_t _internal_decision_native_slot() const;
+  void _internal_set_decision_native_slot(uint64_t value);
+  public:
+
+  // .ControlMode mode = 4;
+  void clear_mode();
+  ::ControlMode mode() const;
+  void set_mode(::ControlMode value);
+  private:
+  ::ControlMode _internal_mode() const;
+  void _internal_set_mode(::ControlMode value);
+  public:
+
   // @@protoc_insertion_point(class_scope:SchedulingWeights)
  private:
   class _Internal;
@@ -227,8 +344,16 @@ class SchedulingWeights final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::UeWeight > ue_weights_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t > dl_eligible_rntis_;
+    mutable std::atomic<int> _dl_eligible_rntis_cached_byte_size_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t > ul_eligible_rntis_;
+    mutable std::atomic<int> _ul_eligible_rntis_cached_byte_size_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr algorithm_;
     uint32_t ran_index_;
     uint32_t tti_index_;
+    uint64_t policy_epoch_;
+    uint64_t decision_native_slot_;
+    int mode_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -416,7 +541,7 @@ inline uint32_t SchedulingWeights::ran_index() const {
   return _internal_ran_index();
 }
 inline void SchedulingWeights::_internal_set_ran_index(uint32_t value) {
-  
+
   _impl_.ran_index_ = value;
 }
 inline void SchedulingWeights::set_ran_index(uint32_t value) {
@@ -436,7 +561,7 @@ inline uint32_t SchedulingWeights::tti_index() const {
   return _internal_tti_index();
 }
 inline void SchedulingWeights::_internal_set_tti_index(uint32_t value) {
-  
+
   _impl_.tti_index_ = value;
 }
 inline void SchedulingWeights::set_tti_index(uint32_t value) {
@@ -484,6 +609,210 @@ SchedulingWeights::ue_weights() const {
   return _impl_.ue_weights_;
 }
 
+// .ControlMode mode = 4;
+inline void SchedulingWeights::clear_mode() {
+  _impl_.mode_ = 0;
+}
+inline ::ControlMode SchedulingWeights::_internal_mode() const {
+  return static_cast< ::ControlMode >(_impl_.mode_);
+}
+inline ::ControlMode SchedulingWeights::mode() const {
+  // @@protoc_insertion_point(field_get:SchedulingWeights.mode)
+  return _internal_mode();
+}
+inline void SchedulingWeights::_internal_set_mode(::ControlMode value) {
+
+  _impl_.mode_ = value;
+}
+inline void SchedulingWeights::set_mode(::ControlMode value) {
+  _internal_set_mode(value);
+  // @@protoc_insertion_point(field_set:SchedulingWeights.mode)
+}
+
+// uint64 policy_epoch = 5;
+inline void SchedulingWeights::clear_policy_epoch() {
+  _impl_.policy_epoch_ = uint64_t{0u};
+}
+inline uint64_t SchedulingWeights::_internal_policy_epoch() const {
+  return _impl_.policy_epoch_;
+}
+inline uint64_t SchedulingWeights::policy_epoch() const {
+  // @@protoc_insertion_point(field_get:SchedulingWeights.policy_epoch)
+  return _internal_policy_epoch();
+}
+inline void SchedulingWeights::_internal_set_policy_epoch(uint64_t value) {
+
+  _impl_.policy_epoch_ = value;
+}
+inline void SchedulingWeights::set_policy_epoch(uint64_t value) {
+  _internal_set_policy_epoch(value);
+  // @@protoc_insertion_point(field_set:SchedulingWeights.policy_epoch)
+}
+
+// string algorithm = 6;
+inline void SchedulingWeights::clear_algorithm() {
+  _impl_.algorithm_.ClearToEmpty();
+}
+inline const std::string& SchedulingWeights::algorithm() const {
+  // @@protoc_insertion_point(field_get:SchedulingWeights.algorithm)
+  return _internal_algorithm();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void SchedulingWeights::set_algorithm(ArgT0&& arg0, ArgT... args) {
+
+ _impl_.algorithm_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:SchedulingWeights.algorithm)
+}
+inline std::string* SchedulingWeights::mutable_algorithm() {
+  std::string* _s = _internal_mutable_algorithm();
+  // @@protoc_insertion_point(field_mutable:SchedulingWeights.algorithm)
+  return _s;
+}
+inline const std::string& SchedulingWeights::_internal_algorithm() const {
+  return _impl_.algorithm_.Get();
+}
+inline void SchedulingWeights::_internal_set_algorithm(const std::string& value) {
+
+  _impl_.algorithm_.Set(value, GetArenaForAllocation());
+}
+inline std::string* SchedulingWeights::_internal_mutable_algorithm() {
+
+  return _impl_.algorithm_.Mutable(GetArenaForAllocation());
+}
+inline std::string* SchedulingWeights::release_algorithm() {
+  // @@protoc_insertion_point(field_release:SchedulingWeights.algorithm)
+  return _impl_.algorithm_.Release();
+}
+inline void SchedulingWeights::set_allocated_algorithm(std::string* algorithm) {
+  if (algorithm != nullptr) {
+
+  } else {
+
+  }
+  _impl_.algorithm_.SetAllocated(algorithm, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.algorithm_.IsDefault()) {
+    _impl_.algorithm_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:SchedulingWeights.algorithm)
+}
+
+// uint64 decision_native_slot = 7;
+inline void SchedulingWeights::clear_decision_native_slot() {
+  _impl_.decision_native_slot_ = uint64_t{0u};
+}
+inline uint64_t SchedulingWeights::_internal_decision_native_slot() const {
+  return _impl_.decision_native_slot_;
+}
+inline uint64_t SchedulingWeights::decision_native_slot() const {
+  // @@protoc_insertion_point(field_get:SchedulingWeights.decision_native_slot)
+  return _internal_decision_native_slot();
+}
+inline void SchedulingWeights::_internal_set_decision_native_slot(uint64_t value) {
+
+  _impl_.decision_native_slot_ = value;
+}
+inline void SchedulingWeights::set_decision_native_slot(uint64_t value) {
+  _internal_set_decision_native_slot(value);
+  // @@protoc_insertion_point(field_set:SchedulingWeights.decision_native_slot)
+}
+
+// repeated uint32 dl_eligible_rntis = 8;
+inline int SchedulingWeights::_internal_dl_eligible_rntis_size() const {
+  return _impl_.dl_eligible_rntis_.size();
+}
+inline int SchedulingWeights::dl_eligible_rntis_size() const {
+  return _internal_dl_eligible_rntis_size();
+}
+inline void SchedulingWeights::clear_dl_eligible_rntis() {
+  _impl_.dl_eligible_rntis_.Clear();
+}
+inline uint32_t SchedulingWeights::_internal_dl_eligible_rntis(int index) const {
+  return _impl_.dl_eligible_rntis_.Get(index);
+}
+inline uint32_t SchedulingWeights::dl_eligible_rntis(int index) const {
+  // @@protoc_insertion_point(field_get:SchedulingWeights.dl_eligible_rntis)
+  return _internal_dl_eligible_rntis(index);
+}
+inline void SchedulingWeights::set_dl_eligible_rntis(int index, uint32_t value) {
+  _impl_.dl_eligible_rntis_.Set(index, value);
+  // @@protoc_insertion_point(field_set:SchedulingWeights.dl_eligible_rntis)
+}
+inline void SchedulingWeights::_internal_add_dl_eligible_rntis(uint32_t value) {
+  _impl_.dl_eligible_rntis_.Add(value);
+}
+inline void SchedulingWeights::add_dl_eligible_rntis(uint32_t value) {
+  _internal_add_dl_eligible_rntis(value);
+  // @@protoc_insertion_point(field_add:SchedulingWeights.dl_eligible_rntis)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+SchedulingWeights::_internal_dl_eligible_rntis() const {
+  return _impl_.dl_eligible_rntis_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+SchedulingWeights::dl_eligible_rntis() const {
+  // @@protoc_insertion_point(field_list:SchedulingWeights.dl_eligible_rntis)
+  return _internal_dl_eligible_rntis();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+SchedulingWeights::_internal_mutable_dl_eligible_rntis() {
+  return &_impl_.dl_eligible_rntis_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+SchedulingWeights::mutable_dl_eligible_rntis() {
+  // @@protoc_insertion_point(field_mutable_list:SchedulingWeights.dl_eligible_rntis)
+  return _internal_mutable_dl_eligible_rntis();
+}
+
+// repeated uint32 ul_eligible_rntis = 9;
+inline int SchedulingWeights::_internal_ul_eligible_rntis_size() const {
+  return _impl_.ul_eligible_rntis_.size();
+}
+inline int SchedulingWeights::ul_eligible_rntis_size() const {
+  return _internal_ul_eligible_rntis_size();
+}
+inline void SchedulingWeights::clear_ul_eligible_rntis() {
+  _impl_.ul_eligible_rntis_.Clear();
+}
+inline uint32_t SchedulingWeights::_internal_ul_eligible_rntis(int index) const {
+  return _impl_.ul_eligible_rntis_.Get(index);
+}
+inline uint32_t SchedulingWeights::ul_eligible_rntis(int index) const {
+  // @@protoc_insertion_point(field_get:SchedulingWeights.ul_eligible_rntis)
+  return _internal_ul_eligible_rntis(index);
+}
+inline void SchedulingWeights::set_ul_eligible_rntis(int index, uint32_t value) {
+  _impl_.ul_eligible_rntis_.Set(index, value);
+  // @@protoc_insertion_point(field_set:SchedulingWeights.ul_eligible_rntis)
+}
+inline void SchedulingWeights::_internal_add_ul_eligible_rntis(uint32_t value) {
+  _impl_.ul_eligible_rntis_.Add(value);
+}
+inline void SchedulingWeights::add_ul_eligible_rntis(uint32_t value) {
+  _internal_add_ul_eligible_rntis(value);
+  // @@protoc_insertion_point(field_add:SchedulingWeights.ul_eligible_rntis)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+SchedulingWeights::_internal_ul_eligible_rntis() const {
+  return _impl_.ul_eligible_rntis_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+SchedulingWeights::ul_eligible_rntis() const {
+  // @@protoc_insertion_point(field_list:SchedulingWeights.ul_eligible_rntis)
+  return _internal_ul_eligible_rntis();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+SchedulingWeights::_internal_mutable_ul_eligible_rntis() {
+  return &_impl_.ul_eligible_rntis_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+SchedulingWeights::mutable_ul_eligible_rntis() {
+  // @@protoc_insertion_point(field_mutable_list:SchedulingWeights.ul_eligible_rntis)
+  return _internal_mutable_ul_eligible_rntis();
+}
+
 // -------------------------------------------------------------------
 
 // UeWeight
@@ -500,7 +829,7 @@ inline uint32_t UeWeight::rnti() const {
   return _internal_rnti();
 }
 inline void UeWeight::_internal_set_rnti(uint32_t value) {
-  
+
   _impl_.rnti_ = value;
 }
 inline void UeWeight::set_rnti(uint32_t value) {
@@ -520,7 +849,7 @@ inline float UeWeight::weight() const {
   return _internal_weight();
 }
 inline void UeWeight::_internal_set_weight(float value) {
-  
+
   _impl_.weight_ = value;
 }
 inline void UeWeight::set_weight(float value) {
@@ -536,6 +865,16 @@ inline void UeWeight::set_weight(float value) {
 
 // @@protoc_insertion_point(namespace_scope)
 
+
+PROTOBUF_NAMESPACE_OPEN
+
+template <> struct is_proto_enum< ::ControlMode> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::ControlMode>() {
+  return ::ControlMode_descriptor();
+}
+
+PROTOBUF_NAMESPACE_CLOSE
 
 // @@protoc_insertion_point(global_scope)
 

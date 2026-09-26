@@ -1,0 +1,13 @@
+[Unit]
+Description=Additional iperf3 server on port %i
+Documentation=man:iperf3(1)
+After=network.target iperf3.service
+PartOf=iperf3.service
+
+[Service]
+Type=simple
+User=iperf3
+ExecStart=/usr/bin/iperf3 --server --port %i --interval 0
+Restart=always
+RestartSec=2
+SuccessExitStatus=1

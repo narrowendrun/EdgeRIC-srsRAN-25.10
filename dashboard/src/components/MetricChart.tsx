@@ -23,6 +23,11 @@ export function MetricChart({ card, series }: { card: ChartCard; series: MetricS
     const buckets = new Map<number, ChartRow>()
     const generated: Array<{ dataKey: string; name: string; color: string; dashed?: boolean }> = []
     series.forEach((item, seriesIndex) => card.metrics.forEach((metric, lineIndex) => {
+      const metricPoints = item.points.flatMap((point) => {
+        const value = point[metric.key]
+        return value === undefined ? [] : [{ timestamp: point.timestamp, value }]
+      })
+      if (!metricPoints.length) return
       const dataKey = `${item.rnti}_${metric.key}`
       generated.push({
         dataKey,
@@ -30,9 +35,9 @@ export function MetricChart({ card, series }: { card: ChartCard; series: MetricS
         color: colors[(seriesIndex + lineIndex * 2) % colors.length],
         dashed: lineIndex > 0,
       })
-      item.points.forEach((point) => {
+      metricPoints.forEach((point) => {
         const row = buckets.get(point.timestamp) || { timestamp: point.timestamp }
-        row[dataKey] = point[metric.key]
+        row[dataKey] = point.value
         buckets.set(point.timestamp, row)
       })
     }))
@@ -42,7 +47,7 @@ export function MetricChart({ card, series }: { card: ChartCard; series: MetricS
   return <article className="paper-note chart-card">
     <div className="chart-title"><h3>{card.title}</h3><span>{card.unit}</span></div>
     <div className="chart-canvas">
-      <ResponsiveContainer width="100%" height="100%">
+      {rows.length === 0 ? <p className="numeric-idle">no observations in this window</p> : <ResponsiveContainer width="100%" height="100%">
         <LineChart data={rows} margin={{ top: 10, right: 12, bottom: 4, left: -12 }}>
           <CartesianGrid stroke="var(--chart-grid)" strokeDasharray="2 5" vertical={false} />
           <XAxis dataKey="timestamp" type="number" scale="time" domain={['dataMin', 'dataMax']} tickFormatter={(value) => new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} minTickGap={44} />
@@ -51,7 +56,7 @@ export function MetricChart({ card, series }: { card: ChartCard; series: MetricS
           <Legend />
           {keys.map((line) => <Line key={line.dataKey} type="monotone" dataKey={line.dataKey} name={line.name} stroke={line.color} strokeWidth={2} dot={false} connectNulls={false} strokeDasharray={line.dashed ? '7 4' : undefined} isAnimationActive={false} />)}
         </LineChart>
-      </ResponsiveContainer>
+      </ResponsiveContainer>}
     </div>
   </article>
 }

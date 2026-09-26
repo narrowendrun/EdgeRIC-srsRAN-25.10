@@ -1,0 +1,26 @@
+[Unit]
+Description=EdgeRIC modular scheduling muApp
+After=network.target redis-server.service
+Wants=redis-server.service
+
+[Service]
+Type=simple
+User=@USER@
+Group=@USER@
+WorkingDirectory=@PROJECT_ROOT@/edgeric/muapp-scheduling
+Environment=PYTHONUNBUFFERED=1
+Environment=VIRTUAL_ENV=@PROJECT_ROOT@/.venv
+Environment=PATH=@PROJECT_ROOT@/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+ExecStartPre=/usr/bin/redis-cli SETNX scheduling_algorithm "Proportional Fair"
+ExecStartPre=/usr/bin/redis-cli SETNX scheduling_policy_epoch 1
+ExecStartPre=/usr/bin/redis-cli SETNX scheduling_max_ues 2
+ExecStart=@PROJECT_ROOT@/.venv/bin/python -u @PROJECT_ROOT@/edgeric/muapp-scheduling/scheduling_muapp.py
+Restart=on-failure
+RestartSec=2
+KillSignal=SIGINT
+TimeoutStopSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

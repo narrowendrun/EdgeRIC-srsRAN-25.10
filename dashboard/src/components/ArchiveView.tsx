@@ -10,8 +10,8 @@ function formatBytes(bytes: number) {
 }
 
 /**
- * What the bench looked like for this run. Without it an archived run cannot be attributed to a
- * scheduler or an RF configuration, and comparing two runs means nothing.
+ * What the bench looked like for this run. RF facts are run conditions; the scheduler timeline is
+ * explicitly requested intent until applied-decision evidence is archived.
  */
 function RunConditions({ run }: { run?: RunManifest }) {
   if (!run) return null
@@ -20,7 +20,7 @@ function RunConditions({ run }: { run?: RunManifest }) {
   return <section className="paper-note run-conditions">
     <div className="section-heading"><div><p className="section-kicker">run conditions</p><h2>Bench details</h2></div></div>
     <div className="detail-highlight-grid">
-      <div className="detail-highlight"><span>Scheduling algorithm</span>
+      <div className="detail-highlight"><span>Scheduler intent at run start</span>
         <strong>{timeline.length ? (timeline[0].algorithm ?? 'none set') : 'not recorded'}</strong>
         <small>{timeline.length > 1 ? `changed ${timeline.length - 1} time${timeline.length === 2 ? '' : 's'} during the run` : 'unchanged for the whole run'}</small>
       </div>

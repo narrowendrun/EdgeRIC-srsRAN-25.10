@@ -62,6 +62,43 @@ message GtpMetrics {
     uint64 ul_bytes = 4;          // UL GTP-U bytes to core
 }
 
+// Direction of a resolved HARQ transmission event.
+enum HarqDirection {
+    HARQ_DIRECTION_UNSPECIFIED = 0;
+    HARQ_DIRECTION_DL = 1;
+    HARQ_DIRECTION_UL = 2;
+}
+
+// Native scheduler outcome for a resolved HARQ transmission attempt.
+enum HarqOutcome {
+    HARQ_OUTCOME_UNSPECIFIED = 0;
+    HARQ_OUTCOME_ACK = 1;
+    HARQ_OUTCOME_NACK = 2;
+    HARQ_OUTCOME_CRC_OK = 3;
+    HARQ_OUTCOME_CRC_FAIL = 4;
+    HARQ_OUTCOME_DTX_TIMEOUT = 5;
+    HARQ_OUTCOME_RETX_TIMEOUT = 6;
+    HARQ_OUTCOME_ACK_ON_TIMEOUT = 7; // Native DL resolution: partial ACK then missing feedback
+}
+
+// One terminal HARQ outcome. attempt_number is zero for the initial
+// transmission and increments for every retransmission of the same TB.
+message HarqEvent {
+    uint64 sequence_id = 1;       // Monotonic publisher sequence; gaps reveal loss
+    uint32 cell_index = 2;
+    uint32 rnti = 3;
+    HarqDirection direction = 4;
+    uint64 tx_slot = 5;           // Extended monotonic native slot of the PDSCH/PUSCH
+    uint64 feedback_slot = 6;     // Extended monotonic native indication/timeout slot
+    uint32 harq_id = 7;
+    uint32 attempt_number = 8;    // 0=newTx, 1+=reTx
+    bool is_retransmission = 9;
+    bool ndi = 10;
+    HarqOutcome outcome = 11;
+    uint32 tbs_bytes = 12;
+    uint32 du_ue_index = 13;      // Stable scheduler UE identity for this UE lifecycle
+}
+
 // MAC-level UE metrics (aggregate, per-TTI)
 message MacUeMetrics {
     uint32 cqi = 1;               // Wideband CQI (0-15)
@@ -83,12 +120,12 @@ message MacUeMetrics {
     uint32 ul_crc_fail = 10;      // UL CRC failures
     
     // MAC layer delays in milliseconds (averaged over metrics report period)
-    float avg_ce_delay_ms = 16;         // Avg CE (Control Element) processing delay
-    float avg_crc_delay_ms = 17;        // Avg CRC indication processing delay
-    float avg_pucch_harq_delay_ms = 18; // Avg PUCCH HARQ feedback delay
-    float avg_pusch_harq_delay_ms = 19; // Avg PUSCH HARQ feedback delay
-    float avg_sr_to_pusch_delay_ms = 20;// Avg SR to PUSCH grant delay
-    float avg_sum_mac_delay_ms = 21;    // Sum of all MAC delays (ce + crc + pucch_harq + pusch_harq + sr_to_pusch)
+    optional float avg_ce_delay_ms = 16;         // Present only when native CE observations exist
+    optional float avg_crc_delay_ms = 17;        // Present only when native CRC observations exist
+    optional float avg_pucch_harq_delay_ms = 18; // Present only when native PUCCH HARQ observations exist
+    optional float avg_pusch_harq_delay_ms = 19; // Present only when native PUSCH HARQ observations exist
+    optional float avg_sr_to_pusch_delay_ms = 20;// Present only when native handled-SR observations exist
+    float avg_sum_mac_delay_ms = 21 [deprecated = true]; // Never published: unlike-conditioned averages cannot be summed
 }
 
 // Per-UE metrics container
@@ -109,9 +146,19 @@ message UeMetrics {
 
 // Top-level metrics message - sent every TTI
 message TtiMetrics {
-    uint32 tti_index = 1;         // TTI index (0-9999, rolls over)
+    uint32 tti_index = 1;         // Legacy scheduler-call counter (wraps only at uint32 overflow)
     uint64 timestamp_us = 2;      // Unix timestamp in microseconds
     repeated UeMetrics ues = 3;   // Per-UE metrics
+    repeated HarqEvent harq_events = 4; // Terminal HARQ outcomes since last publish
+    uint64 native_slot = 5;       // Extended monotonic native scheduler slot
+    uint32 numerology = 6;        // NR numerology mu (0..4)
+    uint32 slot_duration_ns = 7;  // Exact native slot duration
+    uint64 message_sequence_id = 8; // Monotonic publish-attempt sequence; gaps reveal loss
+    uint64 scheduler_policy_epoch = 9;
+    string scheduler_algorithm = 10;
+    bool scheduler_control_active = 11;
+    repeated uint32 dl_eligible_rntis = 12;
+    repeated uint32 ul_eligible_rntis = 13;
 }
 
 // Legacy Metrics message (for backwards compatibility)

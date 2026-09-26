@@ -77,6 +77,7 @@ public:
   du_ue_index_t last_ue_index  = INVALID_DU_UE_INDEX;
   bool          last_dir_is_dl = false;
   bool          last_was_ack   = false;
+  std::optional<harq_timeout_context> last_context;
 
   void handle_harq_timeout(du_ue_index_t ue_index, bool is_dl, bool ack)
   {
@@ -95,6 +96,12 @@ public:
       void on_harq_timeout(du_ue_index_t ue_index, bool is_dl, bool ack) override
       {
         parent.handle_harq_timeout(ue_index, is_dl, ack);
+      }
+
+      void on_harq_timeout(const harq_timeout_context& context) override
+      {
+        parent.last_context = context;
+        parent.handle_harq_timeout(context.ue_idx, context.is_dl, context.ack_on_timeout);
       }
 
     private:
@@ -546,6 +553,9 @@ TEST_F(dl_harq_process_multi_pucch_test,
 {
   const mac_harq_ack_report_status ack_val        = get_random_harq_ack();
   const unsigned                   first_ack_slot = 1;
+  const slot_point                 tx_slot        = h_dl.pdsch_slot();
+  const harq_id_t                  harq_id        = h_dl.id();
+  const bool                       ndi            = h_dl.ndi();
 
   for (unsigned i = 0; i != this->max_ack_wait_timeout + k1 + 1; ++i) {
     // Notify HARQ process with DTX (ACK not decoded).
@@ -564,11 +574,21 @@ TEST_F(dl_harq_process_multi_pucch_test,
       ASSERT_TRUE(h_dl.empty());
       ASSERT_EQ(timeout_handler.last_ue_index, to_du_ue_index(0));
       ASSERT_TRUE(timeout_handler.last_dir_is_dl);
+      ASSERT_TRUE(timeout_handler.last_context.has_value());
+      EXPECT_EQ(timeout_handler.last_context->rnti, rnti);
+      EXPECT_EQ(timeout_handler.last_context->tx_slot, tx_slot);
+      EXPECT_EQ(timeout_handler.last_context->timeout_slot, current_slot);
+      EXPECT_EQ(timeout_handler.last_context->harq_id, harq_id);
+      EXPECT_EQ(timeout_handler.last_context->attempt_number, 0U);
+      EXPECT_EQ(timeout_handler.last_context->ndi, ndi);
+      EXPECT_FALSE(timeout_handler.last_context->retransmission_timeout);
       if (ack_val == srsran::mac_harq_ack_report_status::ack) {
         ASSERT_TRUE(timeout_handler.last_was_ack);
+        EXPECT_TRUE(timeout_handler.last_context->ack_on_timeout);
       } else {
         // In case of NACK/DTX, the HARQ should report the timeout.
         ASSERT_FALSE(timeout_handler.last_was_ack);
+        EXPECT_FALSE(timeout_handler.last_context->ack_on_timeout);
       }
       break;
     }

@@ -7,6 +7,17 @@ message SchedulingWeights {
     uint32 ran_index = 1;           // RAN instance index (for multi-RAN deployments)
     uint32 tti_index = 2;           // TTI when decision was made (for staleness check)
     repeated UeWeight ue_weights = 3;  // Per-UE weights indexed by RNTI
+    ControlMode mode = 4;
+    uint64 policy_epoch = 5;
+    string algorithm = 6;
+    uint64 decision_native_slot = 7;
+    repeated uint32 dl_eligible_rntis = 8;
+    repeated uint32 ul_eligible_rntis = 9;
+}
+
+enum ControlMode {
+    CONTROL_MODE_WEIGHTS = 0;
+    CONTROL_MODE_ELIGIBILITY = 1;
 }
 
 // Per-UE weight specification
@@ -14,4 +25,3 @@ message UeWeight {
     uint32 rnti = 1;                // UE RNTI
     float weight = 2;               // PRB weight multiplier (0.0 = no allocation, 1.0 = fair share)
 }
-

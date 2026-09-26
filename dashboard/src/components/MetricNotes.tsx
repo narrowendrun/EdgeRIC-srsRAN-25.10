@@ -4,6 +4,7 @@ const groupOrder: MetricGroup[] = ['Radio', 'Throughput', 'Reliability', 'Schedu
 
 /** Renders the registry's SQL predicate as something a human reads. */
 function countedOn(metric: MetricDef): string {
+  if (metric.source === 'harq') return 'native slots and resolved initial HARQ transmissions'
   if (!metric.definedWhen) return 'every TTI'
   if (metric.definedWhen.includes('dl_prbs')) return 'TTIs with a DL allocation'
   if (metric.definedWhen.includes('ul_prbs')) return 'TTIs with a UL grant'
@@ -12,6 +13,11 @@ function countedOn(metric: MetricDef): string {
 }
 
 function combinedBy(metric: MetricDef): string {
+  if (metric.source === 'harq') {
+    return metric.key.includes('SuccessProbability')
+      ? 'successful ÷ resolved initial transmissions'
+      : 'native-slot AoI recurrence'
+  }
   switch (metric.agg) {
     case 'avg': return 'mean over the bucket'
     case 'rate': return 'bytes × 8 ÷ elapsed time'

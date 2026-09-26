@@ -222,8 +222,40 @@ public:
   /// \brief Register HARQ-ACK UCI indication.
   void handle_dl_harq_ack(du_ue_index_t ue_index, bool ack, units::bytes tbs);
 
+  /// \brief Publish a terminal DL HARQ outcome with native process metadata.
+  void handle_dl_harq_outcome(du_ue_index_t ue_index,
+                              slot_point tx_slot,
+                              slot_point feedback_slot,
+                              harq_id_t harq_id,
+                              unsigned attempt_number,
+                              bool ndi,
+                              bool ack,
+                              units::bytes tbs);
+
+  /// \brief Publish a terminal UL HARQ outcome with native process metadata.
+  void handle_ul_harq_outcome(du_ue_index_t ue_index,
+                              slot_point tx_slot,
+                              slot_point feedback_slot,
+                              harq_id_t harq_id,
+                              unsigned attempt_number,
+                              bool ndi,
+                              bool crc_ok,
+                              units::bytes tbs);
+
   /// \brief Register HARQ timeout.
   void handle_harq_timeout(du_ue_index_t ue_index, bool is_dl);
+
+  /// \brief Publish a terminal HARQ timeout with metadata captured before deallocation.
+  void handle_harq_timeout_event(du_ue_index_t ue_index,
+                                 bool is_dl,
+                                 slot_point tx_slot,
+                                 slot_point timeout_slot,
+                                 harq_id_t harq_id,
+                                 unsigned attempt_number,
+                                 bool ndi,
+                                 bool retransmission_timeout,
+                                 bool ack_on_timeout,
+                                 units::bytes tbs);
 
   /// \brief Handle UCI PDU indication.
   void handle_uci_pdu_indication(const uci_indication::uci_pdu& pdu, bool is_sr_opportunity_and_f1);

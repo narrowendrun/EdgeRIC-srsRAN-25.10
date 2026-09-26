@@ -25,7 +25,7 @@ function build() {
   return {
     published: [{
       endpoint: 'ipc:///tmp/metrics_data', transport: 'ZMQ PUB', rootMessage: 'TtiMetrics',
-      note: 'The gNB publishes a conflated latest-value stream; subscribers may observe TTI gaps.',
+      note: 'The gNB publishes through a bounded, non-conflated queue; message and HARQ sequence gaps make subscriber loss observable.',
       messages: fieldsFromProto('metrics.proto').filter((message) => !message.name.includes('Legacy')),
     }],
     subscribed: [

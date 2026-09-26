@@ -13,15 +13,17 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15\x63ontrol_weights.proto\"X\n\x11SchedulingWeights\x12\x11\n\tran_index\x18\x01 \x01(\r\x12\x11\n\ttti_index\x18\x02 \x01(\r\x12\x1d\n\nue_weights\x18\x03 \x03(\x0b\x32\t.UeWeight\"(\n\x08UeWeight\x12\x0c\n\x04rnti\x18\x01 \x01(\r\x12\x0e\n\x06weight\x18\x02 \x01(\x02\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15\x63ontrol_weights.proto\"\xf1\x01\n\x11SchedulingWeights\x12\x11\n\tran_index\x18\x01 \x01(\r\x12\x11\n\ttti_index\x18\x02 \x01(\r\x12\x1d\n\nue_weights\x18\x03 \x03(\x0b\x32\t.UeWeight\x12\x1a\n\x04mode\x18\x04 \x01(\x0e\x32\x0c.ControlMode\x12\x14\n\x0cpolicy_epoch\x18\x05 \x01(\x04\x12\x11\n\talgorithm\x18\x06 \x01(\t\x12\x1c\n\x14\x64\x65\x63ision_native_slot\x18\x07 \x01(\x04\x12\x19\n\x11\x64l_eligible_rntis\x18\x08 \x03(\r\x12\x19\n\x11ul_eligible_rntis\x18\t \x03(\r\"(\n\x08UeWeight\x12\x0c\n\x04rnti\x18\x01 \x01(\r\x12\x0e\n\x06weight\x18\x02 \x01(\x02*E\n\x0b\x43ontrolMode\x12\x18\n\x14\x43ONTROL_MODE_WEIGHTS\x10\x00\x12\x1c\n\x18\x43ONTROL_MODE_ELIGIBILITY\x10\x01\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'control_weights_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _SCHEDULINGWEIGHTS._serialized_start=25
-  _SCHEDULINGWEIGHTS._serialized_end=113
-  _UEWEIGHT._serialized_start=115
-  _UEWEIGHT._serialized_end=155
+  _CONTROLMODE._serialized_start=311
+  _CONTROLMODE._serialized_end=380
+  _SCHEDULINGWEIGHTS._serialized_start=26
+  _SCHEDULINGWEIGHTS._serialized_end=267
+  _UEWEIGHT._serialized_start=269
+  _UEWEIGHT._serialized_end=309
 # @@protoc_insertion_point(module_scope)

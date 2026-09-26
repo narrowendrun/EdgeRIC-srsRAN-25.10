@@ -9,10 +9,11 @@ The Workbench is a local Vite/React dashboard for the X310, srsRAN gNB, EdgeRIC 
 - Start, stop and restart controls for each module or the complete stack.
 - Live Open5GS, EdgeRIC and gNB logs.
 - Five-minute rolling windows by default, with 15-minute, 30-minute and one-hour options.
-- A selectable set of twenty per-UE metrics, each shown either as a live number with its
+- A selectable set of per-UE metrics, each shown either as a live number with its
   window minimum, maximum and average, or as a time-series chart. The choice is per metric and
   is remembered in the browser.
 - Throughput, SNR, CQI, BLER, MCS, PRBs, TBS, buffer occupancy and the MAC delay breakdown.
+- Per-UE UL/DL terminal HARQ outcomes, resolved-initial-attempt success probability, and retrospective AoI in native slots and milliseconds.
 - A protobuf-derived catalog of every EdgeRIC published metric and subscribed control.
 - Archived runs with charts and individual component logs.
 
@@ -27,11 +28,10 @@ dashboard server API ───────────────────�
 systemd journals + /var/log/open5gs/*.log ─► logs/runs/<run-id>/*.log
 ```
 
-The existing `collector.py` remains responsible for readable EdgeRIC output and the current UE snapshot. `metrics_recorder.py` is a separate subscriber that projects every scalar `MacUeMetrics` field
-into the indexed `ue_mac` table. It does **not** store the raw protobuf payload unless started
+The existing `collector.py` remains responsible for readable EdgeRIC output and the current UE snapshot. `metrics_recorder.py` is a separate subscriber that projects native MAC fields into `ue_mac` and stores normalized `slot_observation`, `ue_slot_observation`, and immutable `harq_outcome` ledgers. It does **not** store the raw protobuf payload unless started
 with `--store-raw`: nothing reads it, and it roughly triples database size.
 
-EdgeRIC's gNB publisher currently conflates its outgoing stream. The recorder saves every message it receives, but a subscriber cannot guarantee receipt of every 1 ms TTI. Inferred TTI gaps are counted and displayed with each live run.
+EdgeRIC's gNB publisher uses a bounded, non-conflated queue. The recorder saves every message it receives; publisher-message and HARQ-event sequence numbers expose leading and interior loss. A final publisher/recorder drain watermark is still required to prove that no trailing events were lost at shutdown. Native slot duration is archived explicitly (the current 30 kHz SCS configuration uses 0.5 ms slots).
 
 ## Dependencies
 
@@ -186,9 +186,10 @@ muApp picks a change up within about one episode (~1 s) and prints `Running: <na
 muApp is running to act on it, and flags a value the muApp would not recognise. The muApp's
 lifecycle stays manual.
 
-Every run records which algorithm was active and when it changed, sampled every 5 s, so an
-archived run can be attributed to a scheduler. That timeline appears under the run's bench
-details in the archive.
+Every run records the Redis scheduler intent and when it changed, sampled every 5 s. This is not
+proof that the muApp or gNB applied the requested algorithm; applied-decision/grant evidence must
+be added before an archived run can be attributed to a scheduler. The intent timeline appears
+under the run's bench details in the archive.
 
 ## Analysing a recorded run
 
@@ -198,7 +199,7 @@ Each run directory is self-contained and meant to outlive this codebase:
 logs/runs/<run-id>/
   manifest.json          run conditions: RF config, git commit, scheduler timeline, UE counts
   metrics-schema.json    how every metric is derived, including which TTIs it counts
-  metrics.sqlite3        raw per-TTI rows in ue_mac
+  metrics.sqlite3        per-slot MAC rows plus normalized slot and HARQ outcome ledgers
   gnb.log                the gNB's own metrics, the reference our aggregates match
 ```
 
@@ -215,6 +216,11 @@ python3 dashboard/server/scripts/export_run.py logs/runs/<run-id> --bucket 1.0 -
 One row per UE per bucket, with the same conditions the dashboard applies. A blank cell means the
 metric was undefined for that bucket — a gap, not a zero. `--metrics snr,dlMcs` narrows the
 columns; `--bucket` sets the resolution.
+
+For HARQ analysis, use the normalized SQLite tables directly or the deterministic helpers in
+`edgeric/harq_analysis.py`. Success probability counts terminal initial attempts only; AoI resets
+at the original transmission slot on ACK/CRC success. Reject or qualify a run whose capture
+counters report sequence gaps, reorders, contract errors, or rejected events.
 
 ## Tests
 
@@ -252,8 +258,10 @@ Useful project-root commands:
 - `POST /api/control/:target/:action`
 - `GET /api/logs/:module/stream?window=5m`
 - `GET /api/metrics/live?window=5m&metrics=snr,dlMcs`
+- `GET /api/metrics/live/harq?window=5m`
 - `GET /api/metrics/catalog`
 - `GET /api/runs`
 - `GET /api/runs/:id/metrics?window=5m&metrics=...&full=1`
+- `GET /api/runs/:id/harq?window=5m&full=1`
 - `GET /api/runs/:id/logs`
 - `GET /api/runs/:id/log?file=...`

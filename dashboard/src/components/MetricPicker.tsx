@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { METRICS, type MetricGroup, type MetricMode } from '../../server/metrics-registry'
+import { METRIC_CHOICES, type MetricGroup, type MetricMode } from '../../server/metrics-registry'
 
 const groupOrder: MetricGroup[] = ['Radio', 'Throughput', 'Reliability', 'Scheduling', 'Latency']
 
@@ -37,23 +37,26 @@ export function MetricPicker({ selected, unavailable, onToggle, onSetMode, onRes
         <div className="picker-groups">
           {groupOrder.map((group) => <section className="picker-group" key={group}>
             <h3>{group}</h3>
-            {METRICS.filter((metric) => metric.group === group).map((metric) => {
-              const mode = selected[metric.key]
-              const missing = unavailable.includes(metric.key)
-              return <div className={`picker-row${missing ? ' is-unavailable' : ''}`} key={metric.key}>
+            {METRIC_CHOICES.filter((choice) => choice.group === group).map((choice) => {
+              const mode = selected[choice.id]
+              const missing = choice.metrics.filter((metric) => unavailable.includes(metric.key))
+              const whollyMissing = missing.length === choice.metrics.length
+              const directions = [...new Set(choice.metrics.map((metric) => metric.direction.toUpperCase()))]
+              return <div className={`picker-row${whollyMissing ? ' is-unavailable' : ''}`} key={choice.id}>
                 <label>
-                  <input type="checkbox" checked={Boolean(mode)} onChange={() => onToggle(metric.key)} />
-                  <span className="picker-label">{metric.label}</span>
-                  <span className="picker-unit">{metric.unit}</span>
+                  <input type="checkbox" checked={Boolean(mode)} onChange={() => onToggle(choice.id)} />
+                  <span className="picker-label">{choice.title}</span>
+                  <span className="picker-directions">{directions.join(' + ')}</span>
+                  <span className="picker-unit">{choice.unit}</span>
                 </label>
-                {missing
+                {whollyMissing
                   ? <span className="picker-missing">not recorded in this run</span>
-                  : <div className="mode-toggle" role="group" aria-label={`${metric.label} display mode`}>
+                  : <div className="mode-toggle" role="group" aria-label={`${choice.title} display mode`}>
                       {(['numeric', 'chart'] as MetricMode[]).map((option) => <button
                         type="button" key={option} disabled={!mode}
                         className={mode === option ? 'is-active' : ''}
                         aria-pressed={mode === option}
-                        onClick={() => onSetMode(metric.key, option)}
+                        onClick={() => onSetMode(choice.id, option)}
                       >{option === 'numeric' ? 'number' : 'chart'}</button>)}
                     </div>}
               </div>

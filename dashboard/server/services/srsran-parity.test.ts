@@ -28,11 +28,14 @@ function findCandidate(): Candidate | null {
     const log = path.join(dir, 'gnb.log')
     const dbPath = path.join(dir, 'metrics.sqlite3')
     if (!existsSync(log) || !existsSync(dbPath)) continue
-    // Never compare against a run still being recorded: the log and the database are both
-    // moving, so the same assertion can pass and then fail minutes later.
+    // Never compare against a run still being recorded or one whose recorder observed missing
+    // TTIs: in either case the gNB log and database do not describe the same complete window.
     try {
-      const manifest = JSON.parse(readFileSync(path.join(dir, 'manifest.json'), 'utf8')) as { status?: string }
-      if (manifest.status === 'active') continue
+      const manifest = JSON.parse(readFileSync(path.join(dir, 'manifest.json'), 'utf8')) as {
+        status?: string
+        metrics?: { missedTtis?: number }
+      }
+      if (manifest.status === 'active' || Number(manifest.metrics?.missedTtis ?? 0) > 0) continue
     } catch { continue }
     if (statSync(log).size > 64 * 1024 * 1024) continue
     const rows = parseSrsranMetricsLog(readFileSync(log, 'utf8'))

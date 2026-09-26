@@ -62,6 +62,39 @@ message GtpMetrics {
     uint64 ul_bytes = 4;          // UL GTP-U bytes to core
 }
 
+enum HarqDirection {
+    HARQ_DIRECTION_UNSPECIFIED = 0;
+    HARQ_DIRECTION_DL = 1;
+    HARQ_DIRECTION_UL = 2;
+}
+
+enum HarqOutcome {
+    HARQ_OUTCOME_UNSPECIFIED = 0;
+    HARQ_OUTCOME_ACK = 1;
+    HARQ_OUTCOME_NACK = 2;
+    HARQ_OUTCOME_CRC_OK = 3;
+    HARQ_OUTCOME_CRC_FAIL = 4;
+    HARQ_OUTCOME_DTX_TIMEOUT = 5;
+    HARQ_OUTCOME_RETX_TIMEOUT = 6;
+    HARQ_OUTCOME_ACK_ON_TIMEOUT = 7;
+}
+
+message HarqEvent {
+    uint64 sequence_id = 1;
+    uint32 cell_index = 2;
+    uint32 rnti = 3;
+    HarqDirection direction = 4;
+    uint64 tx_slot = 5;
+    uint64 feedback_slot = 6;
+    uint32 harq_id = 7;
+    uint32 attempt_number = 8;
+    bool is_retransmission = 9;
+    bool ndi = 10;
+    HarqOutcome outcome = 11;
+    uint32 tbs_bytes = 12;
+    uint32 du_ue_index = 13;
+}
+
 // MAC-level UE metrics (aggregate, per-TTI)
 message MacUeMetrics {
     uint32 cqi = 1;               // Wideband CQI (0-15)
@@ -83,12 +116,12 @@ message MacUeMetrics {
     uint32 ul_crc_fail = 10;      // UL CRC failures
     
     // MAC layer delays in milliseconds (averaged over metrics report period)
-    float avg_ce_delay_ms = 16;         // Avg CE (Control Element) processing delay
-    float avg_crc_delay_ms = 17;        // Avg CRC indication processing delay
-    float avg_pucch_harq_delay_ms = 18; // Avg PUCCH HARQ feedback delay
-    float avg_pusch_harq_delay_ms = 19; // Avg PUSCH HARQ feedback delay
-    float avg_sr_to_pusch_delay_ms = 20;// Avg SR to PUSCH grant delay
-    float avg_sum_mac_delay_ms = 21;    // Sum of all MAC delays (ce + crc + pucch_harq + pusch_harq + sr_to_pusch)
+    optional float avg_ce_delay_ms = 16;
+    optional float avg_crc_delay_ms = 17;
+    optional float avg_pucch_harq_delay_ms = 18;
+    optional float avg_pusch_harq_delay_ms = 19;
+    optional float avg_sr_to_pusch_delay_ms = 20;
+    float avg_sum_mac_delay_ms = 21 [deprecated = true];
 }
 
 // Per-UE metrics container
@@ -109,9 +142,19 @@ message UeMetrics {
 
 // Top-level metrics message - sent every TTI
 message TtiMetrics {
-    uint32 tti_index = 1;         // TTI index (0-9999, rolls over)
+    uint32 tti_index = 1;
     uint64 timestamp_us = 2;      // Unix timestamp in microseconds
     repeated UeMetrics ues = 3;   // Per-UE metrics
+    repeated HarqEvent harq_events = 4;
+    uint64 native_slot = 5;
+    uint32 numerology = 6;
+    uint32 slot_duration_ns = 7;
+    uint64 message_sequence_id = 8;
+    uint64 scheduler_policy_epoch = 9;
+    string scheduler_algorithm = 10;
+    bool scheduler_control_active = 11;
+    repeated uint32 dl_eligible_rntis = 12;
+    repeated uint32 ul_eligible_rntis = 13;
 }
 
 // Legacy Metrics message (for backwards compatibility)

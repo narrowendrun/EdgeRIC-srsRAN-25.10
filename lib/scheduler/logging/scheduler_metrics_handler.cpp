@@ -268,6 +268,56 @@ void cell_metrics_handler::handle_dl_harq_ack(du_ue_index_t ue_index, bool ack, 
   }
 }
 
+void cell_metrics_handler::handle_dl_harq_outcome(du_ue_index_t ue_index,
+                                                  slot_point tx_slot,
+                                                  slot_point feedback_slot,
+                                                  harq_id_t harq_id,
+                                                  unsigned attempt_number,
+                                                  bool ndi,
+                                                  bool ack,
+                                                  units::bytes tbs)
+{
+  if (ues.contains(ue_index)) {
+    const auto& u = ues[ue_index];
+    edgeric::record_harq_event(fmt::underlying(cell_cfg.cell_index),
+                               fmt::underlying(ue_index),
+                               static_cast<uint16_t>(u.rnti),
+                               HARQ_DIRECTION_DL,
+                               tx_slot.to_uint(),
+                               feedback_slot.to_uint(),
+                               fmt::underlying(harq_id),
+                               attempt_number,
+                               ndi,
+                               ack ? HARQ_OUTCOME_ACK : HARQ_OUTCOME_NACK,
+                               static_cast<uint32_t>(tbs.value()));
+  }
+}
+
+void cell_metrics_handler::handle_ul_harq_outcome(du_ue_index_t ue_index,
+                                                  slot_point tx_slot,
+                                                  slot_point feedback_slot,
+                                                  harq_id_t harq_id,
+                                                  unsigned attempt_number,
+                                                  bool ndi,
+                                                  bool crc_ok,
+                                                  units::bytes tbs)
+{
+  if (ues.contains(ue_index)) {
+    const auto& u = ues[ue_index];
+    edgeric::record_harq_event(fmt::underlying(cell_cfg.cell_index),
+                               fmt::underlying(ue_index),
+                               static_cast<uint16_t>(u.rnti),
+                               HARQ_DIRECTION_UL,
+                               tx_slot.to_uint(),
+                               feedback_slot.to_uint(),
+                               fmt::underlying(harq_id),
+                               attempt_number,
+                               ndi,
+                               crc_ok ? HARQ_OUTCOME_CRC_OK : HARQ_OUTCOME_CRC_FAIL,
+                               static_cast<uint32_t>(tbs.value()));
+  }
+}
+
 void cell_metrics_handler::handle_harq_timeout(du_ue_index_t ue_index, bool is_dl)
 {
   if (ues.contains(ue_index)) {
@@ -277,6 +327,35 @@ void cell_metrics_handler::handle_harq_timeout(du_ue_index_t ue_index, bool is_d
     } else {
       ++u.data.count_crc_pdus;
     }
+  }
+}
+
+void cell_metrics_handler::handle_harq_timeout_event(du_ue_index_t ue_index,
+                                                     bool is_dl,
+                                                     slot_point tx_slot,
+                                                     slot_point timeout_slot,
+                                                     harq_id_t harq_id,
+                                                     unsigned attempt_number,
+                                                     bool ndi,
+                                                     bool retransmission_timeout,
+                                                     bool ack_on_timeout,
+                                                     units::bytes tbs)
+{
+  if (ues.contains(ue_index)) {
+    const auto& u = ues[ue_index];
+    edgeric::record_harq_event(fmt::underlying(cell_cfg.cell_index),
+                               fmt::underlying(ue_index),
+                               static_cast<uint16_t>(u.rnti),
+                               is_dl ? HARQ_DIRECTION_DL : HARQ_DIRECTION_UL,
+                               tx_slot.to_uint(),
+                               timeout_slot.to_uint(),
+                               fmt::underlying(harq_id),
+                               attempt_number,
+                               ndi,
+                               retransmission_timeout ? HARQ_OUTCOME_RETX_TIMEOUT
+                                                      : (ack_on_timeout ? HARQ_OUTCOME_ACK_ON_TIMEOUT
+                                                                        : HARQ_OUTCOME_DTX_TIMEOUT),
+                               static_cast<uint32_t>(tbs.value()));
   }
 }
 
@@ -431,11 +510,11 @@ void cell_metrics_handler::report_metrics()
     // Report MAC layer delays to EdgeRIC
     edgeric::report_mac_delays(
         static_cast<uint16_t>(ue_metrics.rnti),
-        ue_metrics.avg_ce_delay_ms.value_or(0.0f),
-        ue_metrics.avg_crc_delay_ms.value_or(0.0f),
-        ue_metrics.avg_pucch_harq_delay_ms.value_or(0.0f),
-        ue_metrics.avg_pusch_harq_delay_ms.value_or(0.0f),
-        ue_metrics.avg_sr_to_pusch_delay_ms.value_or(0.0f));
+        ue_metrics.avg_ce_delay_ms,
+        ue_metrics.avg_crc_delay_ms,
+        ue_metrics.avg_pucch_harq_delay_ms,
+        ue_metrics.avg_pusch_harq_delay_ms,
+        ue_metrics.avg_sr_to_pusch_delay_ms);
   }
   next_report->events.swap(pending_events);
 

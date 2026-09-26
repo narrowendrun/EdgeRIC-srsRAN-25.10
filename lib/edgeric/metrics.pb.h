@@ -29,6 +29,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
@@ -50,6 +51,9 @@ extern DrbMetricsLegacyDefaultTypeInternal _DrbMetricsLegacy_default_instance_;
 class GtpMetrics;
 struct GtpMetricsDefaultTypeInternal;
 extern GtpMetricsDefaultTypeInternal _GtpMetrics_default_instance_;
+class HarqEvent;
+struct HarqEventDefaultTypeInternal;
+extern HarqEventDefaultTypeInternal _HarqEvent_default_instance_;
 class MacDrbMetrics;
 struct MacDrbMetricsDefaultTypeInternal;
 extern MacDrbMetricsDefaultTypeInternal _MacDrbMetrics_default_instance_;
@@ -77,6 +81,7 @@ extern UeMetricsLegacyDefaultTypeInternal _UeMetricsLegacy_default_instance_;
 PROTOBUF_NAMESPACE_OPEN
 template<> ::DrbMetricsLegacy* Arena::CreateMaybeMessage<::DrbMetricsLegacy>(Arena*);
 template<> ::GtpMetrics* Arena::CreateMaybeMessage<::GtpMetrics>(Arena*);
+template<> ::HarqEvent* Arena::CreateMaybeMessage<::HarqEvent>(Arena*);
 template<> ::MacDrbMetrics* Arena::CreateMaybeMessage<::MacDrbMetrics>(Arena*);
 template<> ::MacUeMetrics* Arena::CreateMaybeMessage<::MacUeMetrics>(Arena*);
 template<> ::Metrics* Arena::CreateMaybeMessage<::Metrics>(Arena*);
@@ -87,6 +92,63 @@ template<> ::UeMetrics* Arena::CreateMaybeMessage<::UeMetrics>(Arena*);
 template<> ::UeMetricsLegacy* Arena::CreateMaybeMessage<::UeMetricsLegacy>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 
+enum HarqDirection : int {
+  HARQ_DIRECTION_UNSPECIFIED = 0,
+  HARQ_DIRECTION_DL = 1,
+  HARQ_DIRECTION_UL = 2,
+  HarqDirection_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  HarqDirection_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool HarqDirection_IsValid(int value);
+constexpr HarqDirection HarqDirection_MIN = HARQ_DIRECTION_UNSPECIFIED;
+constexpr HarqDirection HarqDirection_MAX = HARQ_DIRECTION_UL;
+constexpr int HarqDirection_ARRAYSIZE = HarqDirection_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* HarqDirection_descriptor();
+template<typename T>
+inline const std::string& HarqDirection_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, HarqDirection>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function HarqDirection_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    HarqDirection_descriptor(), enum_t_value);
+}
+inline bool HarqDirection_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, HarqDirection* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<HarqDirection>(
+    HarqDirection_descriptor(), name, value);
+}
+enum HarqOutcome : int {
+  HARQ_OUTCOME_UNSPECIFIED = 0,
+  HARQ_OUTCOME_ACK = 1,
+  HARQ_OUTCOME_NACK = 2,
+  HARQ_OUTCOME_CRC_OK = 3,
+  HARQ_OUTCOME_CRC_FAIL = 4,
+  HARQ_OUTCOME_DTX_TIMEOUT = 5,
+  HARQ_OUTCOME_RETX_TIMEOUT = 6,
+  HARQ_OUTCOME_ACK_ON_TIMEOUT = 7,
+  HarqOutcome_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  HarqOutcome_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool HarqOutcome_IsValid(int value);
+constexpr HarqOutcome HarqOutcome_MIN = HARQ_OUTCOME_UNSPECIFIED;
+constexpr HarqOutcome HarqOutcome_MAX = HARQ_OUTCOME_ACK_ON_TIMEOUT;
+constexpr int HarqOutcome_ARRAYSIZE = HarqOutcome_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* HarqOutcome_descriptor();
+template<typename T>
+inline const std::string& HarqOutcome_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, HarqOutcome>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function HarqOutcome_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    HarqOutcome_descriptor(), enum_t_value);
+}
+inline bool HarqOutcome_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, HarqOutcome* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<HarqOutcome>(
+    HarqOutcome_descriptor(), name, value);
+}
 // ===================================================================
 
 class MacDrbMetrics final :
@@ -1055,6 +1117,286 @@ class GtpMetrics final :
 };
 // -------------------------------------------------------------------
 
+class HarqEvent final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:HarqEvent) */ {
+ public:
+  inline HarqEvent() : HarqEvent(nullptr) {}
+  ~HarqEvent() override;
+  explicit PROTOBUF_CONSTEXPR HarqEvent(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  HarqEvent(const HarqEvent& from);
+  HarqEvent(HarqEvent&& from) noexcept
+    : HarqEvent() {
+    *this = ::std::move(from);
+  }
+
+  inline HarqEvent& operator=(const HarqEvent& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline HarqEvent& operator=(HarqEvent&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const HarqEvent& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const HarqEvent* internal_default_instance() {
+    return reinterpret_cast<const HarqEvent*>(
+               &_HarqEvent_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    4;
+
+  friend void swap(HarqEvent& a, HarqEvent& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(HarqEvent* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(HarqEvent* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  HarqEvent* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<HarqEvent>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const HarqEvent& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const HarqEvent& from) {
+    HarqEvent::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(HarqEvent* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "HarqEvent";
+  }
+  protected:
+  explicit HarqEvent(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kSequenceIdFieldNumber = 1,
+    kCellIndexFieldNumber = 2,
+    kRntiFieldNumber = 3,
+    kTxSlotFieldNumber = 5,
+    kDirectionFieldNumber = 4,
+    kHarqIdFieldNumber = 7,
+    kFeedbackSlotFieldNumber = 6,
+    kAttemptNumberFieldNumber = 8,
+    kIsRetransmissionFieldNumber = 9,
+    kNdiFieldNumber = 10,
+    kOutcomeFieldNumber = 11,
+    kTbsBytesFieldNumber = 12,
+    kDuUeIndexFieldNumber = 13,
+  };
+  // uint64 sequence_id = 1;
+  void clear_sequence_id();
+  uint64_t sequence_id() const;
+  void set_sequence_id(uint64_t value);
+  private:
+  uint64_t _internal_sequence_id() const;
+  void _internal_set_sequence_id(uint64_t value);
+  public:
+
+  // uint32 cell_index = 2;
+  void clear_cell_index();
+  uint32_t cell_index() const;
+  void set_cell_index(uint32_t value);
+  private:
+  uint32_t _internal_cell_index() const;
+  void _internal_set_cell_index(uint32_t value);
+  public:
+
+  // uint32 rnti = 3;
+  void clear_rnti();
+  uint32_t rnti() const;
+  void set_rnti(uint32_t value);
+  private:
+  uint32_t _internal_rnti() const;
+  void _internal_set_rnti(uint32_t value);
+  public:
+
+  // uint64 tx_slot = 5;
+  void clear_tx_slot();
+  uint64_t tx_slot() const;
+  void set_tx_slot(uint64_t value);
+  private:
+  uint64_t _internal_tx_slot() const;
+  void _internal_set_tx_slot(uint64_t value);
+  public:
+
+  // .HarqDirection direction = 4;
+  void clear_direction();
+  ::HarqDirection direction() const;
+  void set_direction(::HarqDirection value);
+  private:
+  ::HarqDirection _internal_direction() const;
+  void _internal_set_direction(::HarqDirection value);
+  public:
+
+  // uint32 harq_id = 7;
+  void clear_harq_id();
+  uint32_t harq_id() const;
+  void set_harq_id(uint32_t value);
+  private:
+  uint32_t _internal_harq_id() const;
+  void _internal_set_harq_id(uint32_t value);
+  public:
+
+  // uint64 feedback_slot = 6;
+  void clear_feedback_slot();
+  uint64_t feedback_slot() const;
+  void set_feedback_slot(uint64_t value);
+  private:
+  uint64_t _internal_feedback_slot() const;
+  void _internal_set_feedback_slot(uint64_t value);
+  public:
+
+  // uint32 attempt_number = 8;
+  void clear_attempt_number();
+  uint32_t attempt_number() const;
+  void set_attempt_number(uint32_t value);
+  private:
+  uint32_t _internal_attempt_number() const;
+  void _internal_set_attempt_number(uint32_t value);
+  public:
+
+  // bool is_retransmission = 9;
+  void clear_is_retransmission();
+  bool is_retransmission() const;
+  void set_is_retransmission(bool value);
+  private:
+  bool _internal_is_retransmission() const;
+  void _internal_set_is_retransmission(bool value);
+  public:
+
+  // bool ndi = 10;
+  void clear_ndi();
+  bool ndi() const;
+  void set_ndi(bool value);
+  private:
+  bool _internal_ndi() const;
+  void _internal_set_ndi(bool value);
+  public:
+
+  // .HarqOutcome outcome = 11;
+  void clear_outcome();
+  ::HarqOutcome outcome() const;
+  void set_outcome(::HarqOutcome value);
+  private:
+  ::HarqOutcome _internal_outcome() const;
+  void _internal_set_outcome(::HarqOutcome value);
+  public:
+
+  // uint32 tbs_bytes = 12;
+  void clear_tbs_bytes();
+  uint32_t tbs_bytes() const;
+  void set_tbs_bytes(uint32_t value);
+  private:
+  uint32_t _internal_tbs_bytes() const;
+  void _internal_set_tbs_bytes(uint32_t value);
+  public:
+
+  // uint32 du_ue_index = 13;
+  void clear_du_ue_index();
+  uint32_t du_ue_index() const;
+  void set_du_ue_index(uint32_t value);
+  private:
+  uint32_t _internal_du_ue_index() const;
+  void _internal_set_du_ue_index(uint32_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:HarqEvent)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    uint64_t sequence_id_;
+    uint32_t cell_index_;
+    uint32_t rnti_;
+    uint64_t tx_slot_;
+    int direction_;
+    uint32_t harq_id_;
+    uint64_t feedback_slot_;
+    uint32_t attempt_number_;
+    bool is_retransmission_;
+    bool ndi_;
+    int outcome_;
+    uint32_t tbs_bytes_;
+    uint32_t du_ue_index_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_metrics_2eproto;
+};
+// -------------------------------------------------------------------
+
 class MacUeMetrics final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:MacUeMetrics) */ {
  public:
@@ -1103,7 +1445,7 @@ class MacUeMetrics final :
                &_MacUeMetrics_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    5;
 
   friend void swap(MacUeMetrics& a, MacUeMetrics& b) {
     a.Swap(&b);
@@ -1325,7 +1667,11 @@ class MacUeMetrics final :
   void _internal_set_ul_prbs(uint32_t value);
   public:
 
-  // float avg_ce_delay_ms = 16;
+  // optional float avg_ce_delay_ms = 16;
+  bool has_avg_ce_delay_ms() const;
+  private:
+  bool _internal_has_avg_ce_delay_ms() const;
+  public:
   void clear_avg_ce_delay_ms();
   float avg_ce_delay_ms() const;
   void set_avg_ce_delay_ms(float value);
@@ -1334,7 +1680,11 @@ class MacUeMetrics final :
   void _internal_set_avg_ce_delay_ms(float value);
   public:
 
-  // float avg_crc_delay_ms = 17;
+  // optional float avg_crc_delay_ms = 17;
+  bool has_avg_crc_delay_ms() const;
+  private:
+  bool _internal_has_avg_crc_delay_ms() const;
+  public:
   void clear_avg_crc_delay_ms();
   float avg_crc_delay_ms() const;
   void set_avg_crc_delay_ms(float value);
@@ -1343,7 +1693,11 @@ class MacUeMetrics final :
   void _internal_set_avg_crc_delay_ms(float value);
   public:
 
-  // float avg_pucch_harq_delay_ms = 18;
+  // optional float avg_pucch_harq_delay_ms = 18;
+  bool has_avg_pucch_harq_delay_ms() const;
+  private:
+  bool _internal_has_avg_pucch_harq_delay_ms() const;
+  public:
   void clear_avg_pucch_harq_delay_ms();
   float avg_pucch_harq_delay_ms() const;
   void set_avg_pucch_harq_delay_ms(float value);
@@ -1352,7 +1706,11 @@ class MacUeMetrics final :
   void _internal_set_avg_pucch_harq_delay_ms(float value);
   public:
 
-  // float avg_pusch_harq_delay_ms = 19;
+  // optional float avg_pusch_harq_delay_ms = 19;
+  bool has_avg_pusch_harq_delay_ms() const;
+  private:
+  bool _internal_has_avg_pusch_harq_delay_ms() const;
+  public:
   void clear_avg_pusch_harq_delay_ms();
   float avg_pusch_harq_delay_ms() const;
   void set_avg_pusch_harq_delay_ms(float value);
@@ -1361,7 +1719,11 @@ class MacUeMetrics final :
   void _internal_set_avg_pusch_harq_delay_ms(float value);
   public:
 
-  // float avg_sr_to_pusch_delay_ms = 20;
+  // optional float avg_sr_to_pusch_delay_ms = 20;
+  bool has_avg_sr_to_pusch_delay_ms() const;
+  private:
+  bool _internal_has_avg_sr_to_pusch_delay_ms() const;
+  public:
   void clear_avg_sr_to_pusch_delay_ms();
   float avg_sr_to_pusch_delay_ms() const;
   void set_avg_sr_to_pusch_delay_ms(float value);
@@ -1370,10 +1732,10 @@ class MacUeMetrics final :
   void _internal_set_avg_sr_to_pusch_delay_ms(float value);
   public:
 
-  // float avg_sum_mac_delay_ms = 21;
-  void clear_avg_sum_mac_delay_ms();
-  float avg_sum_mac_delay_ms() const;
-  void set_avg_sum_mac_delay_ms(float value);
+  // float avg_sum_mac_delay_ms = 21 [deprecated = true];
+  PROTOBUF_DEPRECATED void clear_avg_sum_mac_delay_ms();
+  PROTOBUF_DEPRECATED float avg_sum_mac_delay_ms() const;
+  PROTOBUF_DEPRECATED void set_avg_sum_mac_delay_ms(float value);
   private:
   float _internal_avg_sum_mac_delay_ms() const;
   void _internal_set_avg_sum_mac_delay_ms(float value);
@@ -1405,6 +1767,8 @@ class MacUeMetrics final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
     uint32_t cqi_;
     float snr_;
     uint32_t dl_buffer_;
@@ -1427,7 +1791,6 @@ class MacUeMetrics final :
     float avg_sum_mac_delay_ms_;
     uint32_t dl_acked_bytes_;
     uint32_t ul_ok_bytes_;
-    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_metrics_2eproto;
@@ -1482,7 +1845,7 @@ class UeMetrics final :
                &_UeMetrics_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    6;
 
   friend void swap(UeMetrics& a, UeMetrics& b) {
     a.Swap(&b);
@@ -1730,7 +2093,7 @@ class TtiMetrics final :
                &_TtiMetrics_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    7;
 
   friend void swap(TtiMetrics& a, TtiMetrics& b) {
     a.Swap(&b);
@@ -1804,8 +2167,18 @@ class TtiMetrics final :
 
   enum : int {
     kUesFieldNumber = 3,
+    kHarqEventsFieldNumber = 4,
+    kDlEligibleRntisFieldNumber = 12,
+    kUlEligibleRntisFieldNumber = 13,
+    kSchedulerAlgorithmFieldNumber = 10,
     kTimestampUsFieldNumber = 2,
     kTtiIndexFieldNumber = 1,
+    kNumerologyFieldNumber = 6,
+    kNativeSlotFieldNumber = 5,
+    kMessageSequenceIdFieldNumber = 8,
+    kSchedulerPolicyEpochFieldNumber = 9,
+    kSlotDurationNsFieldNumber = 7,
+    kSchedulerControlActiveFieldNumber = 11,
   };
   // repeated .UeMetrics ues = 3;
   int ues_size() const;
@@ -1825,6 +2198,82 @@ class TtiMetrics final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::UeMetrics >&
       ues() const;
 
+  // repeated .HarqEvent harq_events = 4;
+  int harq_events_size() const;
+  private:
+  int _internal_harq_events_size() const;
+  public:
+  void clear_harq_events();
+  ::HarqEvent* mutable_harq_events(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::HarqEvent >*
+      mutable_harq_events();
+  private:
+  const ::HarqEvent& _internal_harq_events(int index) const;
+  ::HarqEvent* _internal_add_harq_events();
+  public:
+  const ::HarqEvent& harq_events(int index) const;
+  ::HarqEvent* add_harq_events();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::HarqEvent >&
+      harq_events() const;
+
+  // repeated uint32 dl_eligible_rntis = 12;
+  int dl_eligible_rntis_size() const;
+  private:
+  int _internal_dl_eligible_rntis_size() const;
+  public:
+  void clear_dl_eligible_rntis();
+  private:
+  uint32_t _internal_dl_eligible_rntis(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      _internal_dl_eligible_rntis() const;
+  void _internal_add_dl_eligible_rntis(uint32_t value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      _internal_mutable_dl_eligible_rntis();
+  public:
+  uint32_t dl_eligible_rntis(int index) const;
+  void set_dl_eligible_rntis(int index, uint32_t value);
+  void add_dl_eligible_rntis(uint32_t value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      dl_eligible_rntis() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      mutable_dl_eligible_rntis();
+
+  // repeated uint32 ul_eligible_rntis = 13;
+  int ul_eligible_rntis_size() const;
+  private:
+  int _internal_ul_eligible_rntis_size() const;
+  public:
+  void clear_ul_eligible_rntis();
+  private:
+  uint32_t _internal_ul_eligible_rntis(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      _internal_ul_eligible_rntis() const;
+  void _internal_add_ul_eligible_rntis(uint32_t value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      _internal_mutable_ul_eligible_rntis();
+  public:
+  uint32_t ul_eligible_rntis(int index) const;
+  void set_ul_eligible_rntis(int index, uint32_t value);
+  void add_ul_eligible_rntis(uint32_t value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      ul_eligible_rntis() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      mutable_ul_eligible_rntis();
+
+  // string scheduler_algorithm = 10;
+  void clear_scheduler_algorithm();
+  const std::string& scheduler_algorithm() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_scheduler_algorithm(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_scheduler_algorithm();
+  PROTOBUF_NODISCARD std::string* release_scheduler_algorithm();
+  void set_allocated_scheduler_algorithm(std::string* scheduler_algorithm);
+  private:
+  const std::string& _internal_scheduler_algorithm() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_scheduler_algorithm(const std::string& value);
+  std::string* _internal_mutable_scheduler_algorithm();
+  public:
+
   // uint64 timestamp_us = 2;
   void clear_timestamp_us();
   uint64_t timestamp_us() const;
@@ -1843,6 +2292,60 @@ class TtiMetrics final :
   void _internal_set_tti_index(uint32_t value);
   public:
 
+  // uint32 numerology = 6;
+  void clear_numerology();
+  uint32_t numerology() const;
+  void set_numerology(uint32_t value);
+  private:
+  uint32_t _internal_numerology() const;
+  void _internal_set_numerology(uint32_t value);
+  public:
+
+  // uint64 native_slot = 5;
+  void clear_native_slot();
+  uint64_t native_slot() const;
+  void set_native_slot(uint64_t value);
+  private:
+  uint64_t _internal_native_slot() const;
+  void _internal_set_native_slot(uint64_t value);
+  public:
+
+  // uint64 message_sequence_id = 8;
+  void clear_message_sequence_id();
+  uint64_t message_sequence_id() const;
+  void set_message_sequence_id(uint64_t value);
+  private:
+  uint64_t _internal_message_sequence_id() const;
+  void _internal_set_message_sequence_id(uint64_t value);
+  public:
+
+  // uint64 scheduler_policy_epoch = 9;
+  void clear_scheduler_policy_epoch();
+  uint64_t scheduler_policy_epoch() const;
+  void set_scheduler_policy_epoch(uint64_t value);
+  private:
+  uint64_t _internal_scheduler_policy_epoch() const;
+  void _internal_set_scheduler_policy_epoch(uint64_t value);
+  public:
+
+  // uint32 slot_duration_ns = 7;
+  void clear_slot_duration_ns();
+  uint32_t slot_duration_ns() const;
+  void set_slot_duration_ns(uint32_t value);
+  private:
+  uint32_t _internal_slot_duration_ns() const;
+  void _internal_set_slot_duration_ns(uint32_t value);
+  public:
+
+  // bool scheduler_control_active = 11;
+  void clear_scheduler_control_active();
+  bool scheduler_control_active() const;
+  void set_scheduler_control_active(bool value);
+  private:
+  bool _internal_scheduler_control_active() const;
+  void _internal_set_scheduler_control_active(bool value);
+  public:
+
   // @@protoc_insertion_point(class_scope:TtiMetrics)
  private:
   class _Internal;
@@ -1852,8 +2355,20 @@ class TtiMetrics final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::UeMetrics > ues_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::HarqEvent > harq_events_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t > dl_eligible_rntis_;
+    mutable std::atomic<int> _dl_eligible_rntis_cached_byte_size_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t > ul_eligible_rntis_;
+    mutable std::atomic<int> _ul_eligible_rntis_cached_byte_size_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr scheduler_algorithm_;
     uint64_t timestamp_us_;
     uint32_t tti_index_;
+    uint32_t numerology_;
+    uint64_t native_slot_;
+    uint64_t message_sequence_id_;
+    uint64_t scheduler_policy_epoch_;
+    uint32_t slot_duration_ns_;
+    bool scheduler_control_active_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -1909,7 +2424,7 @@ class Metrics final :
                &_Metrics_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    8;
 
   friend void swap(Metrics& a, Metrics& b) {
     a.Swap(&b);
@@ -2077,7 +2592,7 @@ class UeMetricsLegacy final :
                &_UeMetricsLegacy_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    9;
 
   friend void swap(UeMetricsLegacy& a, UeMetricsLegacy& b) {
     a.Swap(&b);
@@ -2366,7 +2881,7 @@ class DrbMetricsLegacy final :
                &_DrbMetricsLegacy_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    10;
 
   friend void swap(DrbMetricsLegacy& a, DrbMetricsLegacy& b) {
     a.Swap(&b);
@@ -2531,7 +3046,7 @@ inline uint32_t MacDrbMetrics::lcid() const {
   return _internal_lcid();
 }
 inline void MacDrbMetrics::_internal_set_lcid(uint32_t value) {
-  
+
   _impl_.lcid_ = value;
 }
 inline void MacDrbMetrics::set_lcid(uint32_t value) {
@@ -2551,7 +3066,7 @@ inline uint32_t MacDrbMetrics::dl_buffer() const {
   return _internal_dl_buffer();
 }
 inline void MacDrbMetrics::_internal_set_dl_buffer(uint32_t value) {
-  
+
   _impl_.dl_buffer_ = value;
 }
 inline void MacDrbMetrics::set_dl_buffer(uint32_t value) {
@@ -2571,7 +3086,7 @@ inline uint32_t MacDrbMetrics::ul_buffer() const {
   return _internal_ul_buffer();
 }
 inline void MacDrbMetrics::_internal_set_ul_buffer(uint32_t value) {
-  
+
   _impl_.ul_buffer_ = value;
 }
 inline void MacDrbMetrics::set_ul_buffer(uint32_t value) {
@@ -2591,7 +3106,7 @@ inline uint32_t MacDrbMetrics::dl_bytes() const {
   return _internal_dl_bytes();
 }
 inline void MacDrbMetrics::_internal_set_dl_bytes(uint32_t value) {
-  
+
   _impl_.dl_bytes_ = value;
 }
 inline void MacDrbMetrics::set_dl_bytes(uint32_t value) {
@@ -2611,7 +3126,7 @@ inline uint32_t MacDrbMetrics::ul_bytes() const {
   return _internal_ul_bytes();
 }
 inline void MacDrbMetrics::_internal_set_ul_bytes(uint32_t value) {
-  
+
   _impl_.ul_bytes_ = value;
 }
 inline void MacDrbMetrics::set_ul_bytes(uint32_t value) {
@@ -2635,7 +3150,7 @@ inline uint32_t RlcDrbMetrics::lcid() const {
   return _internal_lcid();
 }
 inline void RlcDrbMetrics::_internal_set_lcid(uint32_t value) {
-  
+
   _impl_.lcid_ = value;
 }
 inline void RlcDrbMetrics::set_lcid(uint32_t value) {
@@ -2655,7 +3170,7 @@ inline uint32_t RlcDrbMetrics::dl_buffer() const {
   return _internal_dl_buffer();
 }
 inline void RlcDrbMetrics::_internal_set_dl_buffer(uint32_t value) {
-  
+
   _impl_.dl_buffer_ = value;
 }
 inline void RlcDrbMetrics::set_dl_buffer(uint32_t value) {
@@ -2675,7 +3190,7 @@ inline uint32_t RlcDrbMetrics::ul_buffer() const {
   return _internal_ul_buffer();
 }
 inline void RlcDrbMetrics::_internal_set_ul_buffer(uint32_t value) {
-  
+
   _impl_.ul_buffer_ = value;
 }
 inline void RlcDrbMetrics::set_ul_buffer(uint32_t value) {
@@ -2695,7 +3210,7 @@ inline uint64_t RlcDrbMetrics::tx_sdus() const {
   return _internal_tx_sdus();
 }
 inline void RlcDrbMetrics::_internal_set_tx_sdus(uint64_t value) {
-  
+
   _impl_.tx_sdus_ = value;
 }
 inline void RlcDrbMetrics::set_tx_sdus(uint64_t value) {
@@ -2715,7 +3230,7 @@ inline uint64_t RlcDrbMetrics::tx_sdu_bytes() const {
   return _internal_tx_sdu_bytes();
 }
 inline void RlcDrbMetrics::_internal_set_tx_sdu_bytes(uint64_t value) {
-  
+
   _impl_.tx_sdu_bytes_ = value;
 }
 inline void RlcDrbMetrics::set_tx_sdu_bytes(uint64_t value) {
@@ -2735,7 +3250,7 @@ inline uint64_t RlcDrbMetrics::tx_pdus() const {
   return _internal_tx_pdus();
 }
 inline void RlcDrbMetrics::_internal_set_tx_pdus(uint64_t value) {
-  
+
   _impl_.tx_pdus_ = value;
 }
 inline void RlcDrbMetrics::set_tx_pdus(uint64_t value) {
@@ -2755,7 +3270,7 @@ inline uint64_t RlcDrbMetrics::tx_pdu_bytes() const {
   return _internal_tx_pdu_bytes();
 }
 inline void RlcDrbMetrics::_internal_set_tx_pdu_bytes(uint64_t value) {
-  
+
   _impl_.tx_pdu_bytes_ = value;
 }
 inline void RlcDrbMetrics::set_tx_pdu_bytes(uint64_t value) {
@@ -2775,7 +3290,7 @@ inline uint64_t RlcDrbMetrics::tx_dropped_sdus() const {
   return _internal_tx_dropped_sdus();
 }
 inline void RlcDrbMetrics::_internal_set_tx_dropped_sdus(uint64_t value) {
-  
+
   _impl_.tx_dropped_sdus_ = value;
 }
 inline void RlcDrbMetrics::set_tx_dropped_sdus(uint64_t value) {
@@ -2795,7 +3310,7 @@ inline uint64_t RlcDrbMetrics::tx_retx_pdus() const {
   return _internal_tx_retx_pdus();
 }
 inline void RlcDrbMetrics::_internal_set_tx_retx_pdus(uint64_t value) {
-  
+
   _impl_.tx_retx_pdus_ = value;
 }
 inline void RlcDrbMetrics::set_tx_retx_pdus(uint64_t value) {
@@ -2815,7 +3330,7 @@ inline uint32_t RlcDrbMetrics::tx_sdu_latency_us() const {
   return _internal_tx_sdu_latency_us();
 }
 inline void RlcDrbMetrics::_internal_set_tx_sdu_latency_us(uint32_t value) {
-  
+
   _impl_.tx_sdu_latency_us_ = value;
 }
 inline void RlcDrbMetrics::set_tx_sdu_latency_us(uint32_t value) {
@@ -2835,7 +3350,7 @@ inline uint64_t RlcDrbMetrics::rx_sdus() const {
   return _internal_rx_sdus();
 }
 inline void RlcDrbMetrics::_internal_set_rx_sdus(uint64_t value) {
-  
+
   _impl_.rx_sdus_ = value;
 }
 inline void RlcDrbMetrics::set_rx_sdus(uint64_t value) {
@@ -2855,7 +3370,7 @@ inline uint64_t RlcDrbMetrics::rx_sdu_bytes() const {
   return _internal_rx_sdu_bytes();
 }
 inline void RlcDrbMetrics::_internal_set_rx_sdu_bytes(uint64_t value) {
-  
+
   _impl_.rx_sdu_bytes_ = value;
 }
 inline void RlcDrbMetrics::set_rx_sdu_bytes(uint64_t value) {
@@ -2875,7 +3390,7 @@ inline uint64_t RlcDrbMetrics::rx_pdus() const {
   return _internal_rx_pdus();
 }
 inline void RlcDrbMetrics::_internal_set_rx_pdus(uint64_t value) {
-  
+
   _impl_.rx_pdus_ = value;
 }
 inline void RlcDrbMetrics::set_rx_pdus(uint64_t value) {
@@ -2895,7 +3410,7 @@ inline uint64_t RlcDrbMetrics::rx_pdu_bytes() const {
   return _internal_rx_pdu_bytes();
 }
 inline void RlcDrbMetrics::_internal_set_rx_pdu_bytes(uint64_t value) {
-  
+
   _impl_.rx_pdu_bytes_ = value;
 }
 inline void RlcDrbMetrics::set_rx_pdu_bytes(uint64_t value) {
@@ -2915,7 +3430,7 @@ inline uint64_t RlcDrbMetrics::rx_lost_pdus() const {
   return _internal_rx_lost_pdus();
 }
 inline void RlcDrbMetrics::_internal_set_rx_lost_pdus(uint64_t value) {
-  
+
   _impl_.rx_lost_pdus_ = value;
 }
 inline void RlcDrbMetrics::set_rx_lost_pdus(uint64_t value) {
@@ -2935,7 +3450,7 @@ inline uint32_t RlcDrbMetrics::rx_sdu_latency_us() const {
   return _internal_rx_sdu_latency_us();
 }
 inline void RlcDrbMetrics::_internal_set_rx_sdu_latency_us(uint32_t value) {
-  
+
   _impl_.rx_sdu_latency_us_ = value;
 }
 inline void RlcDrbMetrics::set_rx_sdu_latency_us(uint32_t value) {
@@ -2959,7 +3474,7 @@ inline uint32_t PdcpDrbMetrics::drb_id() const {
   return _internal_drb_id();
 }
 inline void PdcpDrbMetrics::_internal_set_drb_id(uint32_t value) {
-  
+
   _impl_.drb_id_ = value;
 }
 inline void PdcpDrbMetrics::set_drb_id(uint32_t value) {
@@ -2979,7 +3494,7 @@ inline uint32_t PdcpDrbMetrics::lcid() const {
   return _internal_lcid();
 }
 inline void PdcpDrbMetrics::_internal_set_lcid(uint32_t value) {
-  
+
   _impl_.lcid_ = value;
 }
 inline void PdcpDrbMetrics::set_lcid(uint32_t value) {
@@ -2999,7 +3514,7 @@ inline uint64_t PdcpDrbMetrics::tx_pdus() const {
   return _internal_tx_pdus();
 }
 inline void PdcpDrbMetrics::_internal_set_tx_pdus(uint64_t value) {
-  
+
   _impl_.tx_pdus_ = value;
 }
 inline void PdcpDrbMetrics::set_tx_pdus(uint64_t value) {
@@ -3019,7 +3534,7 @@ inline uint64_t PdcpDrbMetrics::tx_pdu_bytes() const {
   return _internal_tx_pdu_bytes();
 }
 inline void PdcpDrbMetrics::_internal_set_tx_pdu_bytes(uint64_t value) {
-  
+
   _impl_.tx_pdu_bytes_ = value;
 }
 inline void PdcpDrbMetrics::set_tx_pdu_bytes(uint64_t value) {
@@ -3039,7 +3554,7 @@ inline uint64_t PdcpDrbMetrics::tx_sdus() const {
   return _internal_tx_sdus();
 }
 inline void PdcpDrbMetrics::_internal_set_tx_sdus(uint64_t value) {
-  
+
   _impl_.tx_sdus_ = value;
 }
 inline void PdcpDrbMetrics::set_tx_sdus(uint64_t value) {
@@ -3059,7 +3574,7 @@ inline uint64_t PdcpDrbMetrics::tx_dropped_sdus() const {
   return _internal_tx_dropped_sdus();
 }
 inline void PdcpDrbMetrics::_internal_set_tx_dropped_sdus(uint64_t value) {
-  
+
   _impl_.tx_dropped_sdus_ = value;
 }
 inline void PdcpDrbMetrics::set_tx_dropped_sdus(uint64_t value) {
@@ -3079,7 +3594,7 @@ inline uint32_t PdcpDrbMetrics::tx_discard_timeouts() const {
   return _internal_tx_discard_timeouts();
 }
 inline void PdcpDrbMetrics::_internal_set_tx_discard_timeouts(uint32_t value) {
-  
+
   _impl_.tx_discard_timeouts_ = value;
 }
 inline void PdcpDrbMetrics::set_tx_discard_timeouts(uint32_t value) {
@@ -3099,7 +3614,7 @@ inline uint32_t PdcpDrbMetrics::tx_pdu_latency_ns() const {
   return _internal_tx_pdu_latency_ns();
 }
 inline void PdcpDrbMetrics::_internal_set_tx_pdu_latency_ns(uint32_t value) {
-  
+
   _impl_.tx_pdu_latency_ns_ = value;
 }
 inline void PdcpDrbMetrics::set_tx_pdu_latency_ns(uint32_t value) {
@@ -3119,7 +3634,7 @@ inline uint64_t PdcpDrbMetrics::rx_pdus() const {
   return _internal_rx_pdus();
 }
 inline void PdcpDrbMetrics::_internal_set_rx_pdus(uint64_t value) {
-  
+
   _impl_.rx_pdus_ = value;
 }
 inline void PdcpDrbMetrics::set_rx_pdus(uint64_t value) {
@@ -3139,7 +3654,7 @@ inline uint64_t PdcpDrbMetrics::rx_pdu_bytes() const {
   return _internal_rx_pdu_bytes();
 }
 inline void PdcpDrbMetrics::_internal_set_rx_pdu_bytes(uint64_t value) {
-  
+
   _impl_.rx_pdu_bytes_ = value;
 }
 inline void PdcpDrbMetrics::set_rx_pdu_bytes(uint64_t value) {
@@ -3159,7 +3674,7 @@ inline uint64_t PdcpDrbMetrics::rx_delivered_sdus() const {
   return _internal_rx_delivered_sdus();
 }
 inline void PdcpDrbMetrics::_internal_set_rx_delivered_sdus(uint64_t value) {
-  
+
   _impl_.rx_delivered_sdus_ = value;
 }
 inline void PdcpDrbMetrics::set_rx_delivered_sdus(uint64_t value) {
@@ -3179,7 +3694,7 @@ inline uint64_t PdcpDrbMetrics::rx_dropped_pdus() const {
   return _internal_rx_dropped_pdus();
 }
 inline void PdcpDrbMetrics::_internal_set_rx_dropped_pdus(uint64_t value) {
-  
+
   _impl_.rx_dropped_pdus_ = value;
 }
 inline void PdcpDrbMetrics::set_rx_dropped_pdus(uint64_t value) {
@@ -3199,7 +3714,7 @@ inline uint32_t PdcpDrbMetrics::rx_sdu_latency_ns() const {
   return _internal_rx_sdu_latency_ns();
 }
 inline void PdcpDrbMetrics::_internal_set_rx_sdu_latency_ns(uint32_t value) {
-  
+
   _impl_.rx_sdu_latency_ns_ = value;
 }
 inline void PdcpDrbMetrics::set_rx_sdu_latency_ns(uint32_t value) {
@@ -3223,7 +3738,7 @@ inline uint64_t GtpMetrics::dl_pkts() const {
   return _internal_dl_pkts();
 }
 inline void GtpMetrics::_internal_set_dl_pkts(uint64_t value) {
-  
+
   _impl_.dl_pkts_ = value;
 }
 inline void GtpMetrics::set_dl_pkts(uint64_t value) {
@@ -3243,7 +3758,7 @@ inline uint64_t GtpMetrics::dl_bytes() const {
   return _internal_dl_bytes();
 }
 inline void GtpMetrics::_internal_set_dl_bytes(uint64_t value) {
-  
+
   _impl_.dl_bytes_ = value;
 }
 inline void GtpMetrics::set_dl_bytes(uint64_t value) {
@@ -3263,7 +3778,7 @@ inline uint64_t GtpMetrics::ul_pkts() const {
   return _internal_ul_pkts();
 }
 inline void GtpMetrics::_internal_set_ul_pkts(uint64_t value) {
-  
+
   _impl_.ul_pkts_ = value;
 }
 inline void GtpMetrics::set_ul_pkts(uint64_t value) {
@@ -3283,12 +3798,276 @@ inline uint64_t GtpMetrics::ul_bytes() const {
   return _internal_ul_bytes();
 }
 inline void GtpMetrics::_internal_set_ul_bytes(uint64_t value) {
-  
+
   _impl_.ul_bytes_ = value;
 }
 inline void GtpMetrics::set_ul_bytes(uint64_t value) {
   _internal_set_ul_bytes(value);
   // @@protoc_insertion_point(field_set:GtpMetrics.ul_bytes)
+}
+
+// -------------------------------------------------------------------
+
+// HarqEvent
+
+// uint64 sequence_id = 1;
+inline void HarqEvent::clear_sequence_id() {
+  _impl_.sequence_id_ = uint64_t{0u};
+}
+inline uint64_t HarqEvent::_internal_sequence_id() const {
+  return _impl_.sequence_id_;
+}
+inline uint64_t HarqEvent::sequence_id() const {
+  // @@protoc_insertion_point(field_get:HarqEvent.sequence_id)
+  return _internal_sequence_id();
+}
+inline void HarqEvent::_internal_set_sequence_id(uint64_t value) {
+
+  _impl_.sequence_id_ = value;
+}
+inline void HarqEvent::set_sequence_id(uint64_t value) {
+  _internal_set_sequence_id(value);
+  // @@protoc_insertion_point(field_set:HarqEvent.sequence_id)
+}
+
+// uint32 cell_index = 2;
+inline void HarqEvent::clear_cell_index() {
+  _impl_.cell_index_ = 0u;
+}
+inline uint32_t HarqEvent::_internal_cell_index() const {
+  return _impl_.cell_index_;
+}
+inline uint32_t HarqEvent::cell_index() const {
+  // @@protoc_insertion_point(field_get:HarqEvent.cell_index)
+  return _internal_cell_index();
+}
+inline void HarqEvent::_internal_set_cell_index(uint32_t value) {
+
+  _impl_.cell_index_ = value;
+}
+inline void HarqEvent::set_cell_index(uint32_t value) {
+  _internal_set_cell_index(value);
+  // @@protoc_insertion_point(field_set:HarqEvent.cell_index)
+}
+
+// uint32 rnti = 3;
+inline void HarqEvent::clear_rnti() {
+  _impl_.rnti_ = 0u;
+}
+inline uint32_t HarqEvent::_internal_rnti() const {
+  return _impl_.rnti_;
+}
+inline uint32_t HarqEvent::rnti() const {
+  // @@protoc_insertion_point(field_get:HarqEvent.rnti)
+  return _internal_rnti();
+}
+inline void HarqEvent::_internal_set_rnti(uint32_t value) {
+
+  _impl_.rnti_ = value;
+}
+inline void HarqEvent::set_rnti(uint32_t value) {
+  _internal_set_rnti(value);
+  // @@protoc_insertion_point(field_set:HarqEvent.rnti)
+}
+
+// .HarqDirection direction = 4;
+inline void HarqEvent::clear_direction() {
+  _impl_.direction_ = 0;
+}
+inline ::HarqDirection HarqEvent::_internal_direction() const {
+  return static_cast< ::HarqDirection >(_impl_.direction_);
+}
+inline ::HarqDirection HarqEvent::direction() const {
+  // @@protoc_insertion_point(field_get:HarqEvent.direction)
+  return _internal_direction();
+}
+inline void HarqEvent::_internal_set_direction(::HarqDirection value) {
+
+  _impl_.direction_ = value;
+}
+inline void HarqEvent::set_direction(::HarqDirection value) {
+  _internal_set_direction(value);
+  // @@protoc_insertion_point(field_set:HarqEvent.direction)
+}
+
+// uint64 tx_slot = 5;
+inline void HarqEvent::clear_tx_slot() {
+  _impl_.tx_slot_ = uint64_t{0u};
+}
+inline uint64_t HarqEvent::_internal_tx_slot() const {
+  return _impl_.tx_slot_;
+}
+inline uint64_t HarqEvent::tx_slot() const {
+  // @@protoc_insertion_point(field_get:HarqEvent.tx_slot)
+  return _internal_tx_slot();
+}
+inline void HarqEvent::_internal_set_tx_slot(uint64_t value) {
+
+  _impl_.tx_slot_ = value;
+}
+inline void HarqEvent::set_tx_slot(uint64_t value) {
+  _internal_set_tx_slot(value);
+  // @@protoc_insertion_point(field_set:HarqEvent.tx_slot)
+}
+
+// uint64 feedback_slot = 6;
+inline void HarqEvent::clear_feedback_slot() {
+  _impl_.feedback_slot_ = uint64_t{0u};
+}
+inline uint64_t HarqEvent::_internal_feedback_slot() const {
+  return _impl_.feedback_slot_;
+}
+inline uint64_t HarqEvent::feedback_slot() const {
+  // @@protoc_insertion_point(field_get:HarqEvent.feedback_slot)
+  return _internal_feedback_slot();
+}
+inline void HarqEvent::_internal_set_feedback_slot(uint64_t value) {
+
+  _impl_.feedback_slot_ = value;
+}
+inline void HarqEvent::set_feedback_slot(uint64_t value) {
+  _internal_set_feedback_slot(value);
+  // @@protoc_insertion_point(field_set:HarqEvent.feedback_slot)
+}
+
+// uint32 harq_id = 7;
+inline void HarqEvent::clear_harq_id() {
+  _impl_.harq_id_ = 0u;
+}
+inline uint32_t HarqEvent::_internal_harq_id() const {
+  return _impl_.harq_id_;
+}
+inline uint32_t HarqEvent::harq_id() const {
+  // @@protoc_insertion_point(field_get:HarqEvent.harq_id)
+  return _internal_harq_id();
+}
+inline void HarqEvent::_internal_set_harq_id(uint32_t value) {
+
+  _impl_.harq_id_ = value;
+}
+inline void HarqEvent::set_harq_id(uint32_t value) {
+  _internal_set_harq_id(value);
+  // @@protoc_insertion_point(field_set:HarqEvent.harq_id)
+}
+
+// uint32 attempt_number = 8;
+inline void HarqEvent::clear_attempt_number() {
+  _impl_.attempt_number_ = 0u;
+}
+inline uint32_t HarqEvent::_internal_attempt_number() const {
+  return _impl_.attempt_number_;
+}
+inline uint32_t HarqEvent::attempt_number() const {
+  // @@protoc_insertion_point(field_get:HarqEvent.attempt_number)
+  return _internal_attempt_number();
+}
+inline void HarqEvent::_internal_set_attempt_number(uint32_t value) {
+
+  _impl_.attempt_number_ = value;
+}
+inline void HarqEvent::set_attempt_number(uint32_t value) {
+  _internal_set_attempt_number(value);
+  // @@protoc_insertion_point(field_set:HarqEvent.attempt_number)
+}
+
+// bool is_retransmission = 9;
+inline void HarqEvent::clear_is_retransmission() {
+  _impl_.is_retransmission_ = false;
+}
+inline bool HarqEvent::_internal_is_retransmission() const {
+  return _impl_.is_retransmission_;
+}
+inline bool HarqEvent::is_retransmission() const {
+  // @@protoc_insertion_point(field_get:HarqEvent.is_retransmission)
+  return _internal_is_retransmission();
+}
+inline void HarqEvent::_internal_set_is_retransmission(bool value) {
+
+  _impl_.is_retransmission_ = value;
+}
+inline void HarqEvent::set_is_retransmission(bool value) {
+  _internal_set_is_retransmission(value);
+  // @@protoc_insertion_point(field_set:HarqEvent.is_retransmission)
+}
+
+// bool ndi = 10;
+inline void HarqEvent::clear_ndi() {
+  _impl_.ndi_ = false;
+}
+inline bool HarqEvent::_internal_ndi() const {
+  return _impl_.ndi_;
+}
+inline bool HarqEvent::ndi() const {
+  // @@protoc_insertion_point(field_get:HarqEvent.ndi)
+  return _internal_ndi();
+}
+inline void HarqEvent::_internal_set_ndi(bool value) {
+
+  _impl_.ndi_ = value;
+}
+inline void HarqEvent::set_ndi(bool value) {
+  _internal_set_ndi(value);
+  // @@protoc_insertion_point(field_set:HarqEvent.ndi)
+}
+
+// .HarqOutcome outcome = 11;
+inline void HarqEvent::clear_outcome() {
+  _impl_.outcome_ = 0;
+}
+inline ::HarqOutcome HarqEvent::_internal_outcome() const {
+  return static_cast< ::HarqOutcome >(_impl_.outcome_);
+}
+inline ::HarqOutcome HarqEvent::outcome() const {
+  // @@protoc_insertion_point(field_get:HarqEvent.outcome)
+  return _internal_outcome();
+}
+inline void HarqEvent::_internal_set_outcome(::HarqOutcome value) {
+
+  _impl_.outcome_ = value;
+}
+inline void HarqEvent::set_outcome(::HarqOutcome value) {
+  _internal_set_outcome(value);
+  // @@protoc_insertion_point(field_set:HarqEvent.outcome)
+}
+
+// uint32 tbs_bytes = 12;
+inline void HarqEvent::clear_tbs_bytes() {
+  _impl_.tbs_bytes_ = 0u;
+}
+inline uint32_t HarqEvent::_internal_tbs_bytes() const {
+  return _impl_.tbs_bytes_;
+}
+inline uint32_t HarqEvent::tbs_bytes() const {
+  // @@protoc_insertion_point(field_get:HarqEvent.tbs_bytes)
+  return _internal_tbs_bytes();
+}
+inline void HarqEvent::_internal_set_tbs_bytes(uint32_t value) {
+
+  _impl_.tbs_bytes_ = value;
+}
+inline void HarqEvent::set_tbs_bytes(uint32_t value) {
+  _internal_set_tbs_bytes(value);
+  // @@protoc_insertion_point(field_set:HarqEvent.tbs_bytes)
+}
+
+// uint32 du_ue_index = 13;
+inline void HarqEvent::clear_du_ue_index() {
+  _impl_.du_ue_index_ = 0u;
+}
+inline uint32_t HarqEvent::_internal_du_ue_index() const {
+  return _impl_.du_ue_index_;
+}
+inline uint32_t HarqEvent::du_ue_index() const {
+  // @@protoc_insertion_point(field_get:HarqEvent.du_ue_index)
+  return _internal_du_ue_index();
+}
+inline void HarqEvent::_internal_set_du_ue_index(uint32_t value) {
+
+  _impl_.du_ue_index_ = value;
+}
+inline void HarqEvent::set_du_ue_index(uint32_t value) {
+  _internal_set_du_ue_index(value);
+  // @@protoc_insertion_point(field_set:HarqEvent.du_ue_index)
 }
 
 // -------------------------------------------------------------------
@@ -3307,7 +4086,7 @@ inline uint32_t MacUeMetrics::cqi() const {
   return _internal_cqi();
 }
 inline void MacUeMetrics::_internal_set_cqi(uint32_t value) {
-  
+
   _impl_.cqi_ = value;
 }
 inline void MacUeMetrics::set_cqi(uint32_t value) {
@@ -3327,7 +4106,7 @@ inline float MacUeMetrics::snr() const {
   return _internal_snr();
 }
 inline void MacUeMetrics::_internal_set_snr(float value) {
-  
+
   _impl_.snr_ = value;
 }
 inline void MacUeMetrics::set_snr(float value) {
@@ -3347,7 +4126,7 @@ inline uint32_t MacUeMetrics::dl_buffer() const {
   return _internal_dl_buffer();
 }
 inline void MacUeMetrics::_internal_set_dl_buffer(uint32_t value) {
-  
+
   _impl_.dl_buffer_ = value;
 }
 inline void MacUeMetrics::set_dl_buffer(uint32_t value) {
@@ -3367,7 +4146,7 @@ inline uint32_t MacUeMetrics::ul_buffer() const {
   return _internal_ul_buffer();
 }
 inline void MacUeMetrics::_internal_set_ul_buffer(uint32_t value) {
-  
+
   _impl_.ul_buffer_ = value;
 }
 inline void MacUeMetrics::set_ul_buffer(uint32_t value) {
@@ -3387,7 +4166,7 @@ inline uint32_t MacUeMetrics::dl_tbs() const {
   return _internal_dl_tbs();
 }
 inline void MacUeMetrics::_internal_set_dl_tbs(uint32_t value) {
-  
+
   _impl_.dl_tbs_ = value;
 }
 inline void MacUeMetrics::set_dl_tbs(uint32_t value) {
@@ -3407,7 +4186,7 @@ inline uint32_t MacUeMetrics::ul_tbs() const {
   return _internal_ul_tbs();
 }
 inline void MacUeMetrics::_internal_set_ul_tbs(uint32_t value) {
-  
+
   _impl_.ul_tbs_ = value;
 }
 inline void MacUeMetrics::set_ul_tbs(uint32_t value) {
@@ -3427,7 +4206,7 @@ inline uint32_t MacUeMetrics::dl_acked_bytes() const {
   return _internal_dl_acked_bytes();
 }
 inline void MacUeMetrics::_internal_set_dl_acked_bytes(uint32_t value) {
-  
+
   _impl_.dl_acked_bytes_ = value;
 }
 inline void MacUeMetrics::set_dl_acked_bytes(uint32_t value) {
@@ -3447,7 +4226,7 @@ inline uint32_t MacUeMetrics::ul_ok_bytes() const {
   return _internal_ul_ok_bytes();
 }
 inline void MacUeMetrics::_internal_set_ul_ok_bytes(uint32_t value) {
-  
+
   _impl_.ul_ok_bytes_ = value;
 }
 inline void MacUeMetrics::set_ul_ok_bytes(uint32_t value) {
@@ -3467,7 +4246,7 @@ inline uint32_t MacUeMetrics::dl_mcs() const {
   return _internal_dl_mcs();
 }
 inline void MacUeMetrics::_internal_set_dl_mcs(uint32_t value) {
-  
+
   _impl_.dl_mcs_ = value;
 }
 inline void MacUeMetrics::set_dl_mcs(uint32_t value) {
@@ -3487,7 +4266,7 @@ inline uint32_t MacUeMetrics::ul_mcs() const {
   return _internal_ul_mcs();
 }
 inline void MacUeMetrics::_internal_set_ul_mcs(uint32_t value) {
-  
+
   _impl_.ul_mcs_ = value;
 }
 inline void MacUeMetrics::set_ul_mcs(uint32_t value) {
@@ -3507,7 +4286,7 @@ inline uint32_t MacUeMetrics::dl_prbs() const {
   return _internal_dl_prbs();
 }
 inline void MacUeMetrics::_internal_set_dl_prbs(uint32_t value) {
-  
+
   _impl_.dl_prbs_ = value;
 }
 inline void MacUeMetrics::set_dl_prbs(uint32_t value) {
@@ -3527,7 +4306,7 @@ inline uint32_t MacUeMetrics::ul_prbs() const {
   return _internal_ul_prbs();
 }
 inline void MacUeMetrics::_internal_set_ul_prbs(uint32_t value) {
-  
+
   _impl_.ul_prbs_ = value;
 }
 inline void MacUeMetrics::set_ul_prbs(uint32_t value) {
@@ -3547,7 +4326,7 @@ inline uint32_t MacUeMetrics::dl_harq_ack() const {
   return _internal_dl_harq_ack();
 }
 inline void MacUeMetrics::_internal_set_dl_harq_ack(uint32_t value) {
-  
+
   _impl_.dl_harq_ack_ = value;
 }
 inline void MacUeMetrics::set_dl_harq_ack(uint32_t value) {
@@ -3567,7 +4346,7 @@ inline uint32_t MacUeMetrics::dl_harq_nack() const {
   return _internal_dl_harq_nack();
 }
 inline void MacUeMetrics::_internal_set_dl_harq_nack(uint32_t value) {
-  
+
   _impl_.dl_harq_nack_ = value;
 }
 inline void MacUeMetrics::set_dl_harq_nack(uint32_t value) {
@@ -3587,7 +4366,7 @@ inline uint32_t MacUeMetrics::ul_crc_ok() const {
   return _internal_ul_crc_ok();
 }
 inline void MacUeMetrics::_internal_set_ul_crc_ok(uint32_t value) {
-  
+
   _impl_.ul_crc_ok_ = value;
 }
 inline void MacUeMetrics::set_ul_crc_ok(uint32_t value) {
@@ -3607,7 +4386,7 @@ inline uint32_t MacUeMetrics::ul_crc_fail() const {
   return _internal_ul_crc_fail();
 }
 inline void MacUeMetrics::_internal_set_ul_crc_fail(uint32_t value) {
-  
+
   _impl_.ul_crc_fail_ = value;
 }
 inline void MacUeMetrics::set_ul_crc_fail(uint32_t value) {
@@ -3615,9 +4394,17 @@ inline void MacUeMetrics::set_ul_crc_fail(uint32_t value) {
   // @@protoc_insertion_point(field_set:MacUeMetrics.ul_crc_fail)
 }
 
-// float avg_ce_delay_ms = 16;
+// optional float avg_ce_delay_ms = 16;
+inline bool MacUeMetrics::_internal_has_avg_ce_delay_ms() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool MacUeMetrics::has_avg_ce_delay_ms() const {
+  return _internal_has_avg_ce_delay_ms();
+}
 inline void MacUeMetrics::clear_avg_ce_delay_ms() {
   _impl_.avg_ce_delay_ms_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline float MacUeMetrics::_internal_avg_ce_delay_ms() const {
   return _impl_.avg_ce_delay_ms_;
@@ -3627,7 +4414,7 @@ inline float MacUeMetrics::avg_ce_delay_ms() const {
   return _internal_avg_ce_delay_ms();
 }
 inline void MacUeMetrics::_internal_set_avg_ce_delay_ms(float value) {
-  
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.avg_ce_delay_ms_ = value;
 }
 inline void MacUeMetrics::set_avg_ce_delay_ms(float value) {
@@ -3635,9 +4422,17 @@ inline void MacUeMetrics::set_avg_ce_delay_ms(float value) {
   // @@protoc_insertion_point(field_set:MacUeMetrics.avg_ce_delay_ms)
 }
 
-// float avg_crc_delay_ms = 17;
+// optional float avg_crc_delay_ms = 17;
+inline bool MacUeMetrics::_internal_has_avg_crc_delay_ms() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool MacUeMetrics::has_avg_crc_delay_ms() const {
+  return _internal_has_avg_crc_delay_ms();
+}
 inline void MacUeMetrics::clear_avg_crc_delay_ms() {
   _impl_.avg_crc_delay_ms_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000002u;
 }
 inline float MacUeMetrics::_internal_avg_crc_delay_ms() const {
   return _impl_.avg_crc_delay_ms_;
@@ -3647,7 +4442,7 @@ inline float MacUeMetrics::avg_crc_delay_ms() const {
   return _internal_avg_crc_delay_ms();
 }
 inline void MacUeMetrics::_internal_set_avg_crc_delay_ms(float value) {
-  
+  _impl_._has_bits_[0] |= 0x00000002u;
   _impl_.avg_crc_delay_ms_ = value;
 }
 inline void MacUeMetrics::set_avg_crc_delay_ms(float value) {
@@ -3655,9 +4450,17 @@ inline void MacUeMetrics::set_avg_crc_delay_ms(float value) {
   // @@protoc_insertion_point(field_set:MacUeMetrics.avg_crc_delay_ms)
 }
 
-// float avg_pucch_harq_delay_ms = 18;
+// optional float avg_pucch_harq_delay_ms = 18;
+inline bool MacUeMetrics::_internal_has_avg_pucch_harq_delay_ms() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline bool MacUeMetrics::has_avg_pucch_harq_delay_ms() const {
+  return _internal_has_avg_pucch_harq_delay_ms();
+}
 inline void MacUeMetrics::clear_avg_pucch_harq_delay_ms() {
   _impl_.avg_pucch_harq_delay_ms_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline float MacUeMetrics::_internal_avg_pucch_harq_delay_ms() const {
   return _impl_.avg_pucch_harq_delay_ms_;
@@ -3667,7 +4470,7 @@ inline float MacUeMetrics::avg_pucch_harq_delay_ms() const {
   return _internal_avg_pucch_harq_delay_ms();
 }
 inline void MacUeMetrics::_internal_set_avg_pucch_harq_delay_ms(float value) {
-  
+  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.avg_pucch_harq_delay_ms_ = value;
 }
 inline void MacUeMetrics::set_avg_pucch_harq_delay_ms(float value) {
@@ -3675,9 +4478,17 @@ inline void MacUeMetrics::set_avg_pucch_harq_delay_ms(float value) {
   // @@protoc_insertion_point(field_set:MacUeMetrics.avg_pucch_harq_delay_ms)
 }
 
-// float avg_pusch_harq_delay_ms = 19;
+// optional float avg_pusch_harq_delay_ms = 19;
+inline bool MacUeMetrics::_internal_has_avg_pusch_harq_delay_ms() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline bool MacUeMetrics::has_avg_pusch_harq_delay_ms() const {
+  return _internal_has_avg_pusch_harq_delay_ms();
+}
 inline void MacUeMetrics::clear_avg_pusch_harq_delay_ms() {
   _impl_.avg_pusch_harq_delay_ms_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline float MacUeMetrics::_internal_avg_pusch_harq_delay_ms() const {
   return _impl_.avg_pusch_harq_delay_ms_;
@@ -3687,7 +4498,7 @@ inline float MacUeMetrics::avg_pusch_harq_delay_ms() const {
   return _internal_avg_pusch_harq_delay_ms();
 }
 inline void MacUeMetrics::_internal_set_avg_pusch_harq_delay_ms(float value) {
-  
+  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.avg_pusch_harq_delay_ms_ = value;
 }
 inline void MacUeMetrics::set_avg_pusch_harq_delay_ms(float value) {
@@ -3695,9 +4506,17 @@ inline void MacUeMetrics::set_avg_pusch_harq_delay_ms(float value) {
   // @@protoc_insertion_point(field_set:MacUeMetrics.avg_pusch_harq_delay_ms)
 }
 
-// float avg_sr_to_pusch_delay_ms = 20;
+// optional float avg_sr_to_pusch_delay_ms = 20;
+inline bool MacUeMetrics::_internal_has_avg_sr_to_pusch_delay_ms() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  return value;
+}
+inline bool MacUeMetrics::has_avg_sr_to_pusch_delay_ms() const {
+  return _internal_has_avg_sr_to_pusch_delay_ms();
+}
 inline void MacUeMetrics::clear_avg_sr_to_pusch_delay_ms() {
   _impl_.avg_sr_to_pusch_delay_ms_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline float MacUeMetrics::_internal_avg_sr_to_pusch_delay_ms() const {
   return _impl_.avg_sr_to_pusch_delay_ms_;
@@ -3707,7 +4526,7 @@ inline float MacUeMetrics::avg_sr_to_pusch_delay_ms() const {
   return _internal_avg_sr_to_pusch_delay_ms();
 }
 inline void MacUeMetrics::_internal_set_avg_sr_to_pusch_delay_ms(float value) {
-  
+  _impl_._has_bits_[0] |= 0x00000010u;
   _impl_.avg_sr_to_pusch_delay_ms_ = value;
 }
 inline void MacUeMetrics::set_avg_sr_to_pusch_delay_ms(float value) {
@@ -3715,7 +4534,7 @@ inline void MacUeMetrics::set_avg_sr_to_pusch_delay_ms(float value) {
   // @@protoc_insertion_point(field_set:MacUeMetrics.avg_sr_to_pusch_delay_ms)
 }
 
-// float avg_sum_mac_delay_ms = 21;
+// float avg_sum_mac_delay_ms = 21 [deprecated = true];
 inline void MacUeMetrics::clear_avg_sum_mac_delay_ms() {
   _impl_.avg_sum_mac_delay_ms_ = 0;
 }
@@ -3727,7 +4546,7 @@ inline float MacUeMetrics::avg_sum_mac_delay_ms() const {
   return _internal_avg_sum_mac_delay_ms();
 }
 inline void MacUeMetrics::_internal_set_avg_sum_mac_delay_ms(float value) {
-  
+
   _impl_.avg_sum_mac_delay_ms_ = value;
 }
 inline void MacUeMetrics::set_avg_sum_mac_delay_ms(float value) {
@@ -3751,7 +4570,7 @@ inline uint32_t UeMetrics::rnti() const {
   return _internal_rnti();
 }
 inline void UeMetrics::_internal_set_rnti(uint32_t value) {
-  
+
   _impl_.rnti_ = value;
 }
 inline void UeMetrics::set_rnti(uint32_t value) {
@@ -3788,14 +4607,14 @@ inline void UeMetrics::unsafe_arena_set_allocated_mac(
   }
   _impl_.mac_ = mac;
   if (mac) {
-    
+
   } else {
-    
+
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:UeMetrics.mac)
 }
 inline ::MacUeMetrics* UeMetrics::release_mac() {
-  
+
   ::MacUeMetrics* temp = _impl_.mac_;
   _impl_.mac_ = nullptr;
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -3811,13 +4630,13 @@ inline ::MacUeMetrics* UeMetrics::release_mac() {
 }
 inline ::MacUeMetrics* UeMetrics::unsafe_arena_release_mac() {
   // @@protoc_insertion_point(field_release:UeMetrics.mac)
-  
+
   ::MacUeMetrics* temp = _impl_.mac_;
   _impl_.mac_ = nullptr;
   return temp;
 }
 inline ::MacUeMetrics* UeMetrics::_internal_mutable_mac() {
-  
+
   if (_impl_.mac_ == nullptr) {
     auto* p = CreateMaybeMessage<::MacUeMetrics>(GetArenaForAllocation());
     _impl_.mac_ = p;
@@ -3841,9 +4660,9 @@ inline void UeMetrics::set_allocated_mac(::MacUeMetrics* mac) {
       mac = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
           message_arena, mac, submessage_arena);
     }
-    
+
   } else {
-    
+
   }
   _impl_.mac_ = mac;
   // @@protoc_insertion_point(field_set_allocated:UeMetrics.mac)
@@ -3998,14 +4817,14 @@ inline void UeMetrics::unsafe_arena_set_allocated_gtp(
   }
   _impl_.gtp_ = gtp;
   if (gtp) {
-    
+
   } else {
-    
+
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:UeMetrics.gtp)
 }
 inline ::GtpMetrics* UeMetrics::release_gtp() {
-  
+
   ::GtpMetrics* temp = _impl_.gtp_;
   _impl_.gtp_ = nullptr;
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -4021,13 +4840,13 @@ inline ::GtpMetrics* UeMetrics::release_gtp() {
 }
 inline ::GtpMetrics* UeMetrics::unsafe_arena_release_gtp() {
   // @@protoc_insertion_point(field_release:UeMetrics.gtp)
-  
+
   ::GtpMetrics* temp = _impl_.gtp_;
   _impl_.gtp_ = nullptr;
   return temp;
 }
 inline ::GtpMetrics* UeMetrics::_internal_mutable_gtp() {
-  
+
   if (_impl_.gtp_ == nullptr) {
     auto* p = CreateMaybeMessage<::GtpMetrics>(GetArenaForAllocation());
     _impl_.gtp_ = p;
@@ -4051,9 +4870,9 @@ inline void UeMetrics::set_allocated_gtp(::GtpMetrics* gtp) {
       gtp = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
           message_arena, gtp, submessage_arena);
     }
-    
+
   } else {
-    
+
   }
   _impl_.gtp_ = gtp;
   // @@protoc_insertion_point(field_set_allocated:UeMetrics.gtp)
@@ -4075,7 +4894,7 @@ inline uint32_t TtiMetrics::tti_index() const {
   return _internal_tti_index();
 }
 inline void TtiMetrics::_internal_set_tti_index(uint32_t value) {
-  
+
   _impl_.tti_index_ = value;
 }
 inline void TtiMetrics::set_tti_index(uint32_t value) {
@@ -4095,7 +4914,7 @@ inline uint64_t TtiMetrics::timestamp_us() const {
   return _internal_timestamp_us();
 }
 inline void TtiMetrics::_internal_set_timestamp_us(uint64_t value) {
-  
+
   _impl_.timestamp_us_ = value;
 }
 inline void TtiMetrics::set_timestamp_us(uint64_t value) {
@@ -4143,6 +4962,310 @@ TtiMetrics::ues() const {
   return _impl_.ues_;
 }
 
+// repeated .HarqEvent harq_events = 4;
+inline int TtiMetrics::_internal_harq_events_size() const {
+  return _impl_.harq_events_.size();
+}
+inline int TtiMetrics::harq_events_size() const {
+  return _internal_harq_events_size();
+}
+inline void TtiMetrics::clear_harq_events() {
+  _impl_.harq_events_.Clear();
+}
+inline ::HarqEvent* TtiMetrics::mutable_harq_events(int index) {
+  // @@protoc_insertion_point(field_mutable:TtiMetrics.harq_events)
+  return _impl_.harq_events_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::HarqEvent >*
+TtiMetrics::mutable_harq_events() {
+  // @@protoc_insertion_point(field_mutable_list:TtiMetrics.harq_events)
+  return &_impl_.harq_events_;
+}
+inline const ::HarqEvent& TtiMetrics::_internal_harq_events(int index) const {
+  return _impl_.harq_events_.Get(index);
+}
+inline const ::HarqEvent& TtiMetrics::harq_events(int index) const {
+  // @@protoc_insertion_point(field_get:TtiMetrics.harq_events)
+  return _internal_harq_events(index);
+}
+inline ::HarqEvent* TtiMetrics::_internal_add_harq_events() {
+  return _impl_.harq_events_.Add();
+}
+inline ::HarqEvent* TtiMetrics::add_harq_events() {
+  ::HarqEvent* _add = _internal_add_harq_events();
+  // @@protoc_insertion_point(field_add:TtiMetrics.harq_events)
+  return _add;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::HarqEvent >&
+TtiMetrics::harq_events() const {
+  // @@protoc_insertion_point(field_list:TtiMetrics.harq_events)
+  return _impl_.harq_events_;
+}
+
+// uint64 native_slot = 5;
+inline void TtiMetrics::clear_native_slot() {
+  _impl_.native_slot_ = uint64_t{0u};
+}
+inline uint64_t TtiMetrics::_internal_native_slot() const {
+  return _impl_.native_slot_;
+}
+inline uint64_t TtiMetrics::native_slot() const {
+  // @@protoc_insertion_point(field_get:TtiMetrics.native_slot)
+  return _internal_native_slot();
+}
+inline void TtiMetrics::_internal_set_native_slot(uint64_t value) {
+
+  _impl_.native_slot_ = value;
+}
+inline void TtiMetrics::set_native_slot(uint64_t value) {
+  _internal_set_native_slot(value);
+  // @@protoc_insertion_point(field_set:TtiMetrics.native_slot)
+}
+
+// uint32 numerology = 6;
+inline void TtiMetrics::clear_numerology() {
+  _impl_.numerology_ = 0u;
+}
+inline uint32_t TtiMetrics::_internal_numerology() const {
+  return _impl_.numerology_;
+}
+inline uint32_t TtiMetrics::numerology() const {
+  // @@protoc_insertion_point(field_get:TtiMetrics.numerology)
+  return _internal_numerology();
+}
+inline void TtiMetrics::_internal_set_numerology(uint32_t value) {
+
+  _impl_.numerology_ = value;
+}
+inline void TtiMetrics::set_numerology(uint32_t value) {
+  _internal_set_numerology(value);
+  // @@protoc_insertion_point(field_set:TtiMetrics.numerology)
+}
+
+// uint32 slot_duration_ns = 7;
+inline void TtiMetrics::clear_slot_duration_ns() {
+  _impl_.slot_duration_ns_ = 0u;
+}
+inline uint32_t TtiMetrics::_internal_slot_duration_ns() const {
+  return _impl_.slot_duration_ns_;
+}
+inline uint32_t TtiMetrics::slot_duration_ns() const {
+  // @@protoc_insertion_point(field_get:TtiMetrics.slot_duration_ns)
+  return _internal_slot_duration_ns();
+}
+inline void TtiMetrics::_internal_set_slot_duration_ns(uint32_t value) {
+
+  _impl_.slot_duration_ns_ = value;
+}
+inline void TtiMetrics::set_slot_duration_ns(uint32_t value) {
+  _internal_set_slot_duration_ns(value);
+  // @@protoc_insertion_point(field_set:TtiMetrics.slot_duration_ns)
+}
+
+// uint64 message_sequence_id = 8;
+inline void TtiMetrics::clear_message_sequence_id() {
+  _impl_.message_sequence_id_ = uint64_t{0u};
+}
+inline uint64_t TtiMetrics::_internal_message_sequence_id() const {
+  return _impl_.message_sequence_id_;
+}
+inline uint64_t TtiMetrics::message_sequence_id() const {
+  // @@protoc_insertion_point(field_get:TtiMetrics.message_sequence_id)
+  return _internal_message_sequence_id();
+}
+inline void TtiMetrics::_internal_set_message_sequence_id(uint64_t value) {
+
+  _impl_.message_sequence_id_ = value;
+}
+inline void TtiMetrics::set_message_sequence_id(uint64_t value) {
+  _internal_set_message_sequence_id(value);
+  // @@protoc_insertion_point(field_set:TtiMetrics.message_sequence_id)
+}
+
+// uint64 scheduler_policy_epoch = 9;
+inline void TtiMetrics::clear_scheduler_policy_epoch() {
+  _impl_.scheduler_policy_epoch_ = uint64_t{0u};
+}
+inline uint64_t TtiMetrics::_internal_scheduler_policy_epoch() const {
+  return _impl_.scheduler_policy_epoch_;
+}
+inline uint64_t TtiMetrics::scheduler_policy_epoch() const {
+  // @@protoc_insertion_point(field_get:TtiMetrics.scheduler_policy_epoch)
+  return _internal_scheduler_policy_epoch();
+}
+inline void TtiMetrics::_internal_set_scheduler_policy_epoch(uint64_t value) {
+
+  _impl_.scheduler_policy_epoch_ = value;
+}
+inline void TtiMetrics::set_scheduler_policy_epoch(uint64_t value) {
+  _internal_set_scheduler_policy_epoch(value);
+  // @@protoc_insertion_point(field_set:TtiMetrics.scheduler_policy_epoch)
+}
+
+// string scheduler_algorithm = 10;
+inline void TtiMetrics::clear_scheduler_algorithm() {
+  _impl_.scheduler_algorithm_.ClearToEmpty();
+}
+inline const std::string& TtiMetrics::scheduler_algorithm() const {
+  // @@protoc_insertion_point(field_get:TtiMetrics.scheduler_algorithm)
+  return _internal_scheduler_algorithm();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void TtiMetrics::set_scheduler_algorithm(ArgT0&& arg0, ArgT... args) {
+
+ _impl_.scheduler_algorithm_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:TtiMetrics.scheduler_algorithm)
+}
+inline std::string* TtiMetrics::mutable_scheduler_algorithm() {
+  std::string* _s = _internal_mutable_scheduler_algorithm();
+  // @@protoc_insertion_point(field_mutable:TtiMetrics.scheduler_algorithm)
+  return _s;
+}
+inline const std::string& TtiMetrics::_internal_scheduler_algorithm() const {
+  return _impl_.scheduler_algorithm_.Get();
+}
+inline void TtiMetrics::_internal_set_scheduler_algorithm(const std::string& value) {
+
+  _impl_.scheduler_algorithm_.Set(value, GetArenaForAllocation());
+}
+inline std::string* TtiMetrics::_internal_mutable_scheduler_algorithm() {
+
+  return _impl_.scheduler_algorithm_.Mutable(GetArenaForAllocation());
+}
+inline std::string* TtiMetrics::release_scheduler_algorithm() {
+  // @@protoc_insertion_point(field_release:TtiMetrics.scheduler_algorithm)
+  return _impl_.scheduler_algorithm_.Release();
+}
+inline void TtiMetrics::set_allocated_scheduler_algorithm(std::string* scheduler_algorithm) {
+  if (scheduler_algorithm != nullptr) {
+
+  } else {
+
+  }
+  _impl_.scheduler_algorithm_.SetAllocated(scheduler_algorithm, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.scheduler_algorithm_.IsDefault()) {
+    _impl_.scheduler_algorithm_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:TtiMetrics.scheduler_algorithm)
+}
+
+// bool scheduler_control_active = 11;
+inline void TtiMetrics::clear_scheduler_control_active() {
+  _impl_.scheduler_control_active_ = false;
+}
+inline bool TtiMetrics::_internal_scheduler_control_active() const {
+  return _impl_.scheduler_control_active_;
+}
+inline bool TtiMetrics::scheduler_control_active() const {
+  // @@protoc_insertion_point(field_get:TtiMetrics.scheduler_control_active)
+  return _internal_scheduler_control_active();
+}
+inline void TtiMetrics::_internal_set_scheduler_control_active(bool value) {
+
+  _impl_.scheduler_control_active_ = value;
+}
+inline void TtiMetrics::set_scheduler_control_active(bool value) {
+  _internal_set_scheduler_control_active(value);
+  // @@protoc_insertion_point(field_set:TtiMetrics.scheduler_control_active)
+}
+
+// repeated uint32 dl_eligible_rntis = 12;
+inline int TtiMetrics::_internal_dl_eligible_rntis_size() const {
+  return _impl_.dl_eligible_rntis_.size();
+}
+inline int TtiMetrics::dl_eligible_rntis_size() const {
+  return _internal_dl_eligible_rntis_size();
+}
+inline void TtiMetrics::clear_dl_eligible_rntis() {
+  _impl_.dl_eligible_rntis_.Clear();
+}
+inline uint32_t TtiMetrics::_internal_dl_eligible_rntis(int index) const {
+  return _impl_.dl_eligible_rntis_.Get(index);
+}
+inline uint32_t TtiMetrics::dl_eligible_rntis(int index) const {
+  // @@protoc_insertion_point(field_get:TtiMetrics.dl_eligible_rntis)
+  return _internal_dl_eligible_rntis(index);
+}
+inline void TtiMetrics::set_dl_eligible_rntis(int index, uint32_t value) {
+  _impl_.dl_eligible_rntis_.Set(index, value);
+  // @@protoc_insertion_point(field_set:TtiMetrics.dl_eligible_rntis)
+}
+inline void TtiMetrics::_internal_add_dl_eligible_rntis(uint32_t value) {
+  _impl_.dl_eligible_rntis_.Add(value);
+}
+inline void TtiMetrics::add_dl_eligible_rntis(uint32_t value) {
+  _internal_add_dl_eligible_rntis(value);
+  // @@protoc_insertion_point(field_add:TtiMetrics.dl_eligible_rntis)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+TtiMetrics::_internal_dl_eligible_rntis() const {
+  return _impl_.dl_eligible_rntis_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+TtiMetrics::dl_eligible_rntis() const {
+  // @@protoc_insertion_point(field_list:TtiMetrics.dl_eligible_rntis)
+  return _internal_dl_eligible_rntis();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+TtiMetrics::_internal_mutable_dl_eligible_rntis() {
+  return &_impl_.dl_eligible_rntis_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+TtiMetrics::mutable_dl_eligible_rntis() {
+  // @@protoc_insertion_point(field_mutable_list:TtiMetrics.dl_eligible_rntis)
+  return _internal_mutable_dl_eligible_rntis();
+}
+
+// repeated uint32 ul_eligible_rntis = 13;
+inline int TtiMetrics::_internal_ul_eligible_rntis_size() const {
+  return _impl_.ul_eligible_rntis_.size();
+}
+inline int TtiMetrics::ul_eligible_rntis_size() const {
+  return _internal_ul_eligible_rntis_size();
+}
+inline void TtiMetrics::clear_ul_eligible_rntis() {
+  _impl_.ul_eligible_rntis_.Clear();
+}
+inline uint32_t TtiMetrics::_internal_ul_eligible_rntis(int index) const {
+  return _impl_.ul_eligible_rntis_.Get(index);
+}
+inline uint32_t TtiMetrics::ul_eligible_rntis(int index) const {
+  // @@protoc_insertion_point(field_get:TtiMetrics.ul_eligible_rntis)
+  return _internal_ul_eligible_rntis(index);
+}
+inline void TtiMetrics::set_ul_eligible_rntis(int index, uint32_t value) {
+  _impl_.ul_eligible_rntis_.Set(index, value);
+  // @@protoc_insertion_point(field_set:TtiMetrics.ul_eligible_rntis)
+}
+inline void TtiMetrics::_internal_add_ul_eligible_rntis(uint32_t value) {
+  _impl_.ul_eligible_rntis_.Add(value);
+}
+inline void TtiMetrics::add_ul_eligible_rntis(uint32_t value) {
+  _internal_add_ul_eligible_rntis(value);
+  // @@protoc_insertion_point(field_add:TtiMetrics.ul_eligible_rntis)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+TtiMetrics::_internal_ul_eligible_rntis() const {
+  return _impl_.ul_eligible_rntis_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+TtiMetrics::ul_eligible_rntis() const {
+  // @@protoc_insertion_point(field_list:TtiMetrics.ul_eligible_rntis)
+  return _internal_ul_eligible_rntis();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+TtiMetrics::_internal_mutable_ul_eligible_rntis() {
+  return &_impl_.ul_eligible_rntis_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+TtiMetrics::mutable_ul_eligible_rntis() {
+  // @@protoc_insertion_point(field_mutable_list:TtiMetrics.ul_eligible_rntis)
+  return _internal_mutable_ul_eligible_rntis();
+}
+
 // -------------------------------------------------------------------
 
 // Metrics
@@ -4159,7 +5282,7 @@ inline uint32_t Metrics::tti_cnt() const {
   return _internal_tti_cnt();
 }
 inline void Metrics::_internal_set_tti_cnt(uint32_t value) {
-  
+
   _impl_.tti_cnt_ = value;
 }
 inline void Metrics::set_tti_cnt(uint32_t value) {
@@ -4223,7 +5346,7 @@ inline uint32_t UeMetricsLegacy::rnti() const {
   return _internal_rnti();
 }
 inline void UeMetricsLegacy::_internal_set_rnti(uint32_t value) {
-  
+
   _impl_.rnti_ = value;
 }
 inline void UeMetricsLegacy::set_rnti(uint32_t value) {
@@ -4243,7 +5366,7 @@ inline uint32_t UeMetricsLegacy::cqi() const {
   return _internal_cqi();
 }
 inline void UeMetricsLegacy::_internal_set_cqi(uint32_t value) {
-  
+
   _impl_.cqi_ = value;
 }
 inline void UeMetricsLegacy::set_cqi(uint32_t value) {
@@ -4263,7 +5386,7 @@ inline float UeMetricsLegacy::snr() const {
   return _internal_snr();
 }
 inline void UeMetricsLegacy::_internal_set_snr(float value) {
-  
+
   _impl_.snr_ = value;
 }
 inline void UeMetricsLegacy::set_snr(float value) {
@@ -4283,7 +5406,7 @@ inline float UeMetricsLegacy::tx_bytes() const {
   return _internal_tx_bytes();
 }
 inline void UeMetricsLegacy::_internal_set_tx_bytes(float value) {
-  
+
   _impl_.tx_bytes_ = value;
 }
 inline void UeMetricsLegacy::set_tx_bytes(float value) {
@@ -4303,7 +5426,7 @@ inline float UeMetricsLegacy::rx_bytes() const {
   return _internal_rx_bytes();
 }
 inline void UeMetricsLegacy::_internal_set_rx_bytes(float value) {
-  
+
   _impl_.rx_bytes_ = value;
 }
 inline void UeMetricsLegacy::set_rx_bytes(float value) {
@@ -4323,7 +5446,7 @@ inline uint32_t UeMetricsLegacy::dl_buffer() const {
   return _internal_dl_buffer();
 }
 inline void UeMetricsLegacy::_internal_set_dl_buffer(uint32_t value) {
-  
+
   _impl_.dl_buffer_ = value;
 }
 inline void UeMetricsLegacy::set_dl_buffer(uint32_t value) {
@@ -4343,7 +5466,7 @@ inline uint32_t UeMetricsLegacy::ul_buffer() const {
   return _internal_ul_buffer();
 }
 inline void UeMetricsLegacy::_internal_set_ul_buffer(uint32_t value) {
-  
+
   _impl_.ul_buffer_ = value;
 }
 inline void UeMetricsLegacy::set_ul_buffer(uint32_t value) {
@@ -4363,7 +5486,7 @@ inline float UeMetricsLegacy::dl_tbs() const {
   return _internal_dl_tbs();
 }
 inline void UeMetricsLegacy::_internal_set_dl_tbs(float value) {
-  
+
   _impl_.dl_tbs_ = value;
 }
 inline void UeMetricsLegacy::set_dl_tbs(float value) {
@@ -4383,7 +5506,7 @@ inline uint32_t UeMetricsLegacy::dl_ok() const {
   return _internal_dl_ok();
 }
 inline void UeMetricsLegacy::_internal_set_dl_ok(uint32_t value) {
-  
+
   _impl_.dl_ok_ = value;
 }
 inline void UeMetricsLegacy::set_dl_ok(uint32_t value) {
@@ -4403,7 +5526,7 @@ inline uint32_t UeMetricsLegacy::dl_nok() const {
   return _internal_dl_nok();
 }
 inline void UeMetricsLegacy::_internal_set_dl_nok(uint32_t value) {
-  
+
   _impl_.dl_nok_ = value;
 }
 inline void UeMetricsLegacy::set_dl_nok(uint32_t value) {
@@ -4423,7 +5546,7 @@ inline uint32_t UeMetricsLegacy::ul_ok() const {
   return _internal_ul_ok();
 }
 inline void UeMetricsLegacy::_internal_set_ul_ok(uint32_t value) {
-  
+
   _impl_.ul_ok_ = value;
 }
 inline void UeMetricsLegacy::set_ul_ok(uint32_t value) {
@@ -4443,7 +5566,7 @@ inline uint32_t UeMetricsLegacy::ul_nok() const {
   return _internal_ul_nok();
 }
 inline void UeMetricsLegacy::_internal_set_ul_nok(uint32_t value) {
-  
+
   _impl_.ul_nok_ = value;
 }
 inline void UeMetricsLegacy::set_ul_nok(uint32_t value) {
@@ -4507,7 +5630,7 @@ inline uint32_t DrbMetricsLegacy::lcid() const {
   return _internal_lcid();
 }
 inline void DrbMetricsLegacy::_internal_set_lcid(uint32_t value) {
-  
+
   _impl_.lcid_ = value;
 }
 inline void DrbMetricsLegacy::set_lcid(uint32_t value) {
@@ -4527,7 +5650,7 @@ inline uint32_t DrbMetricsLegacy::dl_buffer() const {
   return _internal_dl_buffer();
 }
 inline void DrbMetricsLegacy::_internal_set_dl_buffer(uint32_t value) {
-  
+
   _impl_.dl_buffer_ = value;
 }
 inline void DrbMetricsLegacy::set_dl_buffer(uint32_t value) {
@@ -4547,7 +5670,7 @@ inline uint32_t DrbMetricsLegacy::ul_buffer() const {
   return _internal_ul_buffer();
 }
 inline void DrbMetricsLegacy::_internal_set_ul_buffer(uint32_t value) {
-  
+
   _impl_.ul_buffer_ = value;
 }
 inline void DrbMetricsLegacy::set_ul_buffer(uint32_t value) {
@@ -4567,7 +5690,7 @@ inline float DrbMetricsLegacy::tx_bytes() const {
   return _internal_tx_bytes();
 }
 inline void DrbMetricsLegacy::_internal_set_tx_bytes(float value) {
-  
+
   _impl_.tx_bytes_ = value;
 }
 inline void DrbMetricsLegacy::set_tx_bytes(float value) {
@@ -4587,7 +5710,7 @@ inline float DrbMetricsLegacy::rx_bytes() const {
   return _internal_rx_bytes();
 }
 inline void DrbMetricsLegacy::_internal_set_rx_bytes(float value) {
-  
+
   _impl_.rx_bytes_ = value;
 }
 inline void DrbMetricsLegacy::set_rx_bytes(float value) {
@@ -4616,9 +5739,26 @@ inline void DrbMetricsLegacy::set_rx_bytes(float value) {
 
 // -------------------------------------------------------------------
 
+// -------------------------------------------------------------------
+
 
 // @@protoc_insertion_point(namespace_scope)
 
+
+PROTOBUF_NAMESPACE_OPEN
+
+template <> struct is_proto_enum< ::HarqDirection> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::HarqDirection>() {
+  return ::HarqDirection_descriptor();
+}
+template <> struct is_proto_enum< ::HarqOutcome> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::HarqOutcome>() {
+  return ::HarqOutcome_descriptor();
+}
+
+PROTOBUF_NAMESPACE_CLOSE
 
 // @@protoc_insertion_point(global_scope)
 

@@ -43,6 +43,12 @@ cell_cfg:
   plmn: "00101"
   tac: 7
   pci: 1
+  # VWD/AoI experiments treat each user-data transport block as one Bernoulli trial.
+  # Keep random-access Msg3 HARQ unchanged; only PDSCH/PUSCH retransmissions are disabled.
+  pdsch:
+    max_nof_harq_retxs: 0
+  pusch:
+    max_nof_harq_retxs: 0
 
 log:
   filename: /tmp/gnb.log

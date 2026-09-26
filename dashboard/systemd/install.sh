@@ -72,12 +72,17 @@ render_unit() {
 render_unit "${script_dir}/edgeric-gnb.service.in" /etc/systemd/system/edgeric-gnb.service
 render_unit "${script_dir}/edgeric-collector.service.in" /etc/systemd/system/edgeric-collector.service
 render_unit "${script_dir}/edgeric-metrics-recorder.service.in" /etc/systemd/system/edgeric-metrics-recorder.service
+render_unit "${script_dir}/edgeric-scheduler.service.in" /etc/systemd/system/edgeric-scheduler.service
 render_unit "${script_dir}/edgeric-dashboard.service.in" /etc/systemd/system/edgeric-dashboard.service
 install -o root -g root -m 0644 "${script_dir}/edgeric-open5gs.service" /etc/systemd/system/edgeric-open5gs.service
+install -o root -g root -m 0644 "${script_dir}/iperf3@.service" /etc/systemd/system/iperf3@.service
+install -d -o root -g root -m 0755 /etc/systemd/system/iperf3.service.d
+install -o root -g root -m 0644 "${script_dir}/iperf3.service.d/edgeric-multi-port.conf" \
+  /etc/systemd/system/iperf3.service.d/edgeric-multi-port.conf
 
 sudoers_file="$(mktemp)"
 cat > "${sudoers_file}" <<EOF
-Cmnd_Alias EDGERIC_DASHBOARD_SYSTEMCTL = /usr/bin/systemctl start edgeric-gnb.service, /usr/bin/systemctl stop edgeric-gnb.service, /usr/bin/systemctl restart edgeric-gnb.service, /usr/bin/systemctl start edgeric-collector.service, /usr/bin/systemctl stop edgeric-collector.service, /usr/bin/systemctl restart edgeric-collector.service, /usr/bin/systemctl start edgeric-open5gs.service, /usr/bin/systemctl stop edgeric-open5gs.service, /usr/bin/systemctl restart edgeric-open5gs.service
+Cmnd_Alias EDGERIC_DASHBOARD_SYSTEMCTL = /usr/bin/systemctl start edgeric-gnb.service, /usr/bin/systemctl stop edgeric-gnb.service, /usr/bin/systemctl restart edgeric-gnb.service, /usr/bin/systemctl start edgeric-collector.service, /usr/bin/systemctl stop edgeric-collector.service, /usr/bin/systemctl restart edgeric-collector.service, /usr/bin/systemctl start edgeric-scheduler.service, /usr/bin/systemctl stop edgeric-scheduler.service, /usr/bin/systemctl restart edgeric-scheduler.service, /usr/bin/systemctl start edgeric-open5gs.service, /usr/bin/systemctl stop edgeric-open5gs.service, /usr/bin/systemctl restart edgeric-open5gs.service
 ${install_user} ALL=(root) NOPASSWD: EDGERIC_DASHBOARD_SYSTEMCTL
 EOF
 visudo -cf "${sudoers_file}"
@@ -85,7 +90,8 @@ install -o root -g root -m 0440 "${sudoers_file}" /etc/sudoers.d/edgeric-dashboa
 rm -f -- "${sudoers_file}"
 
 systemctl daemon-reload
-systemctl enable edgeric-dashboard.service
+systemctl restart iperf3.service
+systemctl enable edgeric-dashboard.service edgeric-scheduler.service
 systemctl restart edgeric-dashboard.service
 
 dashboard_ready=false

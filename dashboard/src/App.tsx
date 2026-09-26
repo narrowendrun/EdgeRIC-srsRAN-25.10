@@ -72,6 +72,25 @@ function App() {
     }
   }
 
+  async function selectScheduler(algorithm: string) {
+    setPendingAction('scheduler-select'); setNotice('')
+    try {
+      const response = await fetch('/api/scheduler/select', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ algorithm }),
+      })
+      const result = await response.json()
+      if (!response.ok) throw new Error(result.error || 'scheduler switch failed')
+      setNotice(result.unchanged
+        ? `${algorithm} is already selected.`
+        : `${algorithm} applied as epoch ${result.policyEpoch}; previous run archived.`)
+      await refresh()
+    } catch (caught) {
+      setNotice(caught instanceof Error ? caught.message : 'scheduler switch failed')
+    } finally {
+      setPendingAction('')
+    }
+  }
+
   return <main className="workbench-shell">
     <header className="masthead">
       <div><p className="eyebrow">vriika-fiend / radio bench</p><h1>EdgeRIC Workbench</h1></div>
@@ -85,7 +104,7 @@ function App() {
     {statusError && <div className="notice notice-error" role="alert">Status feed: {statusError}</div>}
     {notice && <div className="notice" role="status">{notice}</div>}
     {view === 'live' && <>
-      <StatusBoard status={status} pendingAction={pendingAction} onAction={runAction} />
+      <StatusBoard status={status} pendingAction={pendingAction} onAction={runAction} onSchedulerSelect={selectScheduler} />
       <TelemetrySection />
       <LiveTerminal />
     </>}

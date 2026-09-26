@@ -106,9 +106,36 @@ struct GtpMetricsDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GtpMetricsDefaultTypeInternal _GtpMetrics_default_instance_;
+PROTOBUF_CONSTEXPR HarqEvent::HarqEvent(
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_.sequence_id_)*/uint64_t{0u}
+  , /*decltype(_impl_.cell_index_)*/0u
+  , /*decltype(_impl_.rnti_)*/0u
+  , /*decltype(_impl_.tx_slot_)*/uint64_t{0u}
+  , /*decltype(_impl_.direction_)*/0
+  , /*decltype(_impl_.harq_id_)*/0u
+  , /*decltype(_impl_.feedback_slot_)*/uint64_t{0u}
+  , /*decltype(_impl_.attempt_number_)*/0u
+  , /*decltype(_impl_.is_retransmission_)*/false
+  , /*decltype(_impl_.ndi_)*/false
+  , /*decltype(_impl_.outcome_)*/0
+  , /*decltype(_impl_.tbs_bytes_)*/0u
+  , /*decltype(_impl_.du_ue_index_)*/0u
+  , /*decltype(_impl_._cached_size_)*/{}} {}
+struct HarqEventDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR HarqEventDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~HarqEventDefaultTypeInternal() {}
+  union {
+    HarqEvent _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 HarqEventDefaultTypeInternal _HarqEvent_default_instance_;
 PROTOBUF_CONSTEXPR MacUeMetrics::MacUeMetrics(
     ::_pbi::ConstantInitialized): _impl_{
-    /*decltype(_impl_.cqi_)*/0u
+    /*decltype(_impl_._has_bits_)*/{}
+  , /*decltype(_impl_._cached_size_)*/{}
+  , /*decltype(_impl_.cqi_)*/0u
   , /*decltype(_impl_.snr_)*/0
   , /*decltype(_impl_.dl_buffer_)*/0u
   , /*decltype(_impl_.ul_buffer_)*/0u
@@ -129,8 +156,7 @@ PROTOBUF_CONSTEXPR MacUeMetrics::MacUeMetrics(
   , /*decltype(_impl_.avg_sr_to_pusch_delay_ms_)*/0
   , /*decltype(_impl_.avg_sum_mac_delay_ms_)*/0
   , /*decltype(_impl_.dl_acked_bytes_)*/0u
-  , /*decltype(_impl_.ul_ok_bytes_)*/0u
-  , /*decltype(_impl_._cached_size_)*/{}} {}
+  , /*decltype(_impl_.ul_ok_bytes_)*/0u} {}
 struct MacUeMetricsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR MacUeMetricsDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -161,8 +187,20 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORIT
 PROTOBUF_CONSTEXPR TtiMetrics::TtiMetrics(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.ues_)*/{}
+  , /*decltype(_impl_.harq_events_)*/{}
+  , /*decltype(_impl_.dl_eligible_rntis_)*/{}
+  , /*decltype(_impl_._dl_eligible_rntis_cached_byte_size_)*/{0}
+  , /*decltype(_impl_.ul_eligible_rntis_)*/{}
+  , /*decltype(_impl_._ul_eligible_rntis_cached_byte_size_)*/{0}
+  , /*decltype(_impl_.scheduler_algorithm_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.timestamp_us_)*/uint64_t{0u}
   , /*decltype(_impl_.tti_index_)*/0u
+  , /*decltype(_impl_.numerology_)*/0u
+  , /*decltype(_impl_.native_slot_)*/uint64_t{0u}
+  , /*decltype(_impl_.message_sequence_id_)*/uint64_t{0u}
+  , /*decltype(_impl_.scheduler_policy_epoch_)*/uint64_t{0u}
+  , /*decltype(_impl_.slot_duration_ns_)*/0u
+  , /*decltype(_impl_.scheduler_control_active_)*/false
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct TtiMetricsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR TtiMetricsDefaultTypeInternal()
@@ -229,8 +267,8 @@ struct DrbMetricsLegacyDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 DrbMetricsLegacyDefaultTypeInternal _DrbMetricsLegacy_default_instance_;
-static ::_pb::Metadata file_level_metadata_metrics_2eproto[10];
-static constexpr ::_pb::EnumDescriptor const** file_level_enum_descriptors_metrics_2eproto = nullptr;
+static ::_pb::Metadata file_level_metadata_metrics_2eproto[11];
+static const ::_pb::EnumDescriptor* file_level_enum_descriptors_metrics_2eproto[2];
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_metrics_2eproto = nullptr;
 
 const uint32_t TableStruct_metrics_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
@@ -297,6 +335,25 @@ const uint32_t TableStruct_metrics_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
   PROTOBUF_FIELD_OFFSET(::GtpMetrics, _impl_.ul_pkts_),
   PROTOBUF_FIELD_OFFSET(::GtpMetrics, _impl_.ul_bytes_),
   ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _impl_.sequence_id_),
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _impl_.cell_index_),
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _impl_.rnti_),
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _impl_.direction_),
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _impl_.tx_slot_),
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _impl_.feedback_slot_),
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _impl_.harq_id_),
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _impl_.attempt_number_),
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _impl_.is_retransmission_),
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _impl_.ndi_),
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _impl_.outcome_),
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _impl_.tbs_bytes_),
+  PROTOBUF_FIELD_OFFSET(::HarqEvent, _impl_.du_ue_index_),
+  PROTOBUF_FIELD_OFFSET(::MacUeMetrics, _impl_._has_bits_),
   PROTOBUF_FIELD_OFFSET(::MacUeMetrics, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
@@ -324,6 +381,28 @@ const uint32_t TableStruct_metrics_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
   PROTOBUF_FIELD_OFFSET(::MacUeMetrics, _impl_.avg_pusch_harq_delay_ms_),
   PROTOBUF_FIELD_OFFSET(::MacUeMetrics, _impl_.avg_sr_to_pusch_delay_ms_),
   PROTOBUF_FIELD_OFFSET(::MacUeMetrics, _impl_.avg_sum_mac_delay_ms_),
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  ~0u,
+  0,
+  1,
+  2,
+  3,
+  4,
+  ~0u,
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::UeMetrics, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -345,6 +424,16 @@ const uint32_t TableStruct_metrics_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
   PROTOBUF_FIELD_OFFSET(::TtiMetrics, _impl_.tti_index_),
   PROTOBUF_FIELD_OFFSET(::TtiMetrics, _impl_.timestamp_us_),
   PROTOBUF_FIELD_OFFSET(::TtiMetrics, _impl_.ues_),
+  PROTOBUF_FIELD_OFFSET(::TtiMetrics, _impl_.harq_events_),
+  PROTOBUF_FIELD_OFFSET(::TtiMetrics, _impl_.native_slot_),
+  PROTOBUF_FIELD_OFFSET(::TtiMetrics, _impl_.numerology_),
+  PROTOBUF_FIELD_OFFSET(::TtiMetrics, _impl_.slot_duration_ns_),
+  PROTOBUF_FIELD_OFFSET(::TtiMetrics, _impl_.message_sequence_id_),
+  PROTOBUF_FIELD_OFFSET(::TtiMetrics, _impl_.scheduler_policy_epoch_),
+  PROTOBUF_FIELD_OFFSET(::TtiMetrics, _impl_.scheduler_algorithm_),
+  PROTOBUF_FIELD_OFFSET(::TtiMetrics, _impl_.scheduler_control_active_),
+  PROTOBUF_FIELD_OFFSET(::TtiMetrics, _impl_.dl_eligible_rntis_),
+  PROTOBUF_FIELD_OFFSET(::TtiMetrics, _impl_.ul_eligible_rntis_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Metrics, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -389,12 +478,13 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 11, -1, -1, sizeof(::RlcDrbMetrics)},
   { 33, -1, -1, sizeof(::PdcpDrbMetrics)},
   { 52, -1, -1, sizeof(::GtpMetrics)},
-  { 62, -1, -1, sizeof(::MacUeMetrics)},
-  { 90, -1, -1, sizeof(::UeMetrics)},
-  { 102, -1, -1, sizeof(::TtiMetrics)},
-  { 111, -1, -1, sizeof(::Metrics)},
-  { 119, -1, -1, sizeof(::UeMetricsLegacy)},
-  { 138, -1, -1, sizeof(::DrbMetricsLegacy)},
+  { 62, -1, -1, sizeof(::HarqEvent)},
+  { 81, 109, -1, sizeof(::MacUeMetrics)},
+  { 131, -1, -1, sizeof(::UeMetrics)},
+  { 143, -1, -1, sizeof(::TtiMetrics)},
+  { 162, -1, -1, sizeof(::Metrics)},
+  { 170, -1, -1, sizeof(::UeMetricsLegacy)},
+  { 189, -1, -1, sizeof(::DrbMetricsLegacy)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -402,6 +492,7 @@ static const ::_pb::Message* const file_default_instances[] = {
   &::_RlcDrbMetrics_default_instance_._instance,
   &::_PdcpDrbMetrics_default_instance_._instance,
   &::_GtpMetrics_default_instance_._instance,
+  &::_HarqEvent_default_instance_._instance,
   &::_MacUeMetrics_default_instance_._instance,
   &::_UeMetrics_default_instance_._instance,
   &::_TtiMetrics_default_instance_._instance,
@@ -432,43 +523,69 @@ const char descriptor_table_protodef_metrics_2eproto[] PROTOBUF_SECTION_VARIABLE
   "\004\022\027\n\017rx_dropped_pdus\030\t \001(\004\022\031\n\021rx_sdu_lat"
   "ency_ns\030\014 \001(\r\"R\n\nGtpMetrics\022\017\n\007dl_pkts\030\001"
   " \001(\004\022\020\n\010dl_bytes\030\002 \001(\004\022\017\n\007ul_pkts\030\003 \001(\004\022"
-  "\020\n\010ul_bytes\030\004 \001(\004\"\345\003\n\014MacUeMetrics\022\013\n\003cq"
-  "i\030\001 \001(\r\022\013\n\003snr\030\002 \001(\002\022\021\n\tdl_buffer\030\003 \001(\r\022"
-  "\021\n\tul_buffer\030\004 \001(\r\022\016\n\006dl_tbs\030\005 \001(\r\022\016\n\006ul"
-  "_tbs\030\006 \001(\r\022\026\n\016dl_acked_bytes\030\026 \001(\r\022\023\n\013ul"
-  "_ok_bytes\030\027 \001(\r\022\016\n\006dl_mcs\030\013 \001(\r\022\016\n\006ul_mc"
-  "s\030\014 \001(\r\022\017\n\007dl_prbs\030\r \001(\r\022\017\n\007ul_prbs\030\016 \001("
-  "\r\022\023\n\013dl_harq_ack\030\007 \001(\r\022\024\n\014dl_harq_nack\030\010"
-  " \001(\r\022\021\n\tul_crc_ok\030\t \001(\r\022\023\n\013ul_crc_fail\030\n"
-  " \001(\r\022\027\n\017avg_ce_delay_ms\030\020 \001(\002\022\030\n\020avg_crc"
-  "_delay_ms\030\021 \001(\002\022\037\n\027avg_pucch_harq_delay_"
-  "ms\030\022 \001(\002\022\037\n\027avg_pusch_harq_delay_ms\030\023 \001("
-  "\002\022 \n\030avg_sr_to_pusch_delay_ms\030\024 \001(\002\022\034\n\024a"
-  "vg_sum_mac_delay_ms\030\025 \001(\002\"\264\001\n\tUeMetrics\022"
-  "\014\n\004rnti\030\001 \001(\r\022\032\n\003mac\030\002 \001(\0132\r.MacUeMetric"
-  "s\022\037\n\007mac_drb\030\003 \003(\0132\016.MacDrbMetrics\022\037\n\007rl"
-  "c_drb\030\004 \003(\0132\016.RlcDrbMetrics\022!\n\010pdcp_drb\030"
-  "\005 \003(\0132\017.PdcpDrbMetrics\022\030\n\003gtp\030\006 \001(\0132\013.Gt"
-  "pMetrics\"N\n\nTtiMetrics\022\021\n\ttti_index\030\001 \001("
-  "\r\022\024\n\014timestamp_us\030\002 \001(\004\022\027\n\003ues\030\003 \003(\0132\n.U"
-  "eMetrics\"@\n\007Metrics\022\017\n\007tti_cnt\030\001 \001(\r\022$\n\n"
-  "ue_metrics\030\002 \003(\0132\020.UeMetricsLegacy\"\371\001\n\017U"
-  "eMetricsLegacy\022\014\n\004rnti\030\001 \001(\r\022\013\n\003cqi\030\002 \001("
-  "\r\022\013\n\003snr\030\003 \001(\002\022\020\n\010tx_bytes\030\004 \001(\002\022\020\n\010rx_b"
-  "ytes\030\005 \001(\002\022\021\n\tdl_buffer\030\006 \001(\r\022\021\n\tul_buff"
-  "er\030\007 \001(\r\022\016\n\006dl_tbs\030\010 \001(\002\022\r\n\005dl_ok\030\t \001(\r\022"
-  "\016\n\006dl_nok\030\n \001(\r\022\r\n\005ul_ok\030\013 \001(\r\022\016\n\006ul_nok"
-  "\030\014 \001(\r\022&\n\013drb_metrics\030\r \003(\0132\021.DrbMetrics"
-  "Legacy\"j\n\020DrbMetricsLegacy\022\014\n\004lcid\030\001 \001(\r"
-  "\022\021\n\tdl_buffer\030\002 \001(\r\022\021\n\tul_buffer\030\003 \001(\r\022\020"
-  "\n\010tx_bytes\030\004 \001(\002\022\020\n\010rx_bytes\030\005 \001(\002b\006prot"
-  "o3"
+  "\020\n\010ul_bytes\030\004 \001(\004\"\245\002\n\tHarqEvent\022\023\n\013seque"
+  "nce_id\030\001 \001(\004\022\022\n\ncell_index\030\002 \001(\r\022\014\n\004rnti"
+  "\030\003 \001(\r\022!\n\tdirection\030\004 \001(\0162\016.HarqDirectio"
+  "n\022\017\n\007tx_slot\030\005 \001(\004\022\025\n\rfeedback_slot\030\006 \001("
+  "\004\022\017\n\007harq_id\030\007 \001(\r\022\026\n\016attempt_number\030\010 \001"
+  "(\r\022\031\n\021is_retransmission\030\t \001(\010\022\013\n\003ndi\030\n \001"
+  "(\010\022\035\n\007outcome\030\013 \001(\0162\014.HarqOutcome\022\021\n\ttbs"
+  "_bytes\030\014 \001(\r\022\023\n\013du_ue_index\030\r \001(\r\"\200\005\n\014Ma"
+  "cUeMetrics\022\013\n\003cqi\030\001 \001(\r\022\013\n\003snr\030\002 \001(\002\022\021\n\t"
+  "dl_buffer\030\003 \001(\r\022\021\n\tul_buffer\030\004 \001(\r\022\016\n\006dl"
+  "_tbs\030\005 \001(\r\022\016\n\006ul_tbs\030\006 \001(\r\022\026\n\016dl_acked_b"
+  "ytes\030\026 \001(\r\022\023\n\013ul_ok_bytes\030\027 \001(\r\022\016\n\006dl_mc"
+  "s\030\013 \001(\r\022\016\n\006ul_mcs\030\014 \001(\r\022\017\n\007dl_prbs\030\r \001(\r"
+  "\022\017\n\007ul_prbs\030\016 \001(\r\022\023\n\013dl_harq_ack\030\007 \001(\r\022\024"
+  "\n\014dl_harq_nack\030\010 \001(\r\022\021\n\tul_crc_ok\030\t \001(\r\022"
+  "\023\n\013ul_crc_fail\030\n \001(\r\022\034\n\017avg_ce_delay_ms\030"
+  "\020 \001(\002H\000\210\001\001\022\035\n\020avg_crc_delay_ms\030\021 \001(\002H\001\210\001"
+  "\001\022$\n\027avg_pucch_harq_delay_ms\030\022 \001(\002H\002\210\001\001\022"
+  "$\n\027avg_pusch_harq_delay_ms\030\023 \001(\002H\003\210\001\001\022%\n"
+  "\030avg_sr_to_pusch_delay_ms\030\024 \001(\002H\004\210\001\001\022 \n\024"
+  "avg_sum_mac_delay_ms\030\025 \001(\002B\002\030\001B\022\n\020_avg_c"
+  "e_delay_msB\023\n\021_avg_crc_delay_msB\032\n\030_avg_"
+  "pucch_harq_delay_msB\032\n\030_avg_pusch_harq_d"
+  "elay_msB\033\n\031_avg_sr_to_pusch_delay_ms\"\264\001\n"
+  "\tUeMetrics\022\014\n\004rnti\030\001 \001(\r\022\032\n\003mac\030\002 \001(\0132\r."
+  "MacUeMetrics\022\037\n\007mac_drb\030\003 \003(\0132\016.MacDrbMe"
+  "trics\022\037\n\007rlc_drb\030\004 \003(\0132\016.RlcDrbMetrics\022!"
+  "\n\010pdcp_drb\030\005 \003(\0132\017.PdcpDrbMetrics\022\030\n\003gtp"
+  "\030\006 \001(\0132\013.GtpMetrics\"\344\002\n\nTtiMetrics\022\021\n\ttt"
+  "i_index\030\001 \001(\r\022\024\n\014timestamp_us\030\002 \001(\004\022\027\n\003u"
+  "es\030\003 \003(\0132\n.UeMetrics\022\037\n\013harq_events\030\004 \003("
+  "\0132\n.HarqEvent\022\023\n\013native_slot\030\005 \001(\004\022\022\n\nnu"
+  "merology\030\006 \001(\r\022\030\n\020slot_duration_ns\030\007 \001(\r"
+  "\022\033\n\023message_sequence_id\030\010 \001(\004\022\036\n\026schedul"
+  "er_policy_epoch\030\t \001(\004\022\033\n\023scheduler_algor"
+  "ithm\030\n \001(\t\022 \n\030scheduler_control_active\030\013"
+  " \001(\010\022\031\n\021dl_eligible_rntis\030\014 \003(\r\022\031\n\021ul_el"
+  "igible_rntis\030\r \003(\r\"@\n\007Metrics\022\017\n\007tti_cnt"
+  "\030\001 \001(\r\022$\n\nue_metrics\030\002 \003(\0132\020.UeMetricsLe"
+  "gacy\"\371\001\n\017UeMetricsLegacy\022\014\n\004rnti\030\001 \001(\r\022\013"
+  "\n\003cqi\030\002 \001(\r\022\013\n\003snr\030\003 \001(\002\022\020\n\010tx_bytes\030\004 \001"
+  "(\002\022\020\n\010rx_bytes\030\005 \001(\002\022\021\n\tdl_buffer\030\006 \001(\r\022"
+  "\021\n\tul_buffer\030\007 \001(\r\022\016\n\006dl_tbs\030\010 \001(\002\022\r\n\005dl"
+  "_ok\030\t \001(\r\022\016\n\006dl_nok\030\n \001(\r\022\r\n\005ul_ok\030\013 \001(\r"
+  "\022\016\n\006ul_nok\030\014 \001(\r\022&\n\013drb_metrics\030\r \003(\0132\021."
+  "DrbMetricsLegacy\"j\n\020DrbMetricsLegacy\022\014\n\004"
+  "lcid\030\001 \001(\r\022\021\n\tdl_buffer\030\002 \001(\r\022\021\n\tul_buff"
+  "er\030\003 \001(\r\022\020\n\010tx_bytes\030\004 \001(\002\022\020\n\010rx_bytes\030\005"
+  " \001(\002*]\n\rHarqDirection\022\036\n\032HARQ_DIRECTION_"
+  "UNSPECIFIED\020\000\022\025\n\021HARQ_DIRECTION_DL\020\001\022\025\n\021"
+  "HARQ_DIRECTION_UL\020\002*\352\001\n\013HarqOutcome\022\034\n\030H"
+  "ARQ_OUTCOME_UNSPECIFIED\020\000\022\024\n\020HARQ_OUTCOM"
+  "E_ACK\020\001\022\025\n\021HARQ_OUTCOME_NACK\020\002\022\027\n\023HARQ_O"
+  "UTCOME_CRC_OK\020\003\022\031\n\025HARQ_OUTCOME_CRC_FAIL"
+  "\020\004\022\034\n\030HARQ_OUTCOME_DTX_TIMEOUT\020\005\022\035\n\031HARQ"
+  "_OUTCOME_RETX_TIMEOUT\020\006\022\037\n\033HARQ_OUTCOME_"
+  "ACK_ON_TIMEOUT\020\007b\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_metrics_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_metrics_2eproto = {
-    false, false, 2042, descriptor_table_protodef_metrics_2eproto,
+    false, false, 3104, descriptor_table_protodef_metrics_2eproto,
     "metrics.proto",
-    &descriptor_table_metrics_2eproto_once, nullptr, 0, 10,
+    &descriptor_table_metrics_2eproto_once, nullptr, 0, 11,
     schemas, file_default_instances, TableStruct_metrics_2eproto::offsets,
     file_level_metadata_metrics_2eproto, file_level_enum_descriptors_metrics_2eproto,
     file_level_service_descriptors_metrics_2eproto,
@@ -479,6 +596,41 @@ PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_metrics_
 
 // Force running AddDescriptors() at dynamic initialization time.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_metrics_2eproto(&descriptor_table_metrics_2eproto);
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* HarqDirection_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_metrics_2eproto);
+  return file_level_enum_descriptors_metrics_2eproto[0];
+}
+bool HarqDirection_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
+      return true;
+    default:
+      return false;
+  }
+}
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* HarqOutcome_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_metrics_2eproto);
+  return file_level_enum_descriptors_metrics_2eproto[1];
+}
+bool HarqOutcome_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+      return true;
+    default:
+      return false;
+  }
+}
+
 
 // ===================================================================
 
@@ -2048,8 +2200,505 @@ void GtpMetrics::InternalSwap(GtpMetrics* other) {
 
 // ===================================================================
 
+class HarqEvent::_Internal {
+ public:
+};
+
+HarqEvent::HarqEvent(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
+  // @@protoc_insertion_point(arena_constructor:HarqEvent)
+}
+HarqEvent::HarqEvent(const HarqEvent& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  HarqEvent* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_.sequence_id_){}
+    , decltype(_impl_.cell_index_){}
+    , decltype(_impl_.rnti_){}
+    , decltype(_impl_.tx_slot_){}
+    , decltype(_impl_.direction_){}
+    , decltype(_impl_.harq_id_){}
+    , decltype(_impl_.feedback_slot_){}
+    , decltype(_impl_.attempt_number_){}
+    , decltype(_impl_.is_retransmission_){}
+    , decltype(_impl_.ndi_){}
+    , decltype(_impl_.outcome_){}
+    , decltype(_impl_.tbs_bytes_){}
+    , decltype(_impl_.du_ue_index_){}
+    , /*decltype(_impl_._cached_size_)*/{}};
+
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::memcpy(&_impl_.sequence_id_, &from._impl_.sequence_id_,
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.du_ue_index_) -
+    reinterpret_cast<char*>(&_impl_.sequence_id_)) + sizeof(_impl_.du_ue_index_));
+  // @@protoc_insertion_point(copy_constructor:HarqEvent)
+}
+
+inline void HarqEvent::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_.sequence_id_){uint64_t{0u}}
+    , decltype(_impl_.cell_index_){0u}
+    , decltype(_impl_.rnti_){0u}
+    , decltype(_impl_.tx_slot_){uint64_t{0u}}
+    , decltype(_impl_.direction_){0}
+    , decltype(_impl_.harq_id_){0u}
+    , decltype(_impl_.feedback_slot_){uint64_t{0u}}
+    , decltype(_impl_.attempt_number_){0u}
+    , decltype(_impl_.is_retransmission_){false}
+    , decltype(_impl_.ndi_){false}
+    , decltype(_impl_.outcome_){0}
+    , decltype(_impl_.tbs_bytes_){0u}
+    , decltype(_impl_.du_ue_index_){0u}
+    , /*decltype(_impl_._cached_size_)*/{}
+  };
+}
+
+HarqEvent::~HarqEvent() {
+  // @@protoc_insertion_point(destructor:HarqEvent)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void HarqEvent::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+}
+
+void HarqEvent::SetCachedSize(int size) const {
+  _impl_._cached_size_.Set(size);
+}
+
+void HarqEvent::Clear() {
+// @@protoc_insertion_point(message_clear_start:HarqEvent)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  ::memset(&_impl_.sequence_id_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&_impl_.du_ue_index_) -
+      reinterpret_cast<char*>(&_impl_.sequence_id_)) + sizeof(_impl_.du_ue_index_));
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* HarqEvent::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // uint64 sequence_id = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
+          _impl_.sequence_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint32 cell_index = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
+          _impl_.cell_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint32 rnti = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
+          _impl_.rnti_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // .HarqDirection direction = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
+          uint64_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+          _internal_set_direction(static_cast<::HarqDirection>(val));
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 tx_slot = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
+          _impl_.tx_slot_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 feedback_slot = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 48)) {
+          _impl_.feedback_slot_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint32 harq_id = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 56)) {
+          _impl_.harq_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint32 attempt_number = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 64)) {
+          _impl_.attempt_number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // bool is_retransmission = 9;
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 72)) {
+          _impl_.is_retransmission_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // bool ndi = 10;
+      case 10:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 80)) {
+          _impl_.ndi_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // .HarqOutcome outcome = 11;
+      case 11:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 88)) {
+          uint64_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+          _internal_set_outcome(static_cast<::HarqOutcome>(val));
+        } else
+          goto handle_unusual;
+        continue;
+      // uint32 tbs_bytes = 12;
+      case 12:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 96)) {
+          _impl_.tbs_bytes_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint32 du_ue_index = 13;
+      case 13:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 104)) {
+          _impl_.du_ue_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* HarqEvent::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:HarqEvent)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // uint64 sequence_id = 1;
+  if (this->_internal_sequence_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(1, this->_internal_sequence_id(), target);
+  }
+
+  // uint32 cell_index = 2;
+  if (this->_internal_cell_index() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(2, this->_internal_cell_index(), target);
+  }
+
+  // uint32 rnti = 3;
+  if (this->_internal_rnti() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(3, this->_internal_rnti(), target);
+  }
+
+  // .HarqDirection direction = 4;
+  if (this->_internal_direction() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteEnumToArray(
+      4, this->_internal_direction(), target);
+  }
+
+  // uint64 tx_slot = 5;
+  if (this->_internal_tx_slot() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(5, this->_internal_tx_slot(), target);
+  }
+
+  // uint64 feedback_slot = 6;
+  if (this->_internal_feedback_slot() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(6, this->_internal_feedback_slot(), target);
+  }
+
+  // uint32 harq_id = 7;
+  if (this->_internal_harq_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(7, this->_internal_harq_id(), target);
+  }
+
+  // uint32 attempt_number = 8;
+  if (this->_internal_attempt_number() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(8, this->_internal_attempt_number(), target);
+  }
+
+  // bool is_retransmission = 9;
+  if (this->_internal_is_retransmission() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(9, this->_internal_is_retransmission(), target);
+  }
+
+  // bool ndi = 10;
+  if (this->_internal_ndi() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(10, this->_internal_ndi(), target);
+  }
+
+  // .HarqOutcome outcome = 11;
+  if (this->_internal_outcome() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteEnumToArray(
+      11, this->_internal_outcome(), target);
+  }
+
+  // uint32 tbs_bytes = 12;
+  if (this->_internal_tbs_bytes() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(12, this->_internal_tbs_bytes(), target);
+  }
+
+  // uint32 du_ue_index = 13;
+  if (this->_internal_du_ue_index() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(13, this->_internal_du_ue_index(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:HarqEvent)
+  return target;
+}
+
+size_t HarqEvent::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:HarqEvent)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // uint64 sequence_id = 1;
+  if (this->_internal_sequence_id() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_sequence_id());
+  }
+
+  // uint32 cell_index = 2;
+  if (this->_internal_cell_index() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_cell_index());
+  }
+
+  // uint32 rnti = 3;
+  if (this->_internal_rnti() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_rnti());
+  }
+
+  // uint64 tx_slot = 5;
+  if (this->_internal_tx_slot() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_tx_slot());
+  }
+
+  // .HarqDirection direction = 4;
+  if (this->_internal_direction() != 0) {
+    total_size += 1 +
+      ::_pbi::WireFormatLite::EnumSize(this->_internal_direction());
+  }
+
+  // uint32 harq_id = 7;
+  if (this->_internal_harq_id() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_harq_id());
+  }
+
+  // uint64 feedback_slot = 6;
+  if (this->_internal_feedback_slot() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_feedback_slot());
+  }
+
+  // uint32 attempt_number = 8;
+  if (this->_internal_attempt_number() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_attempt_number());
+  }
+
+  // bool is_retransmission = 9;
+  if (this->_internal_is_retransmission() != 0) {
+    total_size += 1 + 1;
+  }
+
+  // bool ndi = 10;
+  if (this->_internal_ndi() != 0) {
+    total_size += 1 + 1;
+  }
+
+  // .HarqOutcome outcome = 11;
+  if (this->_internal_outcome() != 0) {
+    total_size += 1 +
+      ::_pbi::WireFormatLite::EnumSize(this->_internal_outcome());
+  }
+
+  // uint32 tbs_bytes = 12;
+  if (this->_internal_tbs_bytes() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_tbs_bytes());
+  }
+
+  // uint32 du_ue_index = 13;
+  if (this->_internal_du_ue_index() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_du_ue_index());
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData HarqEvent::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+    HarqEvent::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*HarqEvent::GetClassData() const { return &_class_data_; }
+
+
+void HarqEvent::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<HarqEvent*>(&to_msg);
+  auto& from = static_cast<const HarqEvent&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:HarqEvent)
+  GOOGLE_DCHECK_NE(&from, _this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from._internal_sequence_id() != 0) {
+    _this->_internal_set_sequence_id(from._internal_sequence_id());
+  }
+  if (from._internal_cell_index() != 0) {
+    _this->_internal_set_cell_index(from._internal_cell_index());
+  }
+  if (from._internal_rnti() != 0) {
+    _this->_internal_set_rnti(from._internal_rnti());
+  }
+  if (from._internal_tx_slot() != 0) {
+    _this->_internal_set_tx_slot(from._internal_tx_slot());
+  }
+  if (from._internal_direction() != 0) {
+    _this->_internal_set_direction(from._internal_direction());
+  }
+  if (from._internal_harq_id() != 0) {
+    _this->_internal_set_harq_id(from._internal_harq_id());
+  }
+  if (from._internal_feedback_slot() != 0) {
+    _this->_internal_set_feedback_slot(from._internal_feedback_slot());
+  }
+  if (from._internal_attempt_number() != 0) {
+    _this->_internal_set_attempt_number(from._internal_attempt_number());
+  }
+  if (from._internal_is_retransmission() != 0) {
+    _this->_internal_set_is_retransmission(from._internal_is_retransmission());
+  }
+  if (from._internal_ndi() != 0) {
+    _this->_internal_set_ndi(from._internal_ndi());
+  }
+  if (from._internal_outcome() != 0) {
+    _this->_internal_set_outcome(from._internal_outcome());
+  }
+  if (from._internal_tbs_bytes() != 0) {
+    _this->_internal_set_tbs_bytes(from._internal_tbs_bytes());
+  }
+  if (from._internal_du_ue_index() != 0) {
+    _this->_internal_set_du_ue_index(from._internal_du_ue_index());
+  }
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void HarqEvent::CopyFrom(const HarqEvent& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:HarqEvent)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool HarqEvent::IsInitialized() const {
+  return true;
+}
+
+void HarqEvent::InternalSwap(HarqEvent* other) {
+  using std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(HarqEvent, _impl_.du_ue_index_)
+      + sizeof(HarqEvent::_impl_.du_ue_index_)
+      - PROTOBUF_FIELD_OFFSET(HarqEvent, _impl_.sequence_id_)>(
+          reinterpret_cast<char*>(&_impl_.sequence_id_),
+          reinterpret_cast<char*>(&other->_impl_.sequence_id_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata HarqEvent::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_metrics_2eproto_getter, &descriptor_table_metrics_2eproto_once,
+      file_level_metadata_metrics_2eproto[4]);
+}
+
+// ===================================================================
+
 class MacUeMetrics::_Internal {
  public:
+  using HasBits = decltype(std::declval<MacUeMetrics>()._impl_._has_bits_);
+  static void set_has_avg_ce_delay_ms(HasBits* has_bits) {
+    (*has_bits)[0] |= 1u;
+  }
+  static void set_has_avg_crc_delay_ms(HasBits* has_bits) {
+    (*has_bits)[0] |= 2u;
+  }
+  static void set_has_avg_pucch_harq_delay_ms(HasBits* has_bits) {
+    (*has_bits)[0] |= 4u;
+  }
+  static void set_has_avg_pusch_harq_delay_ms(HasBits* has_bits) {
+    (*has_bits)[0] |= 8u;
+  }
+  static void set_has_avg_sr_to_pusch_delay_ms(HasBits* has_bits) {
+    (*has_bits)[0] |= 16u;
+  }
 };
 
 MacUeMetrics::MacUeMetrics(::PROTOBUF_NAMESPACE_ID::Arena* arena,
@@ -2062,7 +2711,9 @@ MacUeMetrics::MacUeMetrics(const MacUeMetrics& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   MacUeMetrics* const _this = this; (void)_this;
   new (&_impl_) Impl_{
-      decltype(_impl_.cqi_){}
+      decltype(_impl_._has_bits_){from._impl_._has_bits_}
+    , /*decltype(_impl_._cached_size_)*/{}
+    , decltype(_impl_.cqi_){}
     , decltype(_impl_.snr_){}
     , decltype(_impl_.dl_buffer_){}
     , decltype(_impl_.ul_buffer_){}
@@ -2083,8 +2734,7 @@ MacUeMetrics::MacUeMetrics(const MacUeMetrics& from)
     , decltype(_impl_.avg_sr_to_pusch_delay_ms_){}
     , decltype(_impl_.avg_sum_mac_delay_ms_){}
     , decltype(_impl_.dl_acked_bytes_){}
-    , decltype(_impl_.ul_ok_bytes_){}
-    , /*decltype(_impl_._cached_size_)*/{}};
+    , decltype(_impl_.ul_ok_bytes_){}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::memcpy(&_impl_.cqi_, &from._impl_.cqi_,
@@ -2098,7 +2748,9 @@ inline void MacUeMetrics::SharedCtor(
   (void)arena;
   (void)is_message_owned;
   new (&_impl_) Impl_{
-      decltype(_impl_.cqi_){0u}
+      decltype(_impl_._has_bits_){}
+    , /*decltype(_impl_._cached_size_)*/{}
+    , decltype(_impl_.cqi_){0u}
     , decltype(_impl_.snr_){0}
     , decltype(_impl_.dl_buffer_){0u}
     , decltype(_impl_.ul_buffer_){0u}
@@ -2120,7 +2772,6 @@ inline void MacUeMetrics::SharedCtor(
     , decltype(_impl_.avg_sum_mac_delay_ms_){0}
     , decltype(_impl_.dl_acked_bytes_){0u}
     , decltype(_impl_.ul_ok_bytes_){0u}
-    , /*decltype(_impl_._cached_size_)*/{}
   };
 }
 
@@ -2148,13 +2799,24 @@ void MacUeMetrics::Clear() {
   (void) cached_has_bits;
 
   ::memset(&_impl_.cqi_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&_impl_.ul_prbs_) -
+      reinterpret_cast<char*>(&_impl_.cqi_)) + sizeof(_impl_.ul_prbs_));
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x0000001fu) {
+    ::memset(&_impl_.avg_ce_delay_ms_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&_impl_.avg_sr_to_pusch_delay_ms_) -
+        reinterpret_cast<char*>(&_impl_.avg_ce_delay_ms_)) + sizeof(_impl_.avg_sr_to_pusch_delay_ms_));
+  }
+  ::memset(&_impl_.avg_sum_mac_delay_ms_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&_impl_.ul_ok_bytes_) -
-      reinterpret_cast<char*>(&_impl_.cqi_)) + sizeof(_impl_.ul_ok_bytes_));
+      reinterpret_cast<char*>(&_impl_.avg_sum_mac_delay_ms_)) + sizeof(_impl_.ul_ok_bytes_));
+  _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 const char* MacUeMetrics::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
     ptr = ::_pbi::ReadTag(ptr, &tag);
@@ -2271,47 +2933,52 @@ const char* MacUeMetrics::_InternalParse(const char* ptr, ::_pbi::ParseContext* 
         } else
           goto handle_unusual;
         continue;
-      // float avg_ce_delay_ms = 16;
+      // optional float avg_ce_delay_ms = 16;
       case 16:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 133)) {
+          _Internal::set_has_avg_ce_delay_ms(&has_bits);
           _impl_.avg_ce_delay_ms_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
           ptr += sizeof(float);
         } else
           goto handle_unusual;
         continue;
-      // float avg_crc_delay_ms = 17;
+      // optional float avg_crc_delay_ms = 17;
       case 17:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 141)) {
+          _Internal::set_has_avg_crc_delay_ms(&has_bits);
           _impl_.avg_crc_delay_ms_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
           ptr += sizeof(float);
         } else
           goto handle_unusual;
         continue;
-      // float avg_pucch_harq_delay_ms = 18;
+      // optional float avg_pucch_harq_delay_ms = 18;
       case 18:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 149)) {
+          _Internal::set_has_avg_pucch_harq_delay_ms(&has_bits);
           _impl_.avg_pucch_harq_delay_ms_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
           ptr += sizeof(float);
         } else
           goto handle_unusual;
         continue;
-      // float avg_pusch_harq_delay_ms = 19;
+      // optional float avg_pusch_harq_delay_ms = 19;
       case 19:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 157)) {
+          _Internal::set_has_avg_pusch_harq_delay_ms(&has_bits);
           _impl_.avg_pusch_harq_delay_ms_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
           ptr += sizeof(float);
         } else
           goto handle_unusual;
         continue;
-      // float avg_sr_to_pusch_delay_ms = 20;
+      // optional float avg_sr_to_pusch_delay_ms = 20;
       case 20:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 165)) {
+          _Internal::set_has_avg_sr_to_pusch_delay_ms(&has_bits);
           _impl_.avg_sr_to_pusch_delay_ms_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
           ptr += sizeof(float);
         } else
           goto handle_unusual;
         continue;
-      // float avg_sum_mac_delay_ms = 21;
+      // float avg_sum_mac_delay_ms = 21 [deprecated = true];
       case 21:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 173)) {
           _impl_.avg_sum_mac_delay_ms_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
@@ -2351,6 +3018,7 @@ const char* MacUeMetrics::_InternalParse(const char* ptr, ::_pbi::ParseContext* 
     CHK_(ptr != nullptr);
   }  // while
 message_done:
+  _impl_._has_bits_.Or(has_bits);
   return ptr;
 failure:
   ptr = nullptr;
@@ -2452,57 +3120,37 @@ uint8_t* MacUeMetrics::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteUInt32ToArray(14, this->_internal_ul_prbs(), target);
   }
 
-  // float avg_ce_delay_ms = 16;
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_ce_delay_ms = this->_internal_avg_ce_delay_ms();
-  uint32_t raw_avg_ce_delay_ms;
-  memcpy(&raw_avg_ce_delay_ms, &tmp_avg_ce_delay_ms, sizeof(tmp_avg_ce_delay_ms));
-  if (raw_avg_ce_delay_ms != 0) {
+  // optional float avg_ce_delay_ms = 16;
+  if (_internal_has_avg_ce_delay_ms()) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteFloatToArray(16, this->_internal_avg_ce_delay_ms(), target);
   }
 
-  // float avg_crc_delay_ms = 17;
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_crc_delay_ms = this->_internal_avg_crc_delay_ms();
-  uint32_t raw_avg_crc_delay_ms;
-  memcpy(&raw_avg_crc_delay_ms, &tmp_avg_crc_delay_ms, sizeof(tmp_avg_crc_delay_ms));
-  if (raw_avg_crc_delay_ms != 0) {
+  // optional float avg_crc_delay_ms = 17;
+  if (_internal_has_avg_crc_delay_ms()) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteFloatToArray(17, this->_internal_avg_crc_delay_ms(), target);
   }
 
-  // float avg_pucch_harq_delay_ms = 18;
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_pucch_harq_delay_ms = this->_internal_avg_pucch_harq_delay_ms();
-  uint32_t raw_avg_pucch_harq_delay_ms;
-  memcpy(&raw_avg_pucch_harq_delay_ms, &tmp_avg_pucch_harq_delay_ms, sizeof(tmp_avg_pucch_harq_delay_ms));
-  if (raw_avg_pucch_harq_delay_ms != 0) {
+  // optional float avg_pucch_harq_delay_ms = 18;
+  if (_internal_has_avg_pucch_harq_delay_ms()) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteFloatToArray(18, this->_internal_avg_pucch_harq_delay_ms(), target);
   }
 
-  // float avg_pusch_harq_delay_ms = 19;
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_pusch_harq_delay_ms = this->_internal_avg_pusch_harq_delay_ms();
-  uint32_t raw_avg_pusch_harq_delay_ms;
-  memcpy(&raw_avg_pusch_harq_delay_ms, &tmp_avg_pusch_harq_delay_ms, sizeof(tmp_avg_pusch_harq_delay_ms));
-  if (raw_avg_pusch_harq_delay_ms != 0) {
+  // optional float avg_pusch_harq_delay_ms = 19;
+  if (_internal_has_avg_pusch_harq_delay_ms()) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteFloatToArray(19, this->_internal_avg_pusch_harq_delay_ms(), target);
   }
 
-  // float avg_sr_to_pusch_delay_ms = 20;
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_sr_to_pusch_delay_ms = this->_internal_avg_sr_to_pusch_delay_ms();
-  uint32_t raw_avg_sr_to_pusch_delay_ms;
-  memcpy(&raw_avg_sr_to_pusch_delay_ms, &tmp_avg_sr_to_pusch_delay_ms, sizeof(tmp_avg_sr_to_pusch_delay_ms));
-  if (raw_avg_sr_to_pusch_delay_ms != 0) {
+  // optional float avg_sr_to_pusch_delay_ms = 20;
+  if (_internal_has_avg_sr_to_pusch_delay_ms()) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteFloatToArray(20, this->_internal_avg_sr_to_pusch_delay_ms(), target);
   }
 
-  // float avg_sum_mac_delay_ms = 21;
+  // float avg_sum_mac_delay_ms = 21 [deprecated = true];
   static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
   float tmp_avg_sum_mac_delay_ms = this->_internal_avg_sum_mac_delay_ms();
   uint32_t raw_avg_sum_mac_delay_ms;
@@ -2614,52 +3262,35 @@ size_t MacUeMetrics::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_ul_prbs());
   }
 
-  // float avg_ce_delay_ms = 16;
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_ce_delay_ms = this->_internal_avg_ce_delay_ms();
-  uint32_t raw_avg_ce_delay_ms;
-  memcpy(&raw_avg_ce_delay_ms, &tmp_avg_ce_delay_ms, sizeof(tmp_avg_ce_delay_ms));
-  if (raw_avg_ce_delay_ms != 0) {
-    total_size += 2 + 4;
-  }
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x0000001fu) {
+    // optional float avg_ce_delay_ms = 16;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 2 + 4;
+    }
 
-  // float avg_crc_delay_ms = 17;
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_crc_delay_ms = this->_internal_avg_crc_delay_ms();
-  uint32_t raw_avg_crc_delay_ms;
-  memcpy(&raw_avg_crc_delay_ms, &tmp_avg_crc_delay_ms, sizeof(tmp_avg_crc_delay_ms));
-  if (raw_avg_crc_delay_ms != 0) {
-    total_size += 2 + 4;
-  }
+    // optional float avg_crc_delay_ms = 17;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 2 + 4;
+    }
 
-  // float avg_pucch_harq_delay_ms = 18;
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_pucch_harq_delay_ms = this->_internal_avg_pucch_harq_delay_ms();
-  uint32_t raw_avg_pucch_harq_delay_ms;
-  memcpy(&raw_avg_pucch_harq_delay_ms, &tmp_avg_pucch_harq_delay_ms, sizeof(tmp_avg_pucch_harq_delay_ms));
-  if (raw_avg_pucch_harq_delay_ms != 0) {
-    total_size += 2 + 4;
-  }
+    // optional float avg_pucch_harq_delay_ms = 18;
+    if (cached_has_bits & 0x00000004u) {
+      total_size += 2 + 4;
+    }
 
-  // float avg_pusch_harq_delay_ms = 19;
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_pusch_harq_delay_ms = this->_internal_avg_pusch_harq_delay_ms();
-  uint32_t raw_avg_pusch_harq_delay_ms;
-  memcpy(&raw_avg_pusch_harq_delay_ms, &tmp_avg_pusch_harq_delay_ms, sizeof(tmp_avg_pusch_harq_delay_ms));
-  if (raw_avg_pusch_harq_delay_ms != 0) {
-    total_size += 2 + 4;
-  }
+    // optional float avg_pusch_harq_delay_ms = 19;
+    if (cached_has_bits & 0x00000008u) {
+      total_size += 2 + 4;
+    }
 
-  // float avg_sr_to_pusch_delay_ms = 20;
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_sr_to_pusch_delay_ms = this->_internal_avg_sr_to_pusch_delay_ms();
-  uint32_t raw_avg_sr_to_pusch_delay_ms;
-  memcpy(&raw_avg_sr_to_pusch_delay_ms, &tmp_avg_sr_to_pusch_delay_ms, sizeof(tmp_avg_sr_to_pusch_delay_ms));
-  if (raw_avg_sr_to_pusch_delay_ms != 0) {
-    total_size += 2 + 4;
-  }
+    // optional float avg_sr_to_pusch_delay_ms = 20;
+    if (cached_has_bits & 0x00000010u) {
+      total_size += 2 + 4;
+    }
 
-  // float avg_sum_mac_delay_ms = 21;
+  }
+  // float avg_sum_mac_delay_ms = 21 [deprecated = true];
   static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
   float tmp_avg_sum_mac_delay_ms = this->_internal_avg_sum_mac_delay_ms();
   uint32_t raw_avg_sum_mac_delay_ms;
@@ -2746,40 +3377,24 @@ void MacUeMetrics::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::P
   if (from._internal_ul_prbs() != 0) {
     _this->_internal_set_ul_prbs(from._internal_ul_prbs());
   }
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_ce_delay_ms = from._internal_avg_ce_delay_ms();
-  uint32_t raw_avg_ce_delay_ms;
-  memcpy(&raw_avg_ce_delay_ms, &tmp_avg_ce_delay_ms, sizeof(tmp_avg_ce_delay_ms));
-  if (raw_avg_ce_delay_ms != 0) {
-    _this->_internal_set_avg_ce_delay_ms(from._internal_avg_ce_delay_ms());
-  }
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_crc_delay_ms = from._internal_avg_crc_delay_ms();
-  uint32_t raw_avg_crc_delay_ms;
-  memcpy(&raw_avg_crc_delay_ms, &tmp_avg_crc_delay_ms, sizeof(tmp_avg_crc_delay_ms));
-  if (raw_avg_crc_delay_ms != 0) {
-    _this->_internal_set_avg_crc_delay_ms(from._internal_avg_crc_delay_ms());
-  }
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_pucch_harq_delay_ms = from._internal_avg_pucch_harq_delay_ms();
-  uint32_t raw_avg_pucch_harq_delay_ms;
-  memcpy(&raw_avg_pucch_harq_delay_ms, &tmp_avg_pucch_harq_delay_ms, sizeof(tmp_avg_pucch_harq_delay_ms));
-  if (raw_avg_pucch_harq_delay_ms != 0) {
-    _this->_internal_set_avg_pucch_harq_delay_ms(from._internal_avg_pucch_harq_delay_ms());
-  }
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_pusch_harq_delay_ms = from._internal_avg_pusch_harq_delay_ms();
-  uint32_t raw_avg_pusch_harq_delay_ms;
-  memcpy(&raw_avg_pusch_harq_delay_ms, &tmp_avg_pusch_harq_delay_ms, sizeof(tmp_avg_pusch_harq_delay_ms));
-  if (raw_avg_pusch_harq_delay_ms != 0) {
-    _this->_internal_set_avg_pusch_harq_delay_ms(from._internal_avg_pusch_harq_delay_ms());
-  }
-  static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
-  float tmp_avg_sr_to_pusch_delay_ms = from._internal_avg_sr_to_pusch_delay_ms();
-  uint32_t raw_avg_sr_to_pusch_delay_ms;
-  memcpy(&raw_avg_sr_to_pusch_delay_ms, &tmp_avg_sr_to_pusch_delay_ms, sizeof(tmp_avg_sr_to_pusch_delay_ms));
-  if (raw_avg_sr_to_pusch_delay_ms != 0) {
-    _this->_internal_set_avg_sr_to_pusch_delay_ms(from._internal_avg_sr_to_pusch_delay_ms());
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x0000001fu) {
+    if (cached_has_bits & 0x00000001u) {
+      _this->_impl_.avg_ce_delay_ms_ = from._impl_.avg_ce_delay_ms_;
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _this->_impl_.avg_crc_delay_ms_ = from._impl_.avg_crc_delay_ms_;
+    }
+    if (cached_has_bits & 0x00000004u) {
+      _this->_impl_.avg_pucch_harq_delay_ms_ = from._impl_.avg_pucch_harq_delay_ms_;
+    }
+    if (cached_has_bits & 0x00000008u) {
+      _this->_impl_.avg_pusch_harq_delay_ms_ = from._impl_.avg_pusch_harq_delay_ms_;
+    }
+    if (cached_has_bits & 0x00000010u) {
+      _this->_impl_.avg_sr_to_pusch_delay_ms_ = from._impl_.avg_sr_to_pusch_delay_ms_;
+    }
+    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
   static_assert(sizeof(uint32_t) == sizeof(float), "Code assumes uint32_t and float are the same size.");
   float tmp_avg_sum_mac_delay_ms = from._internal_avg_sum_mac_delay_ms();
@@ -2811,6 +3426,7 @@ bool MacUeMetrics::IsInitialized() const {
 void MacUeMetrics::InternalSwap(MacUeMetrics* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
       PROTOBUF_FIELD_OFFSET(MacUeMetrics, _impl_.ul_ok_bytes_)
       + sizeof(MacUeMetrics::_impl_.ul_ok_bytes_)
@@ -2822,7 +3438,7 @@ void MacUeMetrics::InternalSwap(MacUeMetrics* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata MacUeMetrics::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_metrics_2eproto_getter, &descriptor_table_metrics_2eproto_once,
-      file_level_metadata_metrics_2eproto[4]);
+      file_level_metadata_metrics_2eproto[5]);
 }
 
 // ===================================================================
@@ -3189,7 +3805,7 @@ void UeMetrics::InternalSwap(UeMetrics* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata UeMetrics::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_metrics_2eproto_getter, &descriptor_table_metrics_2eproto_once,
-      file_level_metadata_metrics_2eproto[5]);
+      file_level_metadata_metrics_2eproto[6]);
 }
 
 // ===================================================================
@@ -3209,14 +3825,34 @@ TtiMetrics::TtiMetrics(const TtiMetrics& from)
   TtiMetrics* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.ues_){from._impl_.ues_}
+    , decltype(_impl_.harq_events_){from._impl_.harq_events_}
+    , decltype(_impl_.dl_eligible_rntis_){from._impl_.dl_eligible_rntis_}
+    , /*decltype(_impl_._dl_eligible_rntis_cached_byte_size_)*/{0}
+    , decltype(_impl_.ul_eligible_rntis_){from._impl_.ul_eligible_rntis_}
+    , /*decltype(_impl_._ul_eligible_rntis_cached_byte_size_)*/{0}
+    , decltype(_impl_.scheduler_algorithm_){}
     , decltype(_impl_.timestamp_us_){}
     , decltype(_impl_.tti_index_){}
+    , decltype(_impl_.numerology_){}
+    , decltype(_impl_.native_slot_){}
+    , decltype(_impl_.message_sequence_id_){}
+    , decltype(_impl_.scheduler_policy_epoch_){}
+    , decltype(_impl_.slot_duration_ns_){}
+    , decltype(_impl_.scheduler_control_active_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _impl_.scheduler_algorithm_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.scheduler_algorithm_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_scheduler_algorithm().empty()) {
+    _this->_impl_.scheduler_algorithm_.Set(from._internal_scheduler_algorithm(),
+      _this->GetArenaForAllocation());
+  }
   ::memcpy(&_impl_.timestamp_us_, &from._impl_.timestamp_us_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.tti_index_) -
-    reinterpret_cast<char*>(&_impl_.timestamp_us_)) + sizeof(_impl_.tti_index_));
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.scheduler_control_active_) -
+    reinterpret_cast<char*>(&_impl_.timestamp_us_)) + sizeof(_impl_.scheduler_control_active_));
   // @@protoc_insertion_point(copy_constructor:TtiMetrics)
 }
 
@@ -3226,10 +3862,26 @@ inline void TtiMetrics::SharedCtor(
   (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.ues_){arena}
+    , decltype(_impl_.harq_events_){arena}
+    , decltype(_impl_.dl_eligible_rntis_){arena}
+    , /*decltype(_impl_._dl_eligible_rntis_cached_byte_size_)*/{0}
+    , decltype(_impl_.ul_eligible_rntis_){arena}
+    , /*decltype(_impl_._ul_eligible_rntis_cached_byte_size_)*/{0}
+    , decltype(_impl_.scheduler_algorithm_){}
     , decltype(_impl_.timestamp_us_){uint64_t{0u}}
     , decltype(_impl_.tti_index_){0u}
+    , decltype(_impl_.numerology_){0u}
+    , decltype(_impl_.native_slot_){uint64_t{0u}}
+    , decltype(_impl_.message_sequence_id_){uint64_t{0u}}
+    , decltype(_impl_.scheduler_policy_epoch_){uint64_t{0u}}
+    , decltype(_impl_.slot_duration_ns_){0u}
+    , decltype(_impl_.scheduler_control_active_){false}
     , /*decltype(_impl_._cached_size_)*/{}
   };
+  _impl_.scheduler_algorithm_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.scheduler_algorithm_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
 TtiMetrics::~TtiMetrics() {
@@ -3244,6 +3896,10 @@ TtiMetrics::~TtiMetrics() {
 inline void TtiMetrics::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.ues_.~RepeatedPtrField();
+  _impl_.harq_events_.~RepeatedPtrField();
+  _impl_.dl_eligible_rntis_.~RepeatedField();
+  _impl_.ul_eligible_rntis_.~RepeatedField();
+  _impl_.scheduler_algorithm_.Destroy();
 }
 
 void TtiMetrics::SetCachedSize(int size) const {
@@ -3257,9 +3913,13 @@ void TtiMetrics::Clear() {
   (void) cached_has_bits;
 
   _impl_.ues_.Clear();
+  _impl_.harq_events_.Clear();
+  _impl_.dl_eligible_rntis_.Clear();
+  _impl_.ul_eligible_rntis_.Clear();
+  _impl_.scheduler_algorithm_.ClearToEmpty();
   ::memset(&_impl_.timestamp_us_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.tti_index_) -
-      reinterpret_cast<char*>(&_impl_.timestamp_us_)) + sizeof(_impl_.tti_index_));
+      reinterpret_cast<char*>(&_impl_.scheduler_control_active_) -
+      reinterpret_cast<char*>(&_impl_.timestamp_us_)) + sizeof(_impl_.scheduler_control_active_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -3295,6 +3955,99 @@ const char* TtiMetrics::_InternalParse(const char* ptr, ::_pbi::ParseContext* ct
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<26>(ptr));
+        } else
+          goto handle_unusual;
+        continue;
+      // repeated .HarqEvent harq_events = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 34)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_harq_events(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<34>(ptr));
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 native_slot = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
+          _impl_.native_slot_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint32 numerology = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 48)) {
+          _impl_.numerology_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint32 slot_duration_ns = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 56)) {
+          _impl_.slot_duration_ns_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 message_sequence_id = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 64)) {
+          _impl_.message_sequence_id_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 scheduler_policy_epoch = 9;
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 72)) {
+          _impl_.scheduler_policy_epoch_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // string scheduler_algorithm = 10;
+      case 10:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 82)) {
+          auto str = _internal_mutable_scheduler_algorithm();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "TtiMetrics.scheduler_algorithm"));
+        } else
+          goto handle_unusual;
+        continue;
+      // bool scheduler_control_active = 11;
+      case 11:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 88)) {
+          _impl_.scheduler_control_active_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // repeated uint32 dl_eligible_rntis = 12;
+      case 12:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 98)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedUInt32Parser(_internal_mutable_dl_eligible_rntis(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<uint8_t>(tag) == 96) {
+          _internal_add_dl_eligible_rntis(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr));
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // repeated uint32 ul_eligible_rntis = 13;
+      case 13:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 106)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedUInt32Parser(_internal_mutable_ul_eligible_rntis(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<uint8_t>(tag) == 104) {
+          _internal_add_ul_eligible_rntis(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr));
+          CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
@@ -3347,6 +4100,78 @@ uint8_t* TtiMetrics::_InternalSerialize(
         InternalWriteMessage(3, repfield, repfield.GetCachedSize(), target, stream);
   }
 
+  // repeated .HarqEvent harq_events = 4;
+  for (unsigned i = 0,
+      n = static_cast<unsigned>(this->_internal_harq_events_size()); i < n; i++) {
+    const auto& repfield = this->_internal_harq_events(i);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+        InternalWriteMessage(4, repfield, repfield.GetCachedSize(), target, stream);
+  }
+
+  // uint64 native_slot = 5;
+  if (this->_internal_native_slot() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(5, this->_internal_native_slot(), target);
+  }
+
+  // uint32 numerology = 6;
+  if (this->_internal_numerology() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(6, this->_internal_numerology(), target);
+  }
+
+  // uint32 slot_duration_ns = 7;
+  if (this->_internal_slot_duration_ns() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(7, this->_internal_slot_duration_ns(), target);
+  }
+
+  // uint64 message_sequence_id = 8;
+  if (this->_internal_message_sequence_id() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(8, this->_internal_message_sequence_id(), target);
+  }
+
+  // uint64 scheduler_policy_epoch = 9;
+  if (this->_internal_scheduler_policy_epoch() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(9, this->_internal_scheduler_policy_epoch(), target);
+  }
+
+  // string scheduler_algorithm = 10;
+  if (!this->_internal_scheduler_algorithm().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_scheduler_algorithm().data(), static_cast<int>(this->_internal_scheduler_algorithm().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "TtiMetrics.scheduler_algorithm");
+    target = stream->WriteStringMaybeAliased(
+        10, this->_internal_scheduler_algorithm(), target);
+  }
+
+  // bool scheduler_control_active = 11;
+  if (this->_internal_scheduler_control_active() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(11, this->_internal_scheduler_control_active(), target);
+  }
+
+  // repeated uint32 dl_eligible_rntis = 12;
+  {
+    int byte_size = _impl_._dl_eligible_rntis_cached_byte_size_.load(std::memory_order_relaxed);
+    if (byte_size > 0) {
+      target = stream->WriteUInt32Packed(
+          12, _internal_dl_eligible_rntis(), byte_size, target);
+    }
+  }
+
+  // repeated uint32 ul_eligible_rntis = 13;
+  {
+    int byte_size = _impl_._ul_eligible_rntis_cached_byte_size_.load(std::memory_order_relaxed);
+    if (byte_size > 0) {
+      target = stream->WriteUInt32Packed(
+          13, _internal_ul_eligible_rntis(), byte_size, target);
+    }
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -3370,6 +4195,48 @@ size_t TtiMetrics::ByteSizeLong() const {
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
+  // repeated .HarqEvent harq_events = 4;
+  total_size += 1UL * this->_internal_harq_events_size();
+  for (const auto& msg : this->_impl_.harq_events_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
+  }
+
+  // repeated uint32 dl_eligible_rntis = 12;
+  {
+    size_t data_size = ::_pbi::WireFormatLite::
+      UInt32Size(this->_impl_.dl_eligible_rntis_);
+    if (data_size > 0) {
+      total_size += 1 +
+        ::_pbi::WireFormatLite::Int32Size(static_cast<int32_t>(data_size));
+    }
+    int cached_size = ::_pbi::ToCachedSize(data_size);
+    _impl_._dl_eligible_rntis_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  // repeated uint32 ul_eligible_rntis = 13;
+  {
+    size_t data_size = ::_pbi::WireFormatLite::
+      UInt32Size(this->_impl_.ul_eligible_rntis_);
+    if (data_size > 0) {
+      total_size += 1 +
+        ::_pbi::WireFormatLite::Int32Size(static_cast<int32_t>(data_size));
+    }
+    int cached_size = ::_pbi::ToCachedSize(data_size);
+    _impl_._ul_eligible_rntis_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  // string scheduler_algorithm = 10;
+  if (!this->_internal_scheduler_algorithm().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_scheduler_algorithm());
+  }
+
   // uint64 timestamp_us = 2;
   if (this->_internal_timestamp_us() != 0) {
     total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_timestamp_us());
@@ -3378,6 +4245,36 @@ size_t TtiMetrics::ByteSizeLong() const {
   // uint32 tti_index = 1;
   if (this->_internal_tti_index() != 0) {
     total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_tti_index());
+  }
+
+  // uint32 numerology = 6;
+  if (this->_internal_numerology() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_numerology());
+  }
+
+  // uint64 native_slot = 5;
+  if (this->_internal_native_slot() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_native_slot());
+  }
+
+  // uint64 message_sequence_id = 8;
+  if (this->_internal_message_sequence_id() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_message_sequence_id());
+  }
+
+  // uint64 scheduler_policy_epoch = 9;
+  if (this->_internal_scheduler_policy_epoch() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_scheduler_policy_epoch());
+  }
+
+  // uint32 slot_duration_ns = 7;
+  if (this->_internal_slot_duration_ns() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_slot_duration_ns());
+  }
+
+  // bool scheduler_control_active = 11;
+  if (this->_internal_scheduler_control_active() != 0) {
+    total_size += 1 + 1;
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -3399,11 +4296,35 @@ void TtiMetrics::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PRO
   (void) cached_has_bits;
 
   _this->_impl_.ues_.MergeFrom(from._impl_.ues_);
+  _this->_impl_.harq_events_.MergeFrom(from._impl_.harq_events_);
+  _this->_impl_.dl_eligible_rntis_.MergeFrom(from._impl_.dl_eligible_rntis_);
+  _this->_impl_.ul_eligible_rntis_.MergeFrom(from._impl_.ul_eligible_rntis_);
+  if (!from._internal_scheduler_algorithm().empty()) {
+    _this->_internal_set_scheduler_algorithm(from._internal_scheduler_algorithm());
+  }
   if (from._internal_timestamp_us() != 0) {
     _this->_internal_set_timestamp_us(from._internal_timestamp_us());
   }
   if (from._internal_tti_index() != 0) {
     _this->_internal_set_tti_index(from._internal_tti_index());
+  }
+  if (from._internal_numerology() != 0) {
+    _this->_internal_set_numerology(from._internal_numerology());
+  }
+  if (from._internal_native_slot() != 0) {
+    _this->_internal_set_native_slot(from._internal_native_slot());
+  }
+  if (from._internal_message_sequence_id() != 0) {
+    _this->_internal_set_message_sequence_id(from._internal_message_sequence_id());
+  }
+  if (from._internal_scheduler_policy_epoch() != 0) {
+    _this->_internal_set_scheduler_policy_epoch(from._internal_scheduler_policy_epoch());
+  }
+  if (from._internal_slot_duration_ns() != 0) {
+    _this->_internal_set_slot_duration_ns(from._internal_slot_duration_ns());
+  }
+  if (from._internal_scheduler_control_active() != 0) {
+    _this->_internal_set_scheduler_control_active(from._internal_scheduler_control_active());
   }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -3421,11 +4342,20 @@ bool TtiMetrics::IsInitialized() const {
 
 void TtiMetrics::InternalSwap(TtiMetrics* other) {
   using std::swap;
+  auto* lhs_arena = GetArenaForAllocation();
+  auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.ues_.InternalSwap(&other->_impl_.ues_);
+  _impl_.harq_events_.InternalSwap(&other->_impl_.harq_events_);
+  _impl_.dl_eligible_rntis_.InternalSwap(&other->_impl_.dl_eligible_rntis_);
+  _impl_.ul_eligible_rntis_.InternalSwap(&other->_impl_.ul_eligible_rntis_);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.scheduler_algorithm_, lhs_arena,
+      &other->_impl_.scheduler_algorithm_, rhs_arena
+  );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(TtiMetrics, _impl_.tti_index_)
-      + sizeof(TtiMetrics::_impl_.tti_index_)
+      PROTOBUF_FIELD_OFFSET(TtiMetrics, _impl_.scheduler_control_active_)
+      + sizeof(TtiMetrics::_impl_.scheduler_control_active_)
       - PROTOBUF_FIELD_OFFSET(TtiMetrics, _impl_.timestamp_us_)>(
           reinterpret_cast<char*>(&_impl_.timestamp_us_),
           reinterpret_cast<char*>(&other->_impl_.timestamp_us_));
@@ -3434,7 +4364,7 @@ void TtiMetrics::InternalSwap(TtiMetrics* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata TtiMetrics::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_metrics_2eproto_getter, &descriptor_table_metrics_2eproto_once,
-      file_level_metadata_metrics_2eproto[6]);
+      file_level_metadata_metrics_2eproto[7]);
 }
 
 // ===================================================================
@@ -3646,7 +4576,7 @@ void Metrics::InternalSwap(Metrics* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata Metrics::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_metrics_2eproto_getter, &descriptor_table_metrics_2eproto_once,
-      file_level_metadata_metrics_2eproto[7]);
+      file_level_metadata_metrics_2eproto[8]);
 }
 
 // ===================================================================
@@ -4179,7 +5109,7 @@ void UeMetricsLegacy::InternalSwap(UeMetricsLegacy* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata UeMetricsLegacy::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_metrics_2eproto_getter, &descriptor_table_metrics_2eproto_once,
-      file_level_metadata_metrics_2eproto[8]);
+      file_level_metadata_metrics_2eproto[9]);
 }
 
 // ===================================================================
@@ -4486,7 +5416,7 @@ void DrbMetricsLegacy::InternalSwap(DrbMetricsLegacy* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata DrbMetricsLegacy::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_metrics_2eproto_getter, &descriptor_table_metrics_2eproto_once,
-      file_level_metadata_metrics_2eproto[9]);
+      file_level_metadata_metrics_2eproto[10]);
 }
 
 // @@protoc_insertion_point(namespace_scope)
@@ -4506,6 +5436,10 @@ Arena::CreateMaybeMessage< ::PdcpDrbMetrics >(Arena* arena) {
 template<> PROTOBUF_NOINLINE ::GtpMetrics*
 Arena::CreateMaybeMessage< ::GtpMetrics >(Arena* arena) {
   return Arena::CreateMessageInternal< ::GtpMetrics >(arena);
+}
+template<> PROTOBUF_NOINLINE ::HarqEvent*
+Arena::CreateMaybeMessage< ::HarqEvent >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::HarqEvent >(arena);
 }
 template<> PROTOBUF_NOINLINE ::MacUeMetrics*
 Arena::CreateMaybeMessage< ::MacUeMetrics >(Arena* arena) {

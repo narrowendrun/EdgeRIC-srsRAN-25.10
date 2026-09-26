@@ -4,6 +4,8 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <set>
+#include <string>
 #include <tuple>
 #include <vector>
 #include <zmq.hpp>
@@ -55,12 +57,11 @@ struct mac_ue_metrics {
     uint32_t ul_crc_fail = 0;  // UL CRC fail this TTI
     
     // MAC layer delays in ms (from scheduler metrics, updated per report period)
-    float avg_ce_delay_ms = 0.0f;          // Avg CE processing delay
-    float avg_crc_delay_ms = 0.0f;         // Avg CRC indication delay
-    float avg_pucch_harq_delay_ms = 0.0f;  // Avg PUCCH HARQ feedback delay
-    float avg_pusch_harq_delay_ms = 0.0f;  // Avg PUSCH HARQ feedback delay
-    float avg_sr_to_pusch_delay_ms = 0.0f; // Avg SR to PUSCH grant delay
-    float avg_sum_mac_delay_ms = 0.0f;     // Sum of all delays
+    std::optional<float> avg_ce_delay_ms;          // Native optional: CE observations in report period
+    std::optional<float> avg_crc_delay_ms;         // Native optional: CRC observations in report period
+    std::optional<float> avg_pucch_harq_delay_ms;  // Native optional: PUCCH HARQ observations in report period
+    std::optional<float> avg_pusch_harq_delay_ms;  // Native optional: PUSCH HARQ observations in report period
+    std::optional<float> avg_sr_to_pusch_delay_ms; // Native optional: handled SRs in report period
 };
 
 /// RLC-level per-DRB metrics (accumulated, snapshot at TTI boundary)
@@ -110,6 +111,22 @@ struct gtp_ue_metrics {
     uint64_t ul_bytes = 0;
 };
 
+/// Immutable native HARQ outcome queued until the next telemetry publish.
+struct harq_event_data {
+    uint64_t sequence_id = 0;
+    uint32_t cell_index = 0;
+    uint32_t du_ue_index = 0;
+    uint16_t rnti = 0;
+    HarqDirection direction = HARQ_DIRECTION_UNSPECIFIED;
+    uint64_t tx_slot = 0;
+    uint64_t feedback_slot = 0;
+    uint32_t harq_id = 0;
+    uint32_t attempt_number = 0;
+    bool ndi = false;
+    HarqOutcome outcome = HARQ_OUTCOME_UNSPECIFIED;
+    uint32_t tbs_bytes = 0;
+};
+
 //==============================================================================
 // EdgeRIC Class
 //==============================================================================
@@ -119,6 +136,12 @@ private:
     // Control: weights, MCS
     static std::map<uint16_t, float> weights_recved;
     static std::map<uint16_t, uint8_t> mcs_recved;
+    static std::set<uint16_t> dl_eligible_rntis;
+    static std::set<uint16_t> ul_eligible_rntis;
+    static bool eligibility_mode;
+    static uint64_t eligibility_decision_slot;
+    static uint64_t scheduler_policy_epoch;
+    static std::string scheduler_algorithm;
 
     //==========================================================================
     // Per-TTI Metrics Storage
@@ -126,6 +149,10 @@ private:
     
     // MAC metrics (per-UE aggregate)
     static std::map<uint16_t, mac_ue_metrics> mac_ue;
+
+    // Terminal HARQ events produced by the scheduler thread.
+    static std::vector<harq_event_data> pending_harq_events;
+    static uint64_t next_harq_event_sequence;
     
     // MAC metrics (per-DRB)
     static std::map<ue_drb_key, mac_drb_metrics> mac_drb;
@@ -173,12 +200,24 @@ private:
     // Set to 2: allows for 1-2 TTI latency in muApp response
     // If muApp stops sending, control messages expire and scheduler uses defaults
     static constexpr uint32_t STALENESS_THRESHOLD = 2;
+    static constexpr uint64_t ELIGIBILITY_STALENESS_SLOTS = 8;
+
+    // Native slot_point wraps once per hyper-system-frame. Keep a process-local
+    // uint64 epoch so archive keys remain monotonic across those wraps.
+    static bool native_slot_initialized;
+    static uint32_t last_native_slot_mod;
+    static uint32_t native_slot_modulus;
+
+    static uint64_t extend_recent_slot(uint32_t modular_slot);
     
     static void ensure_initialized();
 
 public:
     static bool enable_logging;
     static uint32_t tti_cnt;
+    static uint64_t native_slot;
+    static uint32_t numerology;
+    static uint32_t slot_duration_ns;
     
     //==========================================================================
     // Logging Control
@@ -193,8 +232,11 @@ public:
     // TTI Management
     //==========================================================================
     
-    /// Set the TTI counter (called from scheduler every slot)
-    static void setTTI(uint32_t tti_count) { tti_cnt = tti_count; }
+    /// Set the compatibility TTI counter and unwrap the native modular slot.
+    static void setTTI(uint32_t tti_count,
+                       uint32_t modular_slot,
+                       uint32_t slot_modulus,
+                       uint32_t numerology_value);
     
     /// Get TTI index with rollover at TTI_ROLLOVER (10000)
     static uint32_t getTtiIndex() { return tti_cnt % TTI_ROLLOVER; }
@@ -223,14 +265,28 @@ public:
     static void inc_ul_crc_fail(uint16_t rnti) { 
         mac_ue[rnti].ul_crc_fail++;
     }
+
+    /// Queue one terminal HARQ outcome. This is observation-only and never
+    /// feeds back into scheduler state or grant selection.
+    static void record_harq_event(uint32_t cell_index,
+                                  uint32_t du_ue_index,
+                                  uint16_t rnti,
+                                  HarqDirection direction,
+                                  uint32_t tx_slot,
+                                  uint32_t feedback_slot,
+                                  uint32_t harq_id,
+                                  uint32_t attempt_number,
+                                  bool ndi,
+                                  HarqOutcome outcome,
+                                  uint32_t tbs_bytes);
     
     /// Report MAC layer delays from scheduler metrics (called per metrics report period)
     static void report_mac_delays(uint16_t rnti,
-                                  float avg_ce_delay_ms,
-                                  float avg_crc_delay_ms,
-                                  float avg_pucch_harq_delay_ms,
-                                  float avg_pusch_harq_delay_ms,
-                                  float avg_sr_to_pusch_delay_ms);
+                                  std::optional<float> avg_ce_delay_ms,
+                                  std::optional<float> avg_crc_delay_ms,
+                                  std::optional<float> avg_pucch_harq_delay_ms,
+                                  std::optional<float> avg_pusch_harq_delay_ms,
+                                  std::optional<float> avg_sr_to_pusch_delay_ms);
     
     /// Set per-DRB MAC metrics
     static void set_mac_drb(uint16_t rnti, uint8_t lcid,
@@ -324,6 +380,12 @@ public:
     
     /// Get the TTI index when weights were received
     static uint32_t get_weights_tti();
+
+    /// Binary candidate admission. nullopt means no fresh external decision, so
+    /// callers must fail open and leave selection to native srsRAN.
+    static std::optional<bool> is_dl_eligible(uint16_t rnti);
+    static std::optional<bool> is_ul_eligible(uint16_t rnti);
+    static bool eligibility_control_active();
     
     /// Get MCS override for a UE (returns nullopt if stale or not present)
     /// MCS is only valid if: current_TTI - received_TTI <= STALENESS_THRESHOLD

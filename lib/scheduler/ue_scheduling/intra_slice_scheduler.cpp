@@ -260,8 +260,12 @@ static std::pair<unsigned, unsigned> get_max_grants_and_rb_grant_size(span<const
   // of candidates by 4 and set 8 as the maximum number of UEs to be scheduled per slot, assuming full buffer. This
   // heuristic is a result of a tradeoff between minimizing latency and ensuring we don't deplete the PDCCH resources.
   static constexpr unsigned MAX_UE_GRANT_PER_SLOT = 8;
-  ues_to_alloc =
-      std::min({ues_to_alloc, std::max(static_cast<unsigned>(ue_candidates.size()) / 4U, 1U), MAX_UE_GRANT_PER_SLOT});
+  if (edgeric::eligibility_control_active()) {
+    ues_to_alloc = std::min({ues_to_alloc, static_cast<unsigned>(ue_candidates.size()), MAX_UE_GRANT_PER_SLOT});
+  } else {
+    ues_to_alloc =
+        std::min({ues_to_alloc, std::max(static_cast<unsigned>(ue_candidates.size()) / 4U, 1U), MAX_UE_GRANT_PER_SLOT});
+  }
 
   // > Compute maximum nof. PDCCH candidates allowed for each direction.
   // [Implementation-defined]
@@ -402,6 +406,12 @@ void intra_slice_scheduler::prepare_newtx_dl_candidates(const dl_ran_slice_candi
   }
   auto& slice_sched = slice_ctxt_list[slice.id()];
   slice_sched.fill_ue_dl_candidate_group(newtx_candidates, slice);
+  newtx_candidates.erase(
+      std::remove_if(newtx_candidates.begin(), newtx_candidates.end(), [](const auto& candidate) {
+        const auto eligible = edgeric::is_dl_eligible(static_cast<uint16_t>(candidate.ue->crnti()));
+        return eligible.has_value() and not eligible.value();
+      }),
+      newtx_candidates.end());
   if (newtx_candidates.empty()) {
     return;
   }
@@ -430,6 +440,12 @@ void intra_slice_scheduler::prepare_newtx_ul_candidates(const ul_ran_slice_candi
   }
   auto& slice_sched = slice_ctxt_list[slice.id()];
   slice_sched.fill_ue_ul_candidate_group(newtx_candidates, slice);
+  newtx_candidates.erase(
+      std::remove_if(newtx_candidates.begin(), newtx_candidates.end(), [](const auto& candidate) {
+        const auto eligible = edgeric::is_ul_eligible(static_cast<uint16_t>(candidate.ue->crnti()));
+        return eligible.has_value() and not eligible.value();
+      }),
+      newtx_candidates.end());
   if (newtx_candidates.empty()) {
     return;
   }

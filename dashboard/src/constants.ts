@@ -1,7 +1,7 @@
 import type { ModuleName, WindowSize } from './types'
 
 export const moduleLabels: Record<ModuleName, string> = {
-  open5gs: 'Open5GS', edgeric: 'EdgeRIC', gnb: 'srsRAN gNB',
+  open5gs: 'Open5GS', edgeric: 'EdgeRIC', scheduler: 'Scheduler muApp', gnb: 'srsRAN gNB',
 }
 
 export const rfLabels: Record<string, string> = {

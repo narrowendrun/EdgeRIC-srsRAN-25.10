@@ -1,12 +1,11 @@
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import net from 'node:net'
 import { networkInterfaces } from 'node:os'
-import path from 'node:path'
-import YAML from 'yaml'
 import {
-  criticalOpen5gsUnits, managedUnits, open5gsUnits, projectRoot, webuiProxyPort,
+  criticalOpen5gsUnits, managedUnits, open5gsUnits, webuiProxyPort,
   type ModuleName, type ServiceAction,
 } from '../config.js'
+import { loadRfStatus } from './rf-config.js'
 import { getSchedulerStatus } from './scheduler.js'
 import { run } from '../utils.js'
 
@@ -49,43 +48,20 @@ function tcpReachable(address: string, targetPort: number, timeout = 400) {
   })
 }
 
-export function loadRfConfig() {
-  const configPath = path.join(projectRoot, 'gnb_rf_x310_tdd_n78_20mhz.yml')
-  try {
-    const document = YAML.parse(readFileSync(configPath, 'utf8'))
-    const ru = document.ru_sdr || {}
-    const cell = document.cell_cfg || {}
-    const args = String(ru.device_args || '')
-    const argValue = (name: string) => args.match(new RegExp(`(?:^|,)${name}=([^,]+)`))?.[1] || '—'
-    return {
-      device: 'USRP X310', serial: '308CD6E', address: argValue('addr'),
-      masterClock: argValue('master_clock_rate'), sampleRate: `${ru.srate ?? '—'} MS/s`,
-      clockSource: ru.clock || 'default (internal)', timeSource: ru.sync || 'default (internal)',
-      band: `n${cell.band ?? '—'}`,
-      frequency: cell.dl_arfcn === 632628 ? '3489.42 MHz' : `ARFCN ${cell.dl_arfcn ?? '—'}`,
-      bandwidth: `${cell.channel_bandwidth_MHz ?? '—'} MHz`, mimo: '1T1R',
-      txGain: `${ru.tx_gain ?? '—'} dB`, rxGain: `${ru.rx_gain ?? '—'} dB`,
-    }
-  } catch {
-    return {
-      device: 'USRP X310', serial: '308CD6E', address: 'unknown', masterClock: 'unknown',
-      sampleRate: 'unknown', clockSource: 'unknown', timeSource: 'unknown', band: 'unknown',
-      frequency: 'unknown', bandwidth: 'unknown', mimo: '1T1R', txGain: 'unknown', rxGain: 'unknown',
-    }
-  }
-}
-
 export async function getStatus() {
   const iperfAddress = interfaceIpv4('ogstun')
+  const iperfPorts = Array.from({ length: 8 }, (_, index) => 5201 + index)
   const [open5gsStates, gnbUnit, collectorUnit, recorderUnit, iperfUnit, manualGnb, manualCollector, remoteControl, webui, iperfReachable, ues, muappRunning] = await Promise.all([
     Promise.all(open5gsUnits.map(async (unit) => [unit, await unitState(unit)] as const)),
     unitState(managedUnits.gnb), unitState(managedUnits.edgeric), unitState('edgeric-metrics-recorder.service'),
     unitState('iperf3.service'), processRunning('/build/apps/gnb/gnb'),
     processRunning('python(3)? .*collector\\.py'), tcpReachable('127.0.0.1', 55555),
-    tcpReachable('127.0.0.1', 9999), iperfAddress ? tcpReachable(iperfAddress, 5201) : Promise.resolve(false), latestUeSnapshot(),
-    processRunning('python(3)? .*scheduling_muapp\\.py'),
+    tcpReachable('127.0.0.1', 9999), iperfAddress
+      ? Promise.all(iperfPorts.map((targetPort) => tcpReachable(iperfAddress, targetPort)))
+      : Promise.resolve(iperfPorts.map(() => false)), latestUeSnapshot(),
+    unitState(managedUnits.scheduler),
   ])
-  const scheduler = await getSchedulerStatus(muappRunning)
+  const scheduler = await getSchedulerStatus(muappRunning === 'active')
 
   const stateMap = Object.fromEntries(open5gsStates)
   const activeCount = open5gsStates.filter(([, state]) => state === 'active').length
@@ -95,11 +71,12 @@ export async function getStatus() {
   const gnbActive = gnbUnit === 'active' || manualGnb
   const collectorActive = collectorUnit === 'active' || manualCollector
   const recorderActive = recorderUnit === 'active'
-  const rfConfig = loadRfConfig()
+  const iperfActiveCount = iperfReachable.filter(Boolean).length
+  const rfConfig = loadRfStatus()
 
   return {
     timestamp: new Date().toISOString(), controlsReady,
-    rf: { ...rfConfig, reference: rfConfig.clockSource === 'external' && gnbActive ? 'locked at startup' : rfConfig.clockSource },
+    rf: rfConfig,
     modules: {
       open5gs: {
         state: criticalActive ? 'active' : activeCount > 0 ? 'degraded' : 'inactive',
@@ -111,6 +88,11 @@ export async function getStatus() {
         detail: collectorActive && recorderActive ? 'collector and metrics recorder subscribed' : collectorActive ? 'collector active · recorder inactive' : recorderActive ? 'recorder active · collector inactive' : 'collector and recorder are not running',
         managed: collectorUnit === 'active',
       },
+      scheduler: {
+        state: muappRunning === 'active' ? 'active' : 'inactive',
+        detail: muappRunning === 'active' ? 'eligibility scheduler is running' : 'scheduler muApp is not running',
+        managed: muappRunning === 'active',
+      },
       gnb: {
         state: gnbActive && remoteControl ? 'active' : gnbActive ? 'degraded' : 'inactive',
         detail: remoteControl ? 'cell running · control :55555' : gnbActive ? 'process running · control unavailable' : 'gNB is not running',
@@ -119,9 +101,12 @@ export async function getStatus() {
     },
     ues,
     iperf3: {
-      state: iperfUnit === 'active' && iperfReachable ? 'active' : iperfUnit === 'active' ? 'degraded' : 'inactive',
-      address: iperfAddress || 'unavailable', port: 5201,
-      detail: iperfReachable ? 'server accepting tests' : iperfUnit === 'active' ? 'service active, port unreachable' : 'service is not running',
+      state: iperfUnit === 'active' && iperfActiveCount === iperfPorts.length
+        ? 'active' : iperfUnit === 'active' || iperfActiveCount > 0 ? 'degraded' : 'inactive',
+      address: iperfAddress || 'unavailable', port: 5201, ports: iperfPorts,
+      detail: iperfUnit === 'active'
+        ? `${iperfActiveCount}/${iperfPorts.length} servers accepting tests`
+        : 'service is not running',
     },
     scheduler,
     webui: { available: webui, proxyPort: webuiProxyPort },
@@ -133,7 +118,7 @@ export async function controlModule(module: ModuleName, action: ServiceAction) {
 }
 
 export async function controlAll(action: ServiceAction) {
-  const order: ModuleName[] = action === 'stop' ? ['gnb', 'edgeric', 'open5gs'] : ['open5gs', 'edgeric', 'gnb']
+  const order: ModuleName[] = action === 'stop' ? ['gnb', 'scheduler', 'edgeric', 'open5gs'] : ['open5gs', 'edgeric', 'scheduler', 'gnb']
   const results = []
   for (const module of order) {
     const result = await controlModule(module, action)

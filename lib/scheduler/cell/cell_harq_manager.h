@@ -43,6 +43,21 @@ struct pusch_information;
 
 class unique_ue_harq_entity;
 
+/// Native HARQ state captured before a timed-out process is deallocated.
+struct harq_timeout_context {
+  du_ue_index_t ue_idx;
+  rnti_t        rnti;
+  bool          is_dl;
+  bool          ack_on_timeout;
+  bool          retransmission_timeout;
+  slot_point    tx_slot;
+  slot_point    timeout_slot;
+  harq_id_t     harq_id;
+  unsigned      attempt_number;
+  bool          ndi;
+  uint32_t      tbs_bytes;
+};
+
 /// \brief Notifier of HARQ process timeouts.
 class harq_timeout_notifier
 {
@@ -51,6 +66,13 @@ public:
 
   /// \brief Notifies a HARQ timeout.
   virtual void on_harq_timeout(du_ue_index_t ue_idx, bool is_dl, bool ack) = 0;
+
+  /// \brief Notifies a HARQ timeout with the process metadata captured before
+  /// deallocation. Existing notifiers remain source-compatible via forwarding.
+  virtual void on_harq_timeout(const harq_timeout_context& context)
+  {
+    on_harq_timeout(context.ue_idx, context.is_dl, context.ack_on_timeout);
+  }
 };
 
 namespace harq_utils {

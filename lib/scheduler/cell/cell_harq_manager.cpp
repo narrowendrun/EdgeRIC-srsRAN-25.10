@@ -237,10 +237,21 @@ void cell_harq_repository<IsDl>::slot_indication(slot_point sl_tx)
                    h.prev_tx_params.mcs,
                    h.prev_tx_params.nof_symbols,
                    h.prev_tx_params.nof_layers);
+    const harq_timeout_context timeout_context{h.ue_idx,
+                                               h.rnti,
+                                               IsDl,
+                                               false,
+                                               true,
+                                               h.slot_tx,
+                                               last_sl_ind,
+                                               h.h_id,
+                                               h.nof_retxs,
+                                               h.ndi,
+                                               h.prev_tx_params.tbs_bytes};
     dealloc_harq(h);
 
     // Report timeout after the HARQ gets deleted to avoid reentrancy.
-    timeout_notifier.on_harq_timeout(h.ue_idx, IsDl, false);
+    timeout_notifier.on_harq_timeout(timeout_context);
   }
 }
 
@@ -262,6 +273,18 @@ void cell_harq_repository<IsDl>::handle_harq_ack_timeout(harq_type& h, slot_poin
 {
   srsran_sanity_check(h.status == harq_state_t::waiting_ack or h.status == harq_state_t::pending_retx,
                       "HARQ process in wrong state");
+
+  const harq_timeout_context timeout_context{h.ue_idx,
+                                             h.rnti,
+                                             IsDl,
+                                             h.ack_on_timeout,
+                                             h.status == harq_state_t::pending_retx,
+                                             h.slot_tx,
+                                             sl_tx,
+                                             h.h_id,
+                                             h.nof_retxs,
+                                             h.ndi,
+                                             h.prev_tx_params.tbs_bytes};
 
   if (is_ntn_harq_mode_b_enabled()) {
     // Deallocate HARQ.
@@ -303,7 +326,7 @@ void cell_harq_repository<IsDl>::handle_harq_ack_timeout(harq_type& h, slot_poin
   dealloc_harq(h);
 
   // Report timeout with NACK after we delete the HARQ to avoid reentrancy.
-  timeout_notifier.on_harq_timeout(h.ue_idx, IsDl, ack_val);
+  timeout_notifier.on_harq_timeout(timeout_context);
 }
 
 template <bool IsDl>

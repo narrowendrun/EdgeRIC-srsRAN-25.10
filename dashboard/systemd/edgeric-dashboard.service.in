@@ -1,7 +1,7 @@
 [Unit]
 Description=EdgeRIC operations dashboard
-After=network-online.target tailscaled.service
-Wants=network-online.target
+After=network-online.target tailscaled.service edgeric-scheduler.service
+Wants=network-online.target edgeric-scheduler.service
 
 [Service]
 Type=simple

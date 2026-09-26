@@ -23,8 +23,16 @@ namespace _pbi = _pb::internal;
 PROTOBUF_CONSTEXPR SchedulingWeights::SchedulingWeights(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.ue_weights_)*/{}
+  , /*decltype(_impl_.dl_eligible_rntis_)*/{}
+  , /*decltype(_impl_._dl_eligible_rntis_cached_byte_size_)*/{0}
+  , /*decltype(_impl_.ul_eligible_rntis_)*/{}
+  , /*decltype(_impl_._ul_eligible_rntis_cached_byte_size_)*/{0}
+  , /*decltype(_impl_.algorithm_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.ran_index_)*/0u
   , /*decltype(_impl_.tti_index_)*/0u
+  , /*decltype(_impl_.policy_epoch_)*/uint64_t{0u}
+  , /*decltype(_impl_.decision_native_slot_)*/uint64_t{0u}
+  , /*decltype(_impl_.mode_)*/0
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct SchedulingWeightsDefaultTypeInternal {
   PROTOBUF_CONSTEXPR SchedulingWeightsDefaultTypeInternal()
@@ -50,7 +58,7 @@ struct UeWeightDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 UeWeightDefaultTypeInternal _UeWeight_default_instance_;
 static ::_pb::Metadata file_level_metadata_control_5fweights_2eproto[2];
-static constexpr ::_pb::EnumDescriptor const** file_level_enum_descriptors_control_5fweights_2eproto = nullptr;
+static const ::_pb::EnumDescriptor* file_level_enum_descriptors_control_5fweights_2eproto[1];
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_control_5fweights_2eproto = nullptr;
 
 const uint32_t TableStruct_control_5fweights_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
@@ -63,6 +71,12 @@ const uint32_t TableStruct_control_5fweights_2eproto::offsets[] PROTOBUF_SECTION
   PROTOBUF_FIELD_OFFSET(::SchedulingWeights, _impl_.ran_index_),
   PROTOBUF_FIELD_OFFSET(::SchedulingWeights, _impl_.tti_index_),
   PROTOBUF_FIELD_OFFSET(::SchedulingWeights, _impl_.ue_weights_),
+  PROTOBUF_FIELD_OFFSET(::SchedulingWeights, _impl_.mode_),
+  PROTOBUF_FIELD_OFFSET(::SchedulingWeights, _impl_.policy_epoch_),
+  PROTOBUF_FIELD_OFFSET(::SchedulingWeights, _impl_.algorithm_),
+  PROTOBUF_FIELD_OFFSET(::SchedulingWeights, _impl_.decision_native_slot_),
+  PROTOBUF_FIELD_OFFSET(::SchedulingWeights, _impl_.dl_eligible_rntis_),
+  PROTOBUF_FIELD_OFFSET(::SchedulingWeights, _impl_.ul_eligible_rntis_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::UeWeight, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -74,7 +88,7 @@ const uint32_t TableStruct_control_5fweights_2eproto::offsets[] PROTOBUF_SECTION
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::SchedulingWeights)},
-  { 9, -1, -1, sizeof(::UeWeight)},
+  { 15, -1, -1, sizeof(::UeWeight)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -83,15 +97,20 @@ static const ::_pb::Message* const file_default_instances[] = {
 };
 
 const char descriptor_table_protodef_control_5fweights_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\025control_weights.proto\"X\n\021SchedulingWei"
-  "ghts\022\021\n\tran_index\030\001 \001(\r\022\021\n\ttti_index\030\002 \001"
-  "(\r\022\035\n\nue_weights\030\003 \003(\0132\t.UeWeight\"(\n\010UeW"
-  "eight\022\014\n\004rnti\030\001 \001(\r\022\016\n\006weight\030\002 \001(\002b\006pro"
-  "to3"
+  "\n\025control_weights.proto\"\361\001\n\021SchedulingWe"
+  "ights\022\021\n\tran_index\030\001 \001(\r\022\021\n\ttti_index\030\002 "
+  "\001(\r\022\035\n\nue_weights\030\003 \003(\0132\t.UeWeight\022\032\n\004mo"
+  "de\030\004 \001(\0162\014.ControlMode\022\024\n\014policy_epoch\030\005"
+  " \001(\004\022\021\n\talgorithm\030\006 \001(\t\022\034\n\024decision_nati"
+  "ve_slot\030\007 \001(\004\022\031\n\021dl_eligible_rntis\030\010 \003(\r"
+  "\022\031\n\021ul_eligible_rntis\030\t \003(\r\"(\n\010UeWeight\022"
+  "\014\n\004rnti\030\001 \001(\r\022\016\n\006weight\030\002 \001(\002*E\n\013Control"
+  "Mode\022\030\n\024CONTROL_MODE_WEIGHTS\020\000\022\034\n\030CONTRO"
+  "L_MODE_ELIGIBILITY\020\001b\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_control_5fweights_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_control_5fweights_2eproto = {
-    false, false, 163, descriptor_table_protodef_control_5fweights_2eproto,
+    false, false, 388, descriptor_table_protodef_control_5fweights_2eproto,
     "control_weights.proto",
     &descriptor_table_control_5fweights_2eproto_once, nullptr, 0, 2,
     schemas, file_default_instances, TableStruct_control_5fweights_2eproto::offsets,
@@ -104,6 +123,20 @@ PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_control_
 
 // Force running AddDescriptors() at dynamic initialization time.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_control_5fweights_2eproto(&descriptor_table_control_5fweights_2eproto);
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* ControlMode_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_control_5fweights_2eproto);
+  return file_level_enum_descriptors_control_5fweights_2eproto[0];
+}
+bool ControlMode_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+      return true;
+    default:
+      return false;
+  }
+}
+
 
 // ===================================================================
 
@@ -122,14 +155,30 @@ SchedulingWeights::SchedulingWeights(const SchedulingWeights& from)
   SchedulingWeights* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.ue_weights_){from._impl_.ue_weights_}
+    , decltype(_impl_.dl_eligible_rntis_){from._impl_.dl_eligible_rntis_}
+    , /*decltype(_impl_._dl_eligible_rntis_cached_byte_size_)*/{0}
+    , decltype(_impl_.ul_eligible_rntis_){from._impl_.ul_eligible_rntis_}
+    , /*decltype(_impl_._ul_eligible_rntis_cached_byte_size_)*/{0}
+    , decltype(_impl_.algorithm_){}
     , decltype(_impl_.ran_index_){}
     , decltype(_impl_.tti_index_){}
+    , decltype(_impl_.policy_epoch_){}
+    , decltype(_impl_.decision_native_slot_){}
+    , decltype(_impl_.mode_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _impl_.algorithm_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.algorithm_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_algorithm().empty()) {
+    _this->_impl_.algorithm_.Set(from._internal_algorithm(),
+      _this->GetArenaForAllocation());
+  }
   ::memcpy(&_impl_.ran_index_, &from._impl_.ran_index_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.tti_index_) -
-    reinterpret_cast<char*>(&_impl_.ran_index_)) + sizeof(_impl_.tti_index_));
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.mode_) -
+    reinterpret_cast<char*>(&_impl_.ran_index_)) + sizeof(_impl_.mode_));
   // @@protoc_insertion_point(copy_constructor:SchedulingWeights)
 }
 
@@ -139,10 +188,22 @@ inline void SchedulingWeights::SharedCtor(
   (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.ue_weights_){arena}
+    , decltype(_impl_.dl_eligible_rntis_){arena}
+    , /*decltype(_impl_._dl_eligible_rntis_cached_byte_size_)*/{0}
+    , decltype(_impl_.ul_eligible_rntis_){arena}
+    , /*decltype(_impl_._ul_eligible_rntis_cached_byte_size_)*/{0}
+    , decltype(_impl_.algorithm_){}
     , decltype(_impl_.ran_index_){0u}
     , decltype(_impl_.tti_index_){0u}
+    , decltype(_impl_.policy_epoch_){uint64_t{0u}}
+    , decltype(_impl_.decision_native_slot_){uint64_t{0u}}
+    , decltype(_impl_.mode_){0}
     , /*decltype(_impl_._cached_size_)*/{}
   };
+  _impl_.algorithm_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.algorithm_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
 SchedulingWeights::~SchedulingWeights() {
@@ -157,6 +218,9 @@ SchedulingWeights::~SchedulingWeights() {
 inline void SchedulingWeights::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.ue_weights_.~RepeatedPtrField();
+  _impl_.dl_eligible_rntis_.~RepeatedField();
+  _impl_.ul_eligible_rntis_.~RepeatedField();
+  _impl_.algorithm_.Destroy();
 }
 
 void SchedulingWeights::SetCachedSize(int size) const {
@@ -170,9 +234,12 @@ void SchedulingWeights::Clear() {
   (void) cached_has_bits;
 
   _impl_.ue_weights_.Clear();
+  _impl_.dl_eligible_rntis_.Clear();
+  _impl_.ul_eligible_rntis_.Clear();
+  _impl_.algorithm_.ClearToEmpty();
   ::memset(&_impl_.ran_index_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.tti_index_) -
-      reinterpret_cast<char*>(&_impl_.ran_index_)) + sizeof(_impl_.tti_index_));
+      reinterpret_cast<char*>(&_impl_.mode_) -
+      reinterpret_cast<char*>(&_impl_.ran_index_)) + sizeof(_impl_.mode_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -208,6 +275,63 @@ const char* SchedulingWeights::_InternalParse(const char* ptr, ::_pbi::ParseCont
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<26>(ptr));
+        } else
+          goto handle_unusual;
+        continue;
+      // .ControlMode mode = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
+          uint64_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+          _internal_set_mode(static_cast<::ControlMode>(val));
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 policy_epoch = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
+          _impl_.policy_epoch_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // string algorithm = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 50)) {
+          auto str = _internal_mutable_algorithm();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "SchedulingWeights.algorithm"));
+        } else
+          goto handle_unusual;
+        continue;
+      // uint64 decision_native_slot = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 56)) {
+          _impl_.decision_native_slot_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // repeated uint32 dl_eligible_rntis = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 66)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedUInt32Parser(_internal_mutable_dl_eligible_rntis(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<uint8_t>(tag) == 64) {
+          _internal_add_dl_eligible_rntis(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr));
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // repeated uint32 ul_eligible_rntis = 9;
+      case 9:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 74)) {
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedUInt32Parser(_internal_mutable_ul_eligible_rntis(), ptr, ctx);
+          CHK_(ptr);
+        } else if (static_cast<uint8_t>(tag) == 72) {
+          _internal_add_ul_eligible_rntis(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr));
+          CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
@@ -260,6 +384,53 @@ uint8_t* SchedulingWeights::_InternalSerialize(
         InternalWriteMessage(3, repfield, repfield.GetCachedSize(), target, stream);
   }
 
+  // .ControlMode mode = 4;
+  if (this->_internal_mode() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteEnumToArray(
+      4, this->_internal_mode(), target);
+  }
+
+  // uint64 policy_epoch = 5;
+  if (this->_internal_policy_epoch() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(5, this->_internal_policy_epoch(), target);
+  }
+
+  // string algorithm = 6;
+  if (!this->_internal_algorithm().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_algorithm().data(), static_cast<int>(this->_internal_algorithm().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "SchedulingWeights.algorithm");
+    target = stream->WriteStringMaybeAliased(
+        6, this->_internal_algorithm(), target);
+  }
+
+  // uint64 decision_native_slot = 7;
+  if (this->_internal_decision_native_slot() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt64ToArray(7, this->_internal_decision_native_slot(), target);
+  }
+
+  // repeated uint32 dl_eligible_rntis = 8;
+  {
+    int byte_size = _impl_._dl_eligible_rntis_cached_byte_size_.load(std::memory_order_relaxed);
+    if (byte_size > 0) {
+      target = stream->WriteUInt32Packed(
+          8, _internal_dl_eligible_rntis(), byte_size, target);
+    }
+  }
+
+  // repeated uint32 ul_eligible_rntis = 9;
+  {
+    int byte_size = _impl_._ul_eligible_rntis_cached_byte_size_.load(std::memory_order_relaxed);
+    if (byte_size > 0) {
+      target = stream->WriteUInt32Packed(
+          9, _internal_ul_eligible_rntis(), byte_size, target);
+    }
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -283,6 +454,41 @@ size_t SchedulingWeights::ByteSizeLong() const {
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
+  // repeated uint32 dl_eligible_rntis = 8;
+  {
+    size_t data_size = ::_pbi::WireFormatLite::
+      UInt32Size(this->_impl_.dl_eligible_rntis_);
+    if (data_size > 0) {
+      total_size += 1 +
+        ::_pbi::WireFormatLite::Int32Size(static_cast<int32_t>(data_size));
+    }
+    int cached_size = ::_pbi::ToCachedSize(data_size);
+    _impl_._dl_eligible_rntis_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  // repeated uint32 ul_eligible_rntis = 9;
+  {
+    size_t data_size = ::_pbi::WireFormatLite::
+      UInt32Size(this->_impl_.ul_eligible_rntis_);
+    if (data_size > 0) {
+      total_size += 1 +
+        ::_pbi::WireFormatLite::Int32Size(static_cast<int32_t>(data_size));
+    }
+    int cached_size = ::_pbi::ToCachedSize(data_size);
+    _impl_._ul_eligible_rntis_cached_byte_size_.store(cached_size,
+                                    std::memory_order_relaxed);
+    total_size += data_size;
+  }
+
+  // string algorithm = 6;
+  if (!this->_internal_algorithm().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_algorithm());
+  }
+
   // uint32 ran_index = 1;
   if (this->_internal_ran_index() != 0) {
     total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_ran_index());
@@ -291,6 +497,22 @@ size_t SchedulingWeights::ByteSizeLong() const {
   // uint32 tti_index = 2;
   if (this->_internal_tti_index() != 0) {
     total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_tti_index());
+  }
+
+  // uint64 policy_epoch = 5;
+  if (this->_internal_policy_epoch() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_policy_epoch());
+  }
+
+  // uint64 decision_native_slot = 7;
+  if (this->_internal_decision_native_slot() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(this->_internal_decision_native_slot());
+  }
+
+  // .ControlMode mode = 4;
+  if (this->_internal_mode() != 0) {
+    total_size += 1 +
+      ::_pbi::WireFormatLite::EnumSize(this->_internal_mode());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -312,11 +534,25 @@ void SchedulingWeights::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, cons
   (void) cached_has_bits;
 
   _this->_impl_.ue_weights_.MergeFrom(from._impl_.ue_weights_);
+  _this->_impl_.dl_eligible_rntis_.MergeFrom(from._impl_.dl_eligible_rntis_);
+  _this->_impl_.ul_eligible_rntis_.MergeFrom(from._impl_.ul_eligible_rntis_);
+  if (!from._internal_algorithm().empty()) {
+    _this->_internal_set_algorithm(from._internal_algorithm());
+  }
   if (from._internal_ran_index() != 0) {
     _this->_internal_set_ran_index(from._internal_ran_index());
   }
   if (from._internal_tti_index() != 0) {
     _this->_internal_set_tti_index(from._internal_tti_index());
+  }
+  if (from._internal_policy_epoch() != 0) {
+    _this->_internal_set_policy_epoch(from._internal_policy_epoch());
+  }
+  if (from._internal_decision_native_slot() != 0) {
+    _this->_internal_set_decision_native_slot(from._internal_decision_native_slot());
+  }
+  if (from._internal_mode() != 0) {
+    _this->_internal_set_mode(from._internal_mode());
   }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -334,11 +570,19 @@ bool SchedulingWeights::IsInitialized() const {
 
 void SchedulingWeights::InternalSwap(SchedulingWeights* other) {
   using std::swap;
+  auto* lhs_arena = GetArenaForAllocation();
+  auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.ue_weights_.InternalSwap(&other->_impl_.ue_weights_);
+  _impl_.dl_eligible_rntis_.InternalSwap(&other->_impl_.dl_eligible_rntis_);
+  _impl_.ul_eligible_rntis_.InternalSwap(&other->_impl_.ul_eligible_rntis_);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.algorithm_, lhs_arena,
+      &other->_impl_.algorithm_, rhs_arena
+  );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(SchedulingWeights, _impl_.tti_index_)
-      + sizeof(SchedulingWeights::_impl_.tti_index_)
+      PROTOBUF_FIELD_OFFSET(SchedulingWeights, _impl_.mode_)
+      + sizeof(SchedulingWeights::_impl_.mode_)
       - PROTOBUF_FIELD_OFFSET(SchedulingWeights, _impl_.ran_index_)>(
           reinterpret_cast<char*>(&_impl_.ran_index_),
           reinterpret_cast<char*>(&other->_impl_.ran_index_));

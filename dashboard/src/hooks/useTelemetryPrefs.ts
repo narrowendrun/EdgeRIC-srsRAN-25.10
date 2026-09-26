@@ -1,21 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-  CHART_GROUP_TITLES, METRICS, METRICS_BY_KEY, type MetricDef, type MetricMode,
+  METRIC_CHOICES, METRIC_CHOICES_BY_ID, type MetricMode,
 } from '../../server/metrics-registry'
-import type { ChartCard } from '../components/MetricChart'
 
 const storageKey = 'edgeric.telemetry.v1'
-const storageVersion = 1
+const storageVersion = 3
 
 /**
  * What the dashboard shows on a fresh browser. Deliberately not the registry's defaultMode:
  * this is one object to edit if it turns out wrong in practice.
  */
 const defaultSelection: Record<string, MetricMode> = {
-  dlMbps: 'chart', ulMbps: 'chart',
+  throughput: 'chart',
   snr: 'chart',
-  dlMcs: 'numeric', ulMcs: 'numeric',
-  dlBler: 'numeric', ulBler: 'numeric',
+  mcs: 'numeric',
+  bler: 'numeric',
+  successProbability: 'numeric',
+  aoi: 'numeric',
 }
 
 interface StoredPrefs { v: number; selected: Record<string, MetricMode> }
@@ -30,7 +31,7 @@ function load(): Record<string, MetricMode> {
     const cleaned: Record<string, MetricMode> = {}
     for (const [key, mode] of Object.entries(parsed.selected)) {
       // Drop keys the registry no longer knows, so removing a metric cannot break a saved pref.
-      if (METRICS_BY_KEY.has(key) && (mode === 'numeric' || mode === 'chart')) cleaned[key] = mode
+      if (METRIC_CHOICES_BY_ID.has(key) && (mode === 'numeric' || mode === 'chart')) cleaned[key] = mode
     }
     return Object.keys(cleaned).length ? cleaned : { ...defaultSelection }
   } catch {
@@ -47,26 +48,6 @@ function save(selected: Record<string, MetricMode>) {
   }
 }
 
-/** Groups charted metrics into cards; those sharing a chartGroup become one multi-line card. */
-export function chartCards(metrics: MetricDef[]): ChartCard[] {
-  const cards: ChartCard[] = []
-  const seen = new Set<string>()
-  for (const metric of metrics) {
-    if (!metric.chartGroup) {
-      cards.push({ title: metric.label, unit: metric.unit, domain: metric.domain, metrics: [metric] })
-      continue
-    }
-    if (seen.has(metric.chartGroup)) continue
-    seen.add(metric.chartGroup)
-    const members = metrics.filter((item) => item.chartGroup === metric.chartGroup)
-    cards.push({
-      title: CHART_GROUP_TITLES[metric.chartGroup] || metric.label,
-      unit: metric.unit, domain: metric.domain, metrics: members,
-    })
-  }
-  return cards
-}
-
 export function useTelemetryPrefs() {
   const [selected, setSelected] = useState<Record<string, MetricMode>>(load)
   useEffect(() => { save(selected) }, [selected])
@@ -74,7 +55,7 @@ export function useTelemetryPrefs() {
   const toggle = useCallback((key: string) => setSelected((current) => {
     const next = { ...current }
     if (key in next) delete next[key]
-    else next[key] = METRICS_BY_KEY.get(key)?.defaultMode ?? 'chart'
+    else next[key] = METRIC_CHOICES_BY_ID.get(key)?.metrics[0]?.defaultMode ?? 'chart'
     return next
   }), [])
 
@@ -84,10 +65,9 @@ export function useTelemetryPrefs() {
 
   const reset = useCallback(() => setSelected({ ...defaultSelection }), [])
 
-  // Registry order throughout, so cards and tiles keep a stable, predictable arrangement.
-  const keys = useMemo(() => METRICS.filter((m) => m.key in selected).map((m) => m.key), [selected])
-  const numeric = useMemo(() => METRICS.filter((m) => selected[m.key] === 'numeric'), [selected])
-  const charted = useMemo(() => METRICS.filter((m) => selected[m.key] === 'chart'), [selected])
+  // Registry order throughout, so rows keep a stable, predictable arrangement.
+  const choices = useMemo(() => METRIC_CHOICES.filter((choice) => choice.id in selected), [selected])
+  const keys = useMemo(() => choices.flatMap((choice) => choice.metrics.map((metric) => metric.key)), [choices])
 
-  return { selected, toggle, setMode, reset, keys, numeric, charted }
+  return { selected, toggle, setMode, reset, keys, choices }
 }

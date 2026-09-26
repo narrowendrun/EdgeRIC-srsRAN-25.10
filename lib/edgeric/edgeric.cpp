@@ -9,6 +9,12 @@
 
 // TTI counter
 uint32_t edgeric::tti_cnt = 0;
+uint64_t edgeric::native_slot = 0;
+uint32_t edgeric::numerology = 0;
+uint32_t edgeric::slot_duration_ns = 1000000;
+bool edgeric::native_slot_initialized = false;
+uint32_t edgeric::last_native_slot_mod = 0;
+uint32_t edgeric::native_slot_modulus = 0;
 
 // Control indices
 uint32_t edgeric::er_ran_index_weights = 0;
@@ -25,10 +31,18 @@ bool edgeric::initialized = false;
 // Control maps
 std::map<uint16_t, float> edgeric::weights_recved = {};
 std::map<uint16_t, uint8_t> edgeric::mcs_recved = {};
+std::set<uint16_t> edgeric::dl_eligible_rntis = {};
+std::set<uint16_t> edgeric::ul_eligible_rntis = {};
+bool edgeric::eligibility_mode = false;
+uint64_t edgeric::eligibility_decision_slot = 0;
+uint64_t edgeric::scheduler_policy_epoch = 0;
+std::string edgeric::scheduler_algorithm = {};
 
 // MAC metrics
 std::map<uint16_t, mac_ue_metrics> edgeric::mac_ue = {};
 std::map<ue_drb_key, mac_drb_metrics> edgeric::mac_drb = {};
+std::vector<harq_event_data> edgeric::pending_harq_events = {};
+uint64_t edgeric::next_harq_event_sequence = 0;
 
 // RLC metrics
 std::map<ue_drb_key, rlc_drb_metrics> edgeric::rlc_drb = {};
@@ -57,6 +71,9 @@ static zmq::context_t context(1);
 static zmq::socket_t publisher(context, ZMQ_PUB);
 static zmq::socket_t subscriber_weights(context, ZMQ_SUB);
 static zmq::socket_t subscriber_mcs(context, ZMQ_SUB);
+static uint64_t next_message_sequence = 0;
+static uint64_t dropped_harq_events = 0;
+static constexpr size_t MAX_PENDING_HARQ_EVENTS = 65536;
 
 //==============================================================================
 // Initialization
@@ -65,9 +82,9 @@ static zmq::socket_t subscriber_mcs(context, ZMQ_SUB);
 void edgeric::init() {
     if (initialized) return;
     
-    // Publisher for metrics (conflate mode - only keep latest)
-    publisher.set(zmq::sockopt::sndhwm, 1);    // Minimal queue
-    publisher.set(zmq::sockopt::conflate, 1);  // Only keep latest message
+    // Keep a bounded, non-conflated queue. The scheduler still uses non-blocking
+    // sends, and message/event sequence gaps make overload loss observable.
+    publisher.set(zmq::sockopt::sndhwm, 10000);
     publisher.bind("ipc:///tmp/metrics_data");
     
     // Subscriber for weights
@@ -93,6 +110,71 @@ void edgeric::ensure_initialized() {
 // MAC Metrics (scheduler thread - no locking)
 //==============================================================================
 
+namespace {
+
+constexpr uint64_t extend_modular_slot_near(uint64_t reference_extended,
+                                            uint32_t reference_modular,
+                                            uint32_t modulus,
+                                            uint32_t target_modular)
+{
+    int64_t delta = static_cast<int64_t>(target_modular) - static_cast<int64_t>(reference_modular);
+    const int64_t half_modulus = static_cast<int64_t>(modulus / 2U);
+    if (delta > half_modulus) {
+        delta -= modulus;
+    } else if (delta < -half_modulus) {
+        delta += modulus;
+    }
+    return static_cast<uint64_t>(static_cast<int64_t>(reference_extended) + delta);
+}
+
+constexpr uint32_t forward_modular_delta(uint32_t previous, uint32_t current, uint32_t modulus)
+{
+    return (current + modulus - previous) % modulus;
+}
+
+static_assert(extend_modular_slot_near(20482, 2, 20480, 20479) == 20479);
+static_assert(extend_modular_slot_near(20479, 20479, 20480, 2) == 20482);
+static_assert(extend_modular_slot_near(1234, 1234, 20480, 1200) == 1200);
+static_assert(forward_modular_delta(20479, 0, 20480) == 1);
+static_assert(forward_modular_delta(20470, 5, 20480) == 15);
+static_assert(forward_modular_delta(100, 100, 20480) == 0);
+
+} // namespace
+
+void edgeric::setTTI(uint32_t tti_count,
+                     uint32_t modular_slot,
+                     uint32_t slot_modulus,
+                     uint32_t numerology_value)
+{
+    tti_cnt = tti_count;
+    numerology = numerology_value;
+    slot_duration_ns = 1000000U >> numerology_value;
+
+    if (not native_slot_initialized) {
+        native_slot = modular_slot;
+        native_slot_initialized = true;
+    } else if (slot_modulus != native_slot_modulus) {
+        // A cell's numerology is stable for its lifetime. If this process is
+        // reused for a different modulus, preserve monotonicity and start a new
+        // local epoch; an exact cross-cell/reconfiguration delta is unknowable.
+        ++native_slot;
+    } else {
+        const uint32_t forward_delta = forward_modular_delta(last_native_slot_mod, modular_slot, slot_modulus);
+        native_slot += forward_delta;
+    }
+
+    last_native_slot_mod = modular_slot;
+    native_slot_modulus = slot_modulus;
+}
+
+uint64_t edgeric::extend_recent_slot(uint32_t modular_slot)
+{
+    if (not native_slot_initialized or native_slot_modulus == 0) {
+        return modular_slot;
+    }
+    return extend_modular_slot_near(native_slot, last_native_slot_mod, native_slot_modulus, modular_slot);
+}
+
 void edgeric::set_mac_ue(uint16_t rnti, uint32_t cqi, float snr,
                          uint32_t dl_buffer, uint32_t ul_buffer,
                          uint32_t dl_tbs, uint32_t ul_tbs) {
@@ -103,6 +185,41 @@ void edgeric::set_mac_ue(uint16_t rnti, uint32_t cqi, float snr,
     m.ul_buffer = ul_buffer;
     m.dl_tbs = dl_tbs;
     m.ul_tbs = ul_tbs;
+}
+
+void edgeric::record_harq_event(uint32_t cell_index,
+                                uint32_t du_ue_index,
+                                uint16_t rnti,
+                                HarqDirection direction,
+                                uint32_t tx_slot,
+                                uint32_t feedback_slot,
+                                uint32_t harq_id,
+                                uint32_t attempt_number,
+                                bool ndi,
+                                HarqOutcome outcome,
+                                uint32_t tbs_bytes) {
+    const uint64_t sequence_id = next_harq_event_sequence++;
+    if (pending_harq_events.size() >= MAX_PENDING_HARQ_EVENTS) {
+        ++dropped_harq_events;
+        if (dropped_harq_events == 1 or (dropped_harq_events & (dropped_harq_events - 1)) == 0) {
+            std::cerr << "EdgeRIC HARQ event queue saturated; dropped " << dropped_harq_events
+                      << " terminal events (event sequence gaps will expose loss)\n";
+        }
+        return;
+    }
+    pending_harq_events.push_back(harq_event_data{
+        sequence_id,
+        cell_index,
+        du_ue_index,
+        rnti,
+        direction,
+        extend_recent_slot(tx_slot),
+        extend_recent_slot(feedback_slot),
+        harq_id,
+        attempt_number,
+        ndi,
+        outcome,
+        tbs_bytes});
 }
 
 void edgeric::set_mac_drb(uint16_t rnti, uint8_t lcid,
@@ -157,20 +274,17 @@ void edgeric::set_ul_prbs(uint16_t rnti, uint32_t prbs) {
 }
 
 void edgeric::report_mac_delays(uint16_t rnti,
-                                float avg_ce_delay_ms,
-                                float avg_crc_delay_ms,
-                                float avg_pucch_harq_delay_ms,
-                                float avg_pusch_harq_delay_ms,
-                                float avg_sr_to_pusch_delay_ms) {
+                                std::optional<float> avg_ce_delay_ms,
+                                std::optional<float> avg_crc_delay_ms,
+                                std::optional<float> avg_pucch_harq_delay_ms,
+                                std::optional<float> avg_pusch_harq_delay_ms,
+                                std::optional<float> avg_sr_to_pusch_delay_ms) {
     auto& m = mac_ue[rnti];
     m.avg_ce_delay_ms = avg_ce_delay_ms;
     m.avg_crc_delay_ms = avg_crc_delay_ms;
     m.avg_pucch_harq_delay_ms = avg_pucch_harq_delay_ms;
     m.avg_pusch_harq_delay_ms = avg_pusch_harq_delay_ms;
     m.avg_sr_to_pusch_delay_ms = avg_sr_to_pusch_delay_ms;
-    m.avg_sum_mac_delay_ms = avg_ce_delay_ms + avg_crc_delay_ms + 
-                             avg_pucch_harq_delay_ms + avg_pusch_harq_delay_ms + 
-                             avg_sr_to_pusch_delay_ms;
 }
 
 //==============================================================================
@@ -398,12 +512,43 @@ void edgeric::send_tti_metrics() {
     // Use raw tti_cnt (not modulo'd) for accurate staleness checking
     TtiMetrics tti_msg;
     tti_msg.set_tti_index(tti_cnt);
+    tti_msg.set_native_slot(native_slot);
+    tti_msg.set_numerology(numerology);
+    tti_msg.set_slot_duration_ns(slot_duration_ns);
+    tti_msg.set_message_sequence_id(next_message_sequence++);
+    const bool control_active = eligibility_control_active();
+    tti_msg.set_scheduler_control_active(control_active);
+    if (control_active) {
+        tti_msg.set_scheduler_policy_epoch(scheduler_policy_epoch);
+        tti_msg.set_scheduler_algorithm(scheduler_algorithm);
+        for (uint16_t rnti : dl_eligible_rntis) tti_msg.add_dl_eligible_rntis(rnti);
+        for (uint16_t rnti : ul_eligible_rntis) tti_msg.add_ul_eligible_rntis(rnti);
+    } else {
+        tti_msg.set_scheduler_algorithm("Native scheduler (fail-open)");
+    }
     
     // Timestamp in microseconds
     auto now = std::chrono::system_clock::now();
     auto us = std::chrono::duration_cast<std::chrono::microseconds>(
         now.time_since_epoch()).count();
     tti_msg.set_timestamp_us(static_cast<uint64_t>(us));
+
+    for (const harq_event_data& event : pending_harq_events) {
+        HarqEvent* event_msg = tti_msg.add_harq_events();
+        event_msg->set_sequence_id(event.sequence_id);
+        event_msg->set_cell_index(event.cell_index);
+        event_msg->set_du_ue_index(event.du_ue_index);
+        event_msg->set_rnti(event.rnti);
+        event_msg->set_direction(event.direction);
+        event_msg->set_tx_slot(event.tx_slot);
+        event_msg->set_feedback_slot(event.feedback_slot);
+        event_msg->set_harq_id(event.harq_id);
+        event_msg->set_attempt_number(event.attempt_number);
+        event_msg->set_is_retransmission(event.attempt_number > 0);
+        event_msg->set_ndi(event.ndi);
+        event_msg->set_outcome(event.outcome);
+        event_msg->set_tbs_bytes(event.tbs_bytes);
+    }
     
     // Collect unique RNTIs from MAC metrics
     std::set<uint16_t> active_rntis;
@@ -437,12 +582,21 @@ void edgeric::send_tti_metrics() {
             mac_msg->set_ul_crc_ok(mac_it->second.ul_crc_ok);
             mac_msg->set_ul_crc_fail(mac_it->second.ul_crc_fail);
             // MAC layer delays in ms
-            mac_msg->set_avg_ce_delay_ms(mac_it->second.avg_ce_delay_ms);
-            mac_msg->set_avg_crc_delay_ms(mac_it->second.avg_crc_delay_ms);
-            mac_msg->set_avg_pucch_harq_delay_ms(mac_it->second.avg_pucch_harq_delay_ms);
-            mac_msg->set_avg_pusch_harq_delay_ms(mac_it->second.avg_pusch_harq_delay_ms);
-            mac_msg->set_avg_sr_to_pusch_delay_ms(mac_it->second.avg_sr_to_pusch_delay_ms);
-            mac_msg->set_avg_sum_mac_delay_ms(mac_it->second.avg_sum_mac_delay_ms);
+            if (mac_it->second.avg_ce_delay_ms.has_value()) {
+                mac_msg->set_avg_ce_delay_ms(mac_it->second.avg_ce_delay_ms.value());
+            }
+            if (mac_it->second.avg_crc_delay_ms.has_value()) {
+                mac_msg->set_avg_crc_delay_ms(mac_it->second.avg_crc_delay_ms.value());
+            }
+            if (mac_it->second.avg_pucch_harq_delay_ms.has_value()) {
+                mac_msg->set_avg_pucch_harq_delay_ms(mac_it->second.avg_pucch_harq_delay_ms.value());
+            }
+            if (mac_it->second.avg_pusch_harq_delay_ms.has_value()) {
+                mac_msg->set_avg_pusch_harq_delay_ms(mac_it->second.avg_pusch_harq_delay_ms.value());
+            }
+            if (mac_it->second.avg_sr_to_pusch_delay_ms.has_value()) {
+                mac_msg->set_avg_sr_to_pusch_delay_ms(mac_it->second.avg_sr_to_pusch_delay_ms.value());
+            }
         }
         
         // MAC per-DRB metrics
@@ -534,7 +688,14 @@ void edgeric::send_tti_metrics() {
     tti_msg.SerializeToString(&serialized);
     
     zmq::message_t msg(serialized.data(), serialized.size());
-    publisher.send(msg, zmq::send_flags::dontwait);
+    const auto send_result = publisher.send(msg, zmq::send_flags::dontwait);
+
+    // Retain terminal outcomes if ZeroMQ could not enqueue this non-blocking
+    // send. The next publish retries them unchanged; message sequence gaps make
+    // the failed frame visible without creating event sequence gaps.
+    if (send_result.has_value()) {
+        pending_harq_events.clear();
+    }
     
     // Reset per-TTI MAC counters (HARQ, scheduling info)
     // Note: MAC delays are NOT reset here as they are updated per-report-period
@@ -660,6 +821,20 @@ void edgeric::get_weights_from_er() {
             er_ran_index_weights = weights_msg.ran_index();
             er_weights_tti = weights_msg.tti_index();
             weights_recved.clear();
+            eligibility_mode = weights_msg.mode() == CONTROL_MODE_ELIGIBILITY;
+            dl_eligible_rntis.clear();
+            ul_eligible_rntis.clear();
+            if (eligibility_mode) {
+                eligibility_decision_slot = weights_msg.decision_native_slot();
+                scheduler_policy_epoch = weights_msg.policy_epoch();
+                scheduler_algorithm = weights_msg.algorithm();
+                for (uint32_t value : weights_msg.dl_eligible_rntis()) {
+                    if (value <= UINT16_MAX) dl_eligible_rntis.insert(static_cast<uint16_t>(value));
+                }
+                for (uint32_t value : weights_msg.ul_eligible_rntis()) {
+                    if (value <= UINT16_MAX) ul_eligible_rntis.insert(static_cast<uint16_t>(value));
+                }
+            }
             
             for (int i = 0; i < weights_msg.ue_weights_size(); ++i) {
                 const auto& ue_weight = weights_msg.ue_weights(i);
@@ -719,6 +894,9 @@ uint32_t edgeric::get_weights_tti() {
 }
 
 std::optional<float> edgeric::get_weights(uint16_t rnti) {
+    if (eligibility_mode) {
+        return std::nullopt;
+    }
     // Only return weights if they are fresh (not stale)
     if (!are_weights_fresh()) {
         return std::nullopt;
@@ -726,6 +904,22 @@ std::optional<float> edgeric::get_weights(uint16_t rnti) {
     
     auto it = weights_recved.find(rnti);
     return (it != weights_recved.end()) ? std::optional<float>(it->second) : std::nullopt;
+}
+
+bool edgeric::eligibility_control_active() {
+    if (not eligibility_mode or not native_slot_initialized) return false;
+    return native_slot >= eligibility_decision_slot and
+           native_slot - eligibility_decision_slot <= ELIGIBILITY_STALENESS_SLOTS;
+}
+
+std::optional<bool> edgeric::is_dl_eligible(uint16_t rnti) {
+    if (not eligibility_control_active()) return std::nullopt;
+    return dl_eligible_rntis.count(rnti) != 0;
+}
+
+std::optional<bool> edgeric::is_ul_eligible(uint16_t rnti) {
+    if (not eligibility_control_active()) return std::nullopt;
+    return ul_eligible_rntis.count(rnti) != 0;
 }
 
 std::optional<float> edgeric::get_weights_unchecked(uint16_t rnti) {

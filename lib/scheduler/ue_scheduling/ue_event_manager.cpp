@@ -505,6 +505,19 @@ void ue_cell_event_manager::handle_crc_indication(const ul_crc_indication& crc_i
         return event_result::invalid_ue_cc;
       }
 
+      // Snapshot native HARQ metadata before handle_crc_pdu() can clear the
+      // process on a terminal outcome.
+      std::optional<ul_harq_process_handle> h_ul = ue_cc->harqs.find_ul_harq_waiting_ack(sl_rx);
+      if (not h_ul.has_value() or h_ul->id() != crc_ptr->harq_id) {
+        // Preserve the native handler's warning and invalid-feedback behavior.
+        ue_cc->handle_crc_pdu(sl_rx, *crc_ptr);
+        return event_result::processed;
+      }
+      const slot_point   tx_slot        = h_ul->pusch_slot();
+      const unsigned     attempt_number = h_ul->nof_retxs();
+      const bool         ndi            = h_ul->ndi();
+      const units::bytes native_tbs{h_ul->get_grant_params().tbs_bytes};
+
       // Update HARQ.
       const int tbs = ue_cc->handle_crc_pdu(sl_rx, *crc_ptr);
       if (tbs < 0) {
@@ -528,6 +541,14 @@ void ue_cell_event_manager::handle_crc_indication(const ul_crc_indication& crc_i
 
       // Notify metrics handler.
       metrics.handle_crc_indication(sl_rx, *crc_ptr, units::bytes{(unsigned)tbs});
+      metrics.handle_ul_harq_outcome(crc_ptr->ue_index,
+                                     tx_slot,
+                                     sl_rx,
+                                     crc_ptr->harq_id,
+                                     attempt_number,
+                                     ndi,
+                                     crc_ptr->tb_crc_success,
+                                     native_tbs);
 
       return event_result::processed;
     };
@@ -987,6 +1008,14 @@ void ue_cell_event_manager::handle_harq_ind(ue_cell&                            
       if (result->update == dl_harq_process_handle::status_update::acked or
           result->update == dl_harq_process_handle::status_update::nacked) {
         metrics.handle_dl_harq_ack(ue_cc.ue_index, result->update == dl_harq_process_handle::status_update::acked, tbs);
+        metrics.handle_dl_harq_outcome(ue_cc.ue_index,
+                                       result->h_dl.pdsch_slot(),
+                                       uci_sl,
+                                       result->h_dl.id(),
+                                       result->h_dl.nof_retxs(),
+                                       result->h_dl.ndi(),
+                                       result->update == dl_harq_process_handle::status_update::acked,
+                                       tbs);
       }
     }
   }

@@ -1,4 +1,4 @@
-export type ModuleName = 'open5gs' | 'edgeric' | 'gnb'
+export type ModuleName = 'open5gs' | 'edgeric' | 'scheduler' | 'gnb'
 export type ModuleState = 'active' | 'degraded' | 'inactive' | 'unknown'
 export type Action = 'start' | 'stop' | 'restart'
 export type WindowSize = '5m' | '15m' | '30m' | '1h'
@@ -10,12 +10,19 @@ export interface DashboardStatus {
   rf: Record<string, string>
   modules: Record<ModuleName, ModuleStatus>
   ues: { count: number | null; rntis: string[]; fresh: boolean }
-  iperf3: { state: ModuleState; address: string; port: number; detail: string }
+  iperf3: { state: ModuleState; address: string; port: number; ports: number[]; detail: string }
   scheduler: {
     available: boolean
     algorithm: string | null
     known: boolean
     muappRunning: boolean
+    policyEpoch: number | null
+    appliedAlgorithm: string | null
+    appliedEpoch: number | null
+    controlActive: boolean
+    dlEligibleRntis: number[]
+    ulEligibleRntis: number[]
+    algorithms: string[]
     detail: string
   }
   webui: { available: boolean; proxyPort: number }
@@ -41,10 +48,55 @@ export interface MetricsResponse {
   bucketMs?: number
   /** Metric keys actually served. */
   metrics: string[]
-  /** Requested but absent from this run's database (a pre-v2 archive). */
+  /** Requested but absent from this run's database (for example, a pre-v2 archive). */
   unavailable: string[]
   series: MetricSeries[]
   capture: Record<string, number> | null
+}
+
+export type HarqDirection = 'dl' | 'ul'
+export interface HarqReliabilitySeries {
+  rnti: number
+  label: string
+  direction: HarqDirection
+  attempts: number
+  successes: number
+  failures: number
+  excludedRetransmissions: number
+  pSuccess: number | null
+  observedSlots: number
+  points: Array<{ timestamp: number; pSuccessPercent?: number; aoiMs: number }>
+  aoi: {
+    currentSlots: number
+    meanSlots: number
+    maxSlots: number
+    currentMs: number
+    meanMs: number
+    maxMs: number
+  }
+}
+export interface HarqResponse {
+  runId: string | null
+  available: boolean
+  schemaVersion: number | null
+  reason?: string
+  startAt?: string
+  endAt?: string
+  capture: {
+    complete: boolean | null
+    messageSequenceGaps: number
+    messageSequenceReorders: number | null
+    harqSequenceGaps: number | null
+    harqSequenceReorders: number | null
+    duplicateMessages: number | null
+    contractErrors: number | null
+    parseErrors: number | null
+    harqEventErrors: number | null
+    observedMessages: number
+    detail: string
+  } | null
+  scopeNote?: string
+  series: HarqReliabilitySeries[]
 }
 
 export interface RunManifest {
@@ -56,7 +108,7 @@ export interface RunManifest {
   observedRntis: string[]
   metrics: { messages: number; ueSamples: number; missedTtis: number }
   databaseBytes: number
-  configFile?: string
+  configFile?: string | null
   rf?: Record<string, string>
-  schedulerTimeline?: Array<{ at: string; algorithm: string | null }>
+  schedulerTimeline?: Array<{ at: string; algorithm: string | null; policyEpoch?: number; applied?: boolean }>
 }

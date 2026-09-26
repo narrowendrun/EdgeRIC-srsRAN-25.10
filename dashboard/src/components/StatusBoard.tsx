@@ -7,19 +7,22 @@ interface Props {
   status: DashboardStatus | null
   pendingAction: string
   onAction: (target: ModuleName | 'all', action: Action) => void
+  onSchedulerSelect: (algorithm: string) => void
 }
 
-export function StatusBoard({ status, pendingAction, onAction }: Props) {
+export function StatusBoard({ status, pendingAction, onAction, onSchedulerSelect }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const controlsDisabled = !status?.controlsReady || Boolean(pendingAction)
   const ueState: ModuleState = !status?.ues.fresh ? 'unknown' : (status.ues.count || 0) > 0 ? 'active' : 'inactive'
   const ueSummary = status?.ues.fresh ? `${status.ues.count} connected` : 'telemetry unavailable'
-  const iperfEndpoint = status ? `${status.iperf3.address}:${status.iperf3.port}` : '—'
+  const iperfEndpoint = status
+    ? `${status.iperf3.address}:${status.iperf3.ports?.[0] ?? status.iperf3.port}–${status.iperf3.ports?.at(-1) ?? status.iperf3.port}`
+    : '—'
   // Set externally with `redis-cli SET scheduling_algorithm`; the dashboard only reports it.
   const scheduler = status?.scheduler
   const schedulerState: ModuleState = !scheduler ? 'unknown'
     : !scheduler.available ? 'inactive'
-    : scheduler.algorithm && scheduler.known && scheduler.muappRunning ? 'active'
+    : scheduler.algorithm && scheduler.known && scheduler.muappRunning && scheduler.controlActive ? 'active'
     : 'degraded'
 
   return <>
@@ -48,8 +51,13 @@ export function StatusBoard({ status, pendingAction, onAction }: Props) {
           <strong>{iperfEndpoint}</strong><small>{status?.iperf3.detail || 'checking…'}</small>
         </div>
         <div className="summary-cell">
-          <span className="summary-label"><StatusLamp state={schedulerState} /> Scheduler</span>
-          <strong>{status?.scheduler?.algorithm || (status?.scheduler ? 'none set' : '—')}</strong>
+          <span className="summary-label"><StatusLamp state={schedulerState} /> Applied scheduler</span>
+          <select className="scheduler-select" aria-label="Scheduling algorithm"
+            value={scheduler?.algorithm || ''} disabled={!scheduler?.muappRunning || pendingAction === 'scheduler-select'}
+            onChange={(event) => onSchedulerSelect(event.target.value)}>
+            {!scheduler?.algorithm && <option value="">none set</option>}
+            {(scheduler?.algorithms || []).map((algorithm) => <option key={algorithm} value={algorithm}>{algorithm}</option>)}
+          </select>
           <small>{status?.scheduler?.detail || 'checking…'}</small>
         </div>
       </div>
@@ -67,13 +75,13 @@ export function StatusBoard({ status, pendingAction, onAction }: Props) {
           <div className="detail-highlight"><span>iperf3 service</span><strong>{status?.iperf3.state || 'unknown'} · {iperfEndpoint}</strong><small>{status?.iperf3.detail || 'checking…'}</small></div>
         </div>
         <div className="detail-highlight-grid">
-          <div className="detail-highlight"><span>Scheduling algorithm</span>
-            <strong>{scheduler?.algorithm || 'none set'}</strong>
-            <small>{scheduler?.detail || 'checking…'} · set with <code>redis-cli SET scheduling_algorithm</code></small>
+          <div className="detail-highlight"><span>Applied scheduling algorithm</span>
+            <strong>{scheduler?.appliedAlgorithm || 'not evidenced'}</strong>
+            <small>{scheduler?.detail || 'checking…'}{scheduler?.appliedEpoch ? ` · epoch ${scheduler.appliedEpoch}` : ''}</small>
           </div>
           <div className="detail-highlight"><span>Scheduling muApp</span>
             <strong>{scheduler?.muappRunning ? 'running' : 'not running'}</strong>
-            <small>{scheduler?.muappRunning ? 'applying the algorithm above' : 'nothing is acting on the Redis value'}</small>
+            <small>{scheduler?.controlActive ? `DL ${scheduler.dlEligibleRntis.join(', ') || 'none'} · UL ${scheduler.ulEligibleRntis.join(', ') || 'none'}` : 'gNB control is fail-open until fresh decisions arrive'}</small>
           </div>
         </div>
         <div className="rf-grid">

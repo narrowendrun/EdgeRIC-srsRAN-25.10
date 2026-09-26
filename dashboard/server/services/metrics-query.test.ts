@@ -30,6 +30,8 @@ const COLS = [
   'dl_tbs', 'ul_tbs', 'dl_buffer', 'ul_buffer', 'dl_acked_bytes', 'ul_ok_bytes',
   'dl_harq_ack', 'dl_harq_nack', 'ul_crc_ok', 'ul_crc_fail', 'ce_delay_us', 'crc_delay_us',
   'pucch_harq_delay_us', 'pusch_harq_delay_us', 'sr_to_pusch_delay_us', 'sum_mac_delay_us',
+  'ce_delay_valid', 'crc_delay_valid', 'pucch_harq_delay_valid', 'pusch_harq_delay_valid',
+  'sr_to_pusch_delay_valid',
 ]
 
 before(() => {
@@ -48,6 +50,10 @@ before(() => {
     row.rnti = 0x4601
     row.cqi = 10
     row.snr = scheduled ? 20 : 30
+    // Missing native delay observations may leave a stale numeric payload, but validity is
+    // authoritative. True zero is a valid observation and must remain distinguishable.
+    row.ce_delay_us = tti < 100 ? 9999 : tti < 200 ? 0 : tti < 300 ? 4000 : 0
+    row.ce_delay_valid = tti >= 100 && tti < 300 ? 1 : 0
     if (scheduled) {
       const good = tti < 100
       row.dl_mcs = good ? 16 : 12
@@ -114,6 +120,40 @@ describe('SNR — srsRAN prints n/a when there was no PUSCH', () => {
     const s = run(['snr'])
     assert.equal(s.summary.snr.avg, 20,
       'only the 200 TTIs with UL activity count; including idle TTIs would give 28')
+  })
+})
+
+describe('metrics with no qualifying observations', () => {
+  test('an average metric is absent rather than summarised as zero', () => {
+    // The fixture never assigns UL PRBs, so UL MCS has no observation in any TTI.
+    const s = run(['ulMcs'])
+    assert.ok(s.points.every((point) => point.ulMcs === undefined))
+    assert.equal(s.summary.ulMcs, undefined,
+      'no UL allocation must render as unavailable, not as MCS 0')
+  })
+})
+
+describe('native optional MAC delays', () => {
+  test('missing samples are excluded while a present zero remains a real observation', () => {
+    const s = run(['ceDelay'])
+    assert.equal(s.summary.ceDelay.min, 0, 'present zero must not be treated as missing')
+    assert.equal(s.summary.ceDelay.max, 4)
+    assert.equal(s.summary.ceDelay.avg, 2,
+      '100 present zeroes and 100 present 4 ms samples average to 2 ms; absent rows do not count')
+  })
+
+  test('a delay with no native observations is undefined, not zero', () => {
+    const s = run(['crcDelay'])
+    assert.ok(s.points.every((point) => point.crcDelay === undefined))
+    assert.equal(s.summary.crcDelay, undefined)
+  })
+
+  test('synthetic Total MAC delay is no longer a dashboard metric', () => {
+    const result = queryMetrics({
+      runId: 'test', dbPath, isActive: false, window: '5m', metricKeys: ['sumMacDelay'], fullRun: true,
+    })
+    assert.deepEqual(result.metrics, [])
+    assert.deepEqual(result.unavailable, ['sumMacDelay'])
   })
 })
 
@@ -210,12 +250,21 @@ describe('rate metrics on a live run', () => {
     for (let i = 0; i < 2000; i++) insert.run(startUs + i * 1000, i % 10000, 0x4601, 1000)
     db.close()
 
-    const r = queryMetrics({ runId: 't', dbPath: livePath, isActive: true, window: '5m', metricKeys: ['ulMbps'], fullRun: false })
+    const r = queryMetrics({
+      runId: 't', dbPath: livePath, isActive: true, window: '5m',
+      metricKeys: ['ulMbps', 'ulBler'], fullRun: false,
+    })
     const points = r.series[0].points.filter((p) => p.ulMbps !== undefined)
     assert.ok(points.length >= 3, 'expected several buckets with data')
     for (const p of points) {
       assert.ok(Math.abs(p.ulMbps! - 8) < 1.0,
         `every bucket carrying data should read ~8 Mbps, got ${p.ulMbps} at ${new Date(p.timestamp).toISOString()}`)
     }
+    assert.ok(Math.abs(r.series[0].summary.ulMbps.avg - 8) < 0.1,
+      `summary must exclude the recorder commit-lag tail, got ${r.series[0].summary.ulMbps.avg}`)
+    assert.ok(r.series[0].points.every((point) => point.ulBler === undefined),
+      'a bucket with no CRC outcomes has no BLER')
+    assert.equal(r.series[0].summary.ulBler, undefined,
+      'no CRC outcomes must not be summarised as perfect 0% BLER')
   })
 })

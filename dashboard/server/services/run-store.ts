@@ -1,14 +1,14 @@
 import { randomBytes } from 'node:crypto'
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
 import {
-  copyFileSync, createWriteStream, existsSync, mkdirSync, readFileSync,
-  readdirSync, rmSync, statSync, writeFileSync, type WriteStream,
+  createWriteStream, existsSync, mkdirSync, readFileSync,
+  readdirSync, renameSync, rmSync, statSync, writeFileSync, type WriteStream,
 } from 'node:fs'
 import path from 'node:path'
 import { managedUnits, open5gsLogNames, projectRoot, recorderUnit } from '../config.js'
 import { writeRunSchema } from './run-schema.js'
 import { readSchedulerAlgorithm } from './scheduler.js'
-import { loadRfConfig } from './systemd.js'
+import { archiveRfConfig } from './rf-config.js'
 import { run } from '../utils.js'
 
 export interface RunManifest {
@@ -18,7 +18,7 @@ export interface RunManifest {
   endedAt: string | null
   status: 'active' | 'completed' | 'interrupted'
   gitCommit: string
-  configFile: string
+  configFile: string | null
   observedRntis: string[]
   metrics: { messages: number; ueSamples: number; missedTtis: number }
   /**
@@ -27,12 +27,12 @@ export interface RunManifest {
    */
   rf: Record<string, string>
   /**
-   * Which EdgeRIC scheduling algorithm was active, and when it changed. The algorithm is set
+   * Which EdgeRIC scheduling algorithm was requested in Redis, and when it changed. The value is
+   * intent, not evidence that the muApp or gNB applied it. The algorithm is set
    * externally with `redis-cli SET scheduling_algorithm`, so this is sampled rather than
-   * recorded at the point of change. Without it an archived run cannot be attributed to a
-   * scheduler, and comparing runs is meaningless.
+   * recorded at the point of change. It is configuration provenance, not applied scheduler proof.
    */
-  schedulerTimeline: Array<{ at: string; algorithm: string | null }>
+  schedulerTimeline: Array<{ at: string; algorithm: string | null; policyEpoch?: number; applied?: boolean }>
   /**
    * When the metric counters below were successfully derived from the run's database.
    * null means "never computed" (not "computed and genuinely zero"), which is what lets
@@ -94,17 +94,15 @@ export class RunStore {
     const dir = this.runDir(id)
     mkdirSync(path.join(dir, 'open5gs'), { recursive: true })
     mkdirSync(path.join(dir, 'config'), { recursive: true })
-    const configName = 'gnb_rf_x310_tdd_n78_20mhz.yml'
-    const sourceConfig = path.join(projectRoot, configName)
-    if (existsSync(sourceConfig)) copyFileSync(sourceConfig, path.join(dir, 'config', configName))
+    const configSnapshot = archiveRfConfig(path.join(dir, 'config'))
     const git = await run('/usr/bin/git', ['-C', projectRoot, 'rev-parse', '--short', 'HEAD'])
     const scheduler = await readSchedulerAlgorithm()
     const manifest: RunManifest = {
       schemaVersion: 1, id, startedAt: now.toISOString(), endedAt: null, status: 'active',
-      gitCommit: git.ok ? git.stdout : 'unknown', configFile: configName,
+      gitCommit: git.ok ? git.stdout : 'unknown', configFile: configSnapshot.configFile,
       observedRntis: [], metrics: { messages: 0, ueSamples: 0, missedTtis: 0 },
       statsComputedAt: null,
-      rf: loadRfConfig() as unknown as Record<string, string>,
+      rf: configSnapshot.rf,
       schedulerTimeline: [{ at: now.toISOString(), algorithm: scheduler.algorithm }],
     }
     this.writeManifest(manifest)
@@ -112,6 +110,53 @@ export class RunStore {
     writeRunSchema(dir)
     writeFileSync(this.activeFile, `${JSON.stringify({ runId: id, runDir: dir, startedAt: manifest.startedAt }, null, 2)}\n`, { mode: 0o644 })
     this.startCapture(id)
+    return id
+  }
+
+  /** Rotate archives without stopping the recorder, gNB, scheduler, or core. */
+  async rotateForScheduler(algorithm: string, policyEpoch: number) {
+    const previousId = this.activeId()
+    if (!previousId) return this.ensureActive()
+    const previous = this.readManifest(previousId)
+    if (!previous) throw new Error(`Active run ${previousId} has no readable manifest.`)
+
+    const now = new Date()
+    const stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')
+    const id = `${stamp}${randomBytes(2).toString('hex').toUpperCase()}`
+    const dir = this.runDir(id)
+    mkdirSync(path.join(dir, 'open5gs'), { recursive: true })
+    mkdirSync(path.join(dir, 'config'), { recursive: true })
+    const configSnapshot = archiveRfConfig(path.join(dir, 'config'))
+    const git = await run('/usr/bin/git', ['-C', projectRoot, 'rev-parse', '--short', 'HEAD'])
+    const manifest: RunManifest = {
+      schemaVersion: 1, id, startedAt: now.toISOString(), endedAt: null, status: 'active',
+      gitCommit: git.ok ? git.stdout : 'unknown', configFile: configSnapshot.configFile,
+      observedRntis: [], metrics: { messages: 0, ueSamples: 0, missedTtis: 0 },
+      statsComputedAt: null, rf: configSnapshot.rf,
+      schedulerTimeline: [{ at: now.toISOString(), algorithm, policyEpoch, applied: true }],
+    }
+    this.writeManifest(manifest)
+    writeRunSchema(dir)
+    const temporary = `${this.activeFile}.tmp`
+    writeFileSync(temporary, `${JSON.stringify({ runId: id, runDir: dir, startedAt: manifest.startedAt }, null, 2)}\n`, { mode: 0o644 })
+    renameSync(temporary, this.activeFile)
+    this.stopCapture()
+    this.startCapture(id)
+
+    const deadline = Date.now() + 3000
+    while (!existsSync(path.join(dir, 'metrics.sqlite3')) && Date.now() < deadline) await delay(25)
+    await delay(100)
+    const stats = await this.readMetricsStats(previousId)
+    previous.status = 'completed'
+    previous.endedAt = now.toISOString()
+    previous.schedulerTimeline.push({ at: now.toISOString(), algorithm, policyEpoch, applied: true })
+    if (stats) {
+      previous.metrics = stats.metrics
+      previous.observedRntis = stats.rntis
+      previous.statsComputedAt = new Date().toISOString()
+    }
+    this.writeManifest(previous)
+    console.log(`Scheduler epoch ${policyEpoch} applied; rotated run ${previousId} -> ${id}.`)
     return id
   }
 
@@ -147,7 +192,7 @@ export class RunStore {
   }
 
   /**
-   * Appends to the active run's scheduler timeline when the algorithm changes underneath us.
+   * Appends to the active run's scheduler-intent timeline when the Redis value changes.
    * The dashboard does not set the value -- it is changed from a shell -- so the only way to
    * know a run switched schedulers is to sample.
    */
